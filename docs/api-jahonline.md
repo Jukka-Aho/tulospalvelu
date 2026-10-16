@@ -89,11 +89,12 @@ Vastauksen kilpailurivillä voi olla myös `luonne` (`suunnistus`, `hiihto`,
  "nimi":"Kevätkisa","pvm":"2026-04-12","luonne":"suunnistus","laji":"S",
  "alalaji":"","vaiheet":1}
 ```
-→ `{"status":"ok","kilpailu_id":15,"kilpailu":{"id":15,"nimi":"Kevätkisa","luonne":"suunnistus"}}`
+→ `{"status":"ok","action":"luo_kilpailu","kilpailu_id":15,"id":15,"nimi":"Kevätkisa","pvm":"2026-04-12","tyyppi":"yksilo","luonne":"suunnistus"}`
 
+Vaatii käyttäjäkohtaisen avaimen (admin, pääkäyttäjä tai seuran admin).
 Luonne tulee Pirilän kilpailulajista ja ohjaa, mitkä valikot netissä näkyvät
 (juoksussa ajanotto, suunnistuksessa ratatiedot ja Emit-sivut). Palvelimen
-toteutusohje: [jahonline-docs/kisan-luonne.md](jahonline-docs/kisan-luonne.md).
+toteutus: [jahonline-docs/kisan-luonne.md](jahonline-docs/kisan-luonne.md).
 
 ### `kilpailijat` (JAHOnline → Pirilä)
 ```json

@@ -1,9 +1,17 @@
 # Kisan luonne ja Pirilän yhdistäminen (JAHOnline-palvelin)
 
-Tämä on JAHOnline-sivuston toteutusohje. Pirilän puoli (HkKisaWin ja
-ViestiWin) on tehty tässä repossa. Sivuston koodi ei ole tässä repossa, joten
-alla oleva pitää toteuttaa JAHOnlinen `kilpailijat_bridge.php`:hen ja
-hallintasivuille.
+Pirilän puoli (HkKisaWin ja ViestiWin) on tässä repossa. JAHOnline-sivuston
+koodi ei ole tässä repossa. Sivuston puoli on toteutettu palvelimelle
+seuraavasti:
+
+| Tiedosto | Muutos |
+|---|---|
+| `includes/kisa_luonne.php` (uusi) | sarakkeet ja `pirila_yhteydet`-taulu (`kisaLuonneVarmista`), luonteet, `kisaNaytaValikko()`, yhteyksien muisti |
+| `public/api/kilpailijat_bridge.php` | `action=luo_kilpailu` ja `action=yhdista` |
+| `includes/api_auth.php` | `kilpailut`-listaan `luonne` ja `yhdistetty` |
+| `admin/kilpailut.php` | valinta *Kisan luonne*, luonne kisalistan merkkinä |
+| `includes/admin_nav.php` | hallintavalikko luonteen mukaan, merkkinä luonteen nimi |
+| `includes/seura_kisavalikko.php`, `public/ajanotto_valinta.php` | seuran pikavalikko ja ajanoton valintasivu luonteen mukaan |
 
 ## Mitä Pirilä tekee
 
@@ -43,24 +51,28 @@ Viesti ja yksilökisa erotetaan edelleen kentällä `tyyppi` (`viesti` /
 
 ## Tietokanta
 
+`kisaLuonneVarmista()` lisää sarakkeet ja taulun automaattisesti, kun
+sivua tai API:a käytetään ensimmäisen kerran:
+
 ```sql
 ALTER TABLE kilpailut
   ADD COLUMN luonne VARCHAR(20) NULL DEFAULT NULL,
   ADD COLUMN pirila_laji CHAR(1) NULL DEFAULT NULL;
 
-CREATE TABLE pirila_yhteydet (
+CREATE TABLE IF NOT EXISTS pirila_yhteydet (
   id INT AUTO_INCREMENT PRIMARY KEY,
   kilpailu_id INT NOT NULL,
-  kayttaja_id INT NOT NULL,
-  lahde VARCHAR(20) NOT NULL,          -- HkKisaWin / ViestiWin
-  asema VARCHAR(64) NOT NULL,          -- koneen tai aseman nimi
-  kansio VARCHAR(260) NOT NULL,        -- Pirilän kilpailukansio
-  pirila_nimi VARCHAR(160) NULL,
+  kayttaja_id INT NULL,                -- NULL, jos käytetty vanhaa kilpailuavainta
+  lahde VARCHAR(40) NULL,              -- HkKisaWin / ViestiWin
+  tyyppi VARCHAR(10) NULL,             -- yksilo / viesti
+  asema VARCHAR(64) NOT NULL DEFAULT '',
+  kansio VARCHAR(255) NOT NULL DEFAULT '',  -- Pirilän kilpailukansio
+  pirila_nimi VARCHAR(255) NULL,
   laji CHAR(1) NULL,
   ensimmainen_at DATETIME NOT NULL,
   viimeksi_at DATETIME NOT NULL,
-  UNIQUE KEY (kilpailu_id, asema, kansio),
-  FOREIGN KEY (kilpailu_id) REFERENCES kilpailut(id)
+  UNIQUE KEY uq_pirila_yhteys (kilpailu_id, asema, kansio(190)),
+  KEY idx_pirila_yhteys_kilpailu (kilpailu_id)
 );
 ```
 
@@ -105,12 +117,17 @@ Palvelin:
 2. lisää tai päivittää rivin `pirila_yhteydet` (`viimeksi_at = NOW()`)
 3. asettaa `kilpailut.pirila_laji = laji`, ja `luonne`-kentän **vain jos se on
    NULL**
-4. vastaa kuten `ping`, kisan tiedoilla:
+4. tallentaa `kello`-kentän kuten `ping` ja vastaa:
 
 ```json
-{"status":"ok","kilpailu":{"id":11,"nimi":"Kevätkisa","pvm":"2026-04-12",
- "tyyppi":"yksilo","luonne":"suunnistus"},"server_time":"..."}
+{"status":"ok","action":"yhdista","kilpailu_id":11,
+ "kilpailu":{"id":11,"nimi":"Kevätkisa","tyyppi":"henkilokohtainen","tila":"luonnos","osuuksia":1},
+ "nimi":"Kevätkisa","pvm":"2026-04-12","luonne":"suunnistus",
+ "yhdistetty":true,"yhteydet":1,"server_time":"...","kello":{...}}
 ```
+
+`yhteydet` on kisaan yhdistettyjen asemien ja kansioiden määrä. Jos `luonne`
+puuttuu pyynnöstä, palvelin päättelee sen `laji`-kirjaimesta.
 
 Jos netin luonne poikkeaa Pirilän lajista, Pirilä näyttää varoituksen mutta
 yhdistää silti.
@@ -132,19 +149,32 @@ yhdistää silti.
 }
 ```
 
-`pvm` on `vvvv-kk-pp` tai `null`. `vaiheet` on HkKisaWinin vaiheiden määrä
-(viestissä 1).
+`pvm` on `vvvv-kk-pp` tai `null`. Palvelin hyväksyy myös muodon `p.k.vvvv`.
+`vaiheet` on HkKisaWinin vaiheiden määrä (viestissä 1).
 
-Palvelin luo kisan avaimen käyttäjälle (omistaja), merkitsee sen
-Pirilä-kilpailuksi (`pirila = 1`), tallentaa `luonne`- ja `pirila_laji`-kentät
-ja vastaa:
+Pyyntö vaatii käyttäjäkohtaisen API-avaimen (ei `kilpailu_id`:tä). Kisan voi
+luoda sama joukko kuin hallinnassa: admin, pääkäyttäjä tai seuran admin.
+Muuten vastaus on HTTP 403.
+
+Palvelin luo kisan tilaan `luonnos`, merkitsee sen Pirilä-kilpailuksi
+(`kisa_tyyppi = 'pirila'`, `pirila_synkka = 1`) ja asettaa:
+
+- omistajan: avaimen käyttäjä, tai aliakäyttäjällä tämän pääkäyttäjä
+- seuraksi käyttäjän ensimmäisen seuran, jossa hän on admin
+- kentät `luonne` ja `pirila_laji`
+
+Vastaus:
 
 ```json
-{"status":"ok","kilpailu_id":15,"kilpailu":{"id":15,"nimi":"Kevätkisa","luonne":"suunnistus"}}
+{"status":"ok","action":"luo_kilpailu","kilpailu_id":15,"id":15,"nimi":"Kevätkisa",
+ "pvm":"2026-04-12","tyyppi":"yksilo","luonne":"suunnistus"}
 ```
 
+Pirilä kutsuu heti perään `yhdista`, joka tallentaa aseman ja kansion.
+
 Virhe: `{"status":"error","message":"..."}`. Pirilä näyttää viestin lokissa.
-Tuntematon `luonne` tallennetaan arvona `muu`.
+Jos `luonne` on tuntematon, palvelin käyttää `laji`-kirjaimen luonnetta (tuntematon
+kirjain on `muu`).
 
 ## Valikot luonteen mukaan
 
@@ -152,11 +182,15 @@ Luonne ohjaa, mitkä valikot kisan sivuilla ja hallinnassa näkyvät:
 
 | Valikko / sivu | suunnistus | ampumasuunnistus | hiihto | ampumahiihto | juoksu | uinti | sotilas5ottelu, meri5ottelu | muu |
 |---|---|---|---|---|---|---|---|---|
-| Ratatiedot | kyllä | kyllä | ei | ei | ei | ei | ei | ei |
-| Emit-sivut (emit-luenta, rastiväliajat `valiajat.php`) | kyllä | kyllä | ei | ei | ei | ei | ei | ei |
-| Ajanotto (ruudukko, nappi, numerot, jaettu ajanottolista) | ei | ei | kyllä | kyllä | kyllä | kyllä | kyllä | kyllä |
-| Ampumasakot (mobiili: kilpailija) | ei | kyllä | ei | kyllä | ei | ei | kyllä | ei |
-| Osanottajat, lähtölistat, tulokset, online-väliajat, seuranta | kyllä | kyllä | kyllä | kyllä | kyllä | kyllä | kyllä | kyllä |
+| Ratatiedot (hallinta: Radat) | kyllä | kyllä | ei | ei | ei | ei | ei | ei |
+| Emit-sivut (Emit-lukija, Pirilä-kisan Lähtöluenta) | kyllä | kyllä | ei | ei | ei | ei | ei | ei |
+| Ajanotto (Mobiiliajanotto, Maalinappi, Numerot) | ei | ei | kyllä | kyllä | kyllä | kyllä | kyllä | kyllä |
+| Ampumapaikka | ei | kyllä | ei | kyllä | ei | ei | kyllä | ei |
+| Kilpailijat, Sarjat, Lähdöt, Nimenhuuto, Lähtökello, tulokset, seuranta | kyllä | kyllä | kyllä | kyllä | kyllä | kyllä | kyllä | kyllä |
+
+Luonne vain piilottaa valikoita, se ei tuo uusia. Pirilä-kisan omat säännöt
+pysyvät: Pirilä-kisassa ajanoton ruudukko ja Maalinappi eivät näy (ajat tulevat
+Pirilästä), ja Numerot näkyy vain jaetulla ajanottolistalla.
 
 `luonne = NULL`: kaikki valikot näkyvät.
 
@@ -164,21 +198,20 @@ Piilotus on vain näkymää: sivujen osoitteet ja API toimivat luonteesta
 riippumatta, jotta Pirilän synkka (esim. emit-rastiväliajat) ei katkea, jos
 luonne on valittu väärin.
 
-Esimerkki PHP-apufunktiosta:
+Toteutus on `includes/kisa_luonne.php`:ssä:
 
 ```php
-function kisa_nayta_valikko(?string $luonne, string $valikko): bool
+function kisaNaytaValikko(array $kilpailu, string $valikko): bool
 {
-    if ($luonne === null || $luonne === '') {
+    $luonne = kisaLuonneNormalisoi($kilpailu['luonne'] ?? null);
+    if ($luonne === null) {
         return true;
     }
     $saannot = [
         'ratatiedot' => ['suunnistus', 'ampumasuunnistus'],
-        'emit'       => ['suunnistus', 'ampumasuunnistus'],
-        'ajanotto'   => ['hiihto', 'ampumahiihto', 'juoksu', 'uinti',
-                         'sotilas5ottelu', 'meri5ottelu', 'muu'],
-        'sakot'      => ['ampumasuunnistus', 'ampumahiihto',
-                         'sotilas5ottelu', 'meri5ottelu'],
+        'emit' => ['suunnistus', 'ampumasuunnistus'],
+        'ajanotto' => ['hiihto', 'ampumahiihto', 'juoksu', 'uinti', 'sotilas5ottelu', 'meri5ottelu', 'muu'],
+        'ampuma' => ['ampumasuunnistus', 'ampumahiihto', 'sotilas5ottelu', 'meri5ottelu'],
     ];
     if (!isset($saannot[$valikko])) {
         return true;

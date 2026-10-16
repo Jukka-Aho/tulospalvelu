@@ -4,6 +4,7 @@ Muutoshistoria pääkehityshaaraan (main) tehdyistä committeista, uusin ensin.
 
 | Pvm | # | Muutos |
 |---|---|---|
+| 2026-10-16 | — | JAHOnline-palvelin: `luo_kilpailu` ja `yhdista` toteutettu; kisalla on luonne (hallinnan valinta *Kisan luonne*), joka valitsee näkyvät valikot: suunnistuksessa radat ja Emit-sivut, juoksussa ja hiihdossa ajanotto, ampumalajeissa ampumapaikka (dokumentti `docs/jahonline-docs/kisan-luonne.md`) |
 | 2026-10-16 | — | JAHOnline API: *Testaa (ping)* on nyt *Yhdistä* (`action=yhdista`, vanhalle palvelimelle ping); yhdistetyt kisat ja API-avain muistetaan (`jahonline_yhdistetyt.ini`); uusi painike *Luo uusi JAHOnline-kisa* (näkyy, kun yhteys on luotu) luo netin kisan avatusta kilpailusta luonteella, joka tulee Pirilän kilpailulajista (suunnistus, hiihto, juoksu, …); ViestiWin: `ApiPaikallinenKello` siirretty yhteiseen `ApiYhteydet.cpp`:hen (puuttui ViestiWinistä) |
 | 2026-10-12 | — | HkKisaWin: emit-väliaikatuloste: Rata-sarake näytetään vain, jos sarjan kilpailijat kiertävät eri ratoja (aiemmin aina, kun sarjan nimi ei ollut radan nimi). Muutos koskee myös vanhaa (ei-responsiivista) html- ja tekstitulostetta |
 | 2026-10-02 | — | HkKisaWin: lähtöluettelo myös mobiili-HTML:nä (responsiivinen: sarakeluokat ja -leveydet, seura nimen alle kapealla näytöllä, ei sarjalinkkejä); Näytä heti ei enää avaa vanhaa tiedostoa, jos tulostus estettiin virheilmoituksella |
