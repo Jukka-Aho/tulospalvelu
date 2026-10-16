@@ -29,6 +29,11 @@ typedef struct {
 	int vastaanottaEiLahteneet;    // Apply DNS/DNF from pull
 	int lahetysvali;               // Interval seconds
 	int kaynnissa;                 // Sync thread active intent
+	int siirtotapa;                // 0 = suora koneelta koneelle, 1 = JAHOnline-loki
+	int numerotSelaimesta;         // Maaliaika ilman numeroa, numero selaimessa
+	wchar_t asema[64];             // Lähettäjän nimi lokissa
+	int tapahtumaCursor;           // Viimeksi sovellettu lokirivi
+	int tapahtumaCursorKilpailu;   // Cursor kuuluu tälle kilpailu_id:lle
 } apiconfigtp;
 
 class TFormApiYhteydet : public TForm
@@ -66,6 +71,12 @@ __published:
 	TLabel *LabelLahetysvali;
 	TEdit *EditLahetysvali;
 	TLabel *LabelSekunti;
+	TLabel *LabelSiirtotapa;
+	TComboBox *ComboSiirtotapa;
+	TLabel *LabelSiirtoOhje;
+	TLabel *LabelAsema;
+	TEdit *EditAsema;
+	TCheckBox *CBNumerotSelaimesta;
 
 	TMemo *MemoTila;
 	TButton *BtnPaivitaTila;
@@ -119,5 +130,19 @@ UnicodeString ApiBridgeUrl(void);
 bool ApiHttpPostJson(const UnicodeString& url, const UnicodeString& jsonBody, UnicodeString& vastaus);
 bool ApiHttpGetAuth(const UnicodeString& url, UnicodeString& vastaus);
 UnicodeString ApiKilpailutPyynto(void);
+
+// 0 = suora yhteys, 1 = JAHOnline-tapahtumaloki työasemien välillä.
+bool ApiSiirtoOnJahonline(void);
+int api_siirto_jahonline(void);
+UnicodeString ApiAsemaNimi(void);
+void ApiJonotaTapahtuma(const UnicodeString& objJson);
+int ApiLahetaTapahtumaJono(void);
+int ApiTapahtumaPudotettuOta(void);
+typedef void (*ApiTapahtumaSovellaFn)(const UnicodeString& tapahtumaJson);
+void ApiAsetaTapahtumaSovella(ApiTapahtumaSovellaFn fn);
+int ApiHaeTapahtumat(void);
+void ApiSovellusAlkaa(void);
+void ApiSovellusLoppuu(void);
+bool ApiSovellusKaynnissa(void);
 
 #endif

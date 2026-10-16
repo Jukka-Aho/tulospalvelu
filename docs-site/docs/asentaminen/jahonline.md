@@ -56,6 +56,30 @@ Automaattinen taustasynkka (välilehti *Automaatio*) lähettää lisäksi koko
 osanottajalistan valitun välein (`lahetysvali`, oletus 10 s), kun ping on
 onnistunut.
 
+## Työasemien siirto
+
+Samalla välilehdellä **Työasemien siirto** valitsee, kulkeeko Pirilän oma
+asemaliikenne suoraan koneelta koneelle vai JAHOnlinen kautta.
+
+- **Lähiverkko säilyy.** Synkan valinta ei katkaise koneelta koneelle -yhteyttä.
+  Yksi kone voi olla ainoa netissä. Muut koneet ovat sen kanssa samassa
+  lähiverkossa, ja se kone vie tiedot JAHOnlineen.
+- **Tapahtumaloki** on lisä tälle koneelle. Sillä kone lukee puhelimen ja
+  sellaisten asemien rivit, jotka eivät ole lähiverkossa, ja välittää ne
+  `laheta`-liikenteenä muille. Anna asemalle nimi, jotta se ei lue omia
+  rivejään takaisin.
+
+**Lopeta synkka** pysäyttää täyssynkan. Jos siirto on JAHOnline, asemien välinen
+loki jää päälle.
+
+Puhelimella samaa kisaa voi kirjata sivulta **Hallinta → Ajanotto →
+Mobiili: kilpailija** (nimi, status, ampumasakot). Emit-leimat näkyvät
+sivulla; puhelin ei lue USB-lukijaa.
+
+Kun netissä on ruksi *Jaettu ajanottolista* ja Pirilässä *Maaliajat ilman numeroa*,
+maaliaika kirjataan Pirilässä ja numero selaimen Numerot-sivulla. Juoksun oma
+ajanotto jää käyttöön, ja sen voi yhdistää Pirilään samalla ruksilla.
+
 ## Online-rastit (kaksisuuntainen vienti)
 
 Kyllä: online-väliajat kulkevat saman JAHOnline-bridgen kautta, sekä

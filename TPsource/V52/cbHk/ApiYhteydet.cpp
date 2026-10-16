@@ -62,6 +62,17 @@ static void ApiConfigLueTiedostosta(const UnicodeString& polku)
 	apiconfig.lahetaTulokset = GetPrivateProfileIntW(L"jahonline", L"laheta_tulokset", 1, polku.c_str());
 	apiconfig.vastaanottaEiLahteneet = GetPrivateProfileIntW(L"jahonline", L"vastaanotta_dns", 1, polku.c_str());
 	apiconfig.kaynnissa = GetPrivateProfileIntW(L"jahonline", L"kaynnissa", 0, polku.c_str());
+	apiconfig.siirtotapa = GetPrivateProfileIntW(L"jahonline", L"siirtotapa", 0, polku.c_str());
+	if (apiconfig.siirtotapa != 1)
+		apiconfig.siirtotapa = 0;
+	apiconfig.numerotSelaimesta = GetPrivateProfileIntW(L"jahonline", L"numerot_selaimesta", 0, polku.c_str()) ? 1 : 0;
+	GetPrivateProfileStringW(L"jahonline", L"asema", L"", tmp, 64, polku.c_str());
+	wcsncpy(apiconfig.asema, tmp, sizeof(apiconfig.asema)/2 - 1);
+	apiconfig.asema[sizeof(apiconfig.asema)/2 - 1] = 0;
+	apiconfig.tapahtumaCursorKilpailu = GetPrivateProfileIntW(L"jahonline", L"tapahtuma_cursor_kilpailu", 0, polku.c_str());
+	apiconfig.tapahtumaCursor = GetPrivateProfileIntW(L"jahonline", L"tapahtuma_cursor", 0, polku.c_str());
+	if (apiconfig.tapahtumaCursorKilpailu != apiconfig.kilpailuId)
+		apiconfig.tapahtumaCursor = 0;
 	if (apiconfig.lahetysvali < 2)
 		apiconfig.lahetysvali = 2;
 }
@@ -112,6 +123,11 @@ void ApiConfigTallenna(void)
 	WritePrivateProfileStringW(L"jahonline", L"laheta_tulokset", IntToStr(apiconfig.lahetaTulokset).c_str(), polku.c_str());
 	WritePrivateProfileStringW(L"jahonline", L"vastaanotta_dns", IntToStr(apiconfig.vastaanottaEiLahteneet).c_str(), polku.c_str());
 	WritePrivateProfileStringW(L"jahonline", L"kaynnissa", IntToStr(apiconfig.kaynnissa).c_str(), polku.c_str());
+	WritePrivateProfileStringW(L"jahonline", L"siirtotapa", IntToStr(apiconfig.siirtotapa).c_str(), polku.c_str());
+	WritePrivateProfileStringW(L"jahonline", L"numerot_selaimesta", IntToStr(apiconfig.numerotSelaimesta).c_str(), polku.c_str());
+	WritePrivateProfileStringW(L"jahonline", L"asema", apiconfig.asema, polku.c_str());
+	WritePrivateProfileStringW(L"jahonline", L"tapahtuma_cursor", IntToStr(apiconfig.tapahtumaCursor).c_str(), polku.c_str());
+	WritePrivateProfileStringW(L"jahonline", L"tapahtuma_cursor_kilpailu", IntToStr(apiconfig.kilpailuId).c_str(), polku.c_str());
 }
 
 UnicodeString ApiBridgeUrl(void)
@@ -370,6 +386,12 @@ void __fastcall TFormApiYhteydet::LueTiedot(void)
 	CBLahetaTulokset->Checked = apiconfig.lahetaTulokset != 0;
 	CBVastaanottaEiLahteneet->Checked = apiconfig.vastaanottaEiLahteneet != 0;
 	EditLahetysvali->Text = IntToStr(apiconfig.lahetysvali);
+	if (ComboSiirtotapa)
+		ComboSiirtotapa->ItemIndex = apiconfig.siirtotapa == 1 ? 1 : 0;
+	if (EditAsema)
+		EditAsema->Text = apiconfig.asema;
+	if (CBNumerotSelaimesta)
+		CBNumerotSelaimesta->Checked = apiconfig.numerotSelaimesta != 0;
 	NaytaYhteysTila();
 	if (LabelIniPolku)
 		LabelIniPolku->Caption = L"Asetustiedosto (kilpailun kansio):\r\n" + ApiConfigPolku();
@@ -384,10 +406,11 @@ void __fastcall TFormApiYhteydet::KirjoitaTiedot(void)
 	apiconfig.apiKey[sizeof(apiconfig.apiKey)/2 - 1] = 0;
 	{
 		int cid = ComboKilpailuId();
-		if (cid > 0)
-			apiconfig.kilpailuId = cid;
-		else
-			apiconfig.kilpailuId = _wtoi(EditKilpailuId->Text.c_str());
+		if (cid <= 0)
+			cid = _wtoi(EditKilpailuId->Text.c_str());
+		if (cid != apiconfig.kilpailuId)
+			apiconfig.tapahtumaCursor = 0;
+		apiconfig.kilpailuId = cid;
 		if (ComboKilpailu && ComboKilpailu->ItemIndex >= 0) {
 			UnicodeString s = ComboKilpailu->Items->Strings[ComboKilpailu->ItemIndex];
 			int dash = s.Pos(L" - ");
@@ -406,6 +429,14 @@ void __fastcall TFormApiYhteydet::KirjoitaTiedot(void)
 	apiconfig.lahetaTulokset = CBLahetaTulokset->Checked ? 1 : 0;
 	apiconfig.vastaanottaEiLahteneet = CBVastaanottaEiLahteneet->Checked ? 1 : 0;
 	apiconfig.lahetysvali = _wtoi(EditLahetysvali->Text.c_str());
+	if (ComboSiirtotapa)
+		apiconfig.siirtotapa = ComboSiirtotapa->ItemIndex == 1 ? 1 : 0;
+	if (EditAsema) {
+		wcsncpy(apiconfig.asema, EditAsema->Text.c_str(), sizeof(apiconfig.asema)/2 - 1);
+		apiconfig.asema[sizeof(apiconfig.asema)/2 - 1] = 0;
+	}
+	if (CBNumerotSelaimesta)
+		apiconfig.numerotSelaimesta = CBNumerotSelaimesta->Checked ? 1 : 0;
 	if (apiconfig.lahetysvali < 2)
 		apiconfig.lahetysvali = 2;
 }
@@ -458,7 +489,8 @@ void __fastcall TFormApiYhteydet::TestaaYhteys(void)
 	}
 
 	UnicodeString url = ApiBridgeUrl();
-	UnicodeString body = L"{\"action\":\"ping\",\"kilpailu_id\":" + IntToStr(apiconfig.kilpailuId) + L"}";
+	UnicodeString body = L"{\"action\":\"ping\",\"kilpailu_id\":" + IntToStr(apiconfig.kilpailuId)
+		+ L",\"kello\":" + ApiJsonString(ApiPaikallinenKello()) + L"}";
 	UnicodeString vastaus;
 	PaivitaTila(L"POST ping -> " + url);
 
@@ -486,8 +518,16 @@ void __fastcall TFormApiYhteydet::LopetaSynkka(void)
 	apiconfig.kaynnissa = 0;
 	ApiConfigTallenna();
 	TApiIntegration::GetInstance()->Lopeta();
+	bool jatkuu = false;
+	if (apiconfig.siirtotapa == 1 && TApiIntegration::GetInstance()->OnKilpailuAvattu()
+		&& apiconfig.kilpailuId > 0 && apiconfig.apiKey[0] != 0) {
+		TApiIntegration::GetInstance()->Alusta();
+		jatkuu = true;
+		PaivitaTila(L"T\xe4yssynkka pys\xe4ytetty. JAHOnline-siirto ty\xf6asemien v\xe4lill\xe4 jatkuu.");
+	}
 	NaytaYhteysTila();
-	PaivitaTila(L"Synkka lopetettu.");
+	if (!jatkuu)
+		PaivitaTila(L"Synkka lopetettu.");
 }
 
 
@@ -639,6 +679,7 @@ void __fastcall TFormApiYhteydet::BtnHaeNytClick(TObject *Sender)
 		return;
 	}
 	int n = ApiSynkkaaHaeKaikki(true);
+	ApiPaivitaOsanottajaNakyma();
 	PaivitaTila(L"Haku valmis, päivitetty: " + IntToStr(n));
 }
 
@@ -672,8 +713,12 @@ void __fastcall TFormApiYhteydet::BtnOhjeClick(TObject *Sender)
 		L"Online-rasti / ajanotto -> action=tapahtuma (piste, aika_sec = tuloksen sekunnit)\n"
 		L"ViestiWin: sama protokolla + kenttä osuus (1-pohjainen).\n"
 		L"Emit-luenta merkitsee lähtijän läsnäolevaksi ja synkkaa heti.\n"
-		L"Testaa (ping) käynnistää taustasynkan, kun kilpailu on auki.\n"
-		L"Lopeta synkka pysäyttää taustasäikeen.\n"
+		L"Testaa (ping) k\xe4ynnist\xe4\xe4 taustasynkan, kun kilpailu on auki.\n"
+		L"L\xe4hiverkko (laheta) toimii aina, kun se on m\xe4\xe4ritetty. Synkka ei katkaise sit\xe4.\n"
+		L"Yksi kone voi olla ainoa, joka puhuu nettiin. Muut koneet ovat samassa l\xe4hiverkossa.\n"
+		L"Tapahtumaloki t\xe4ll\xe4 koneella tuo lis\xe4ksi puhelimen ja verkottomat asemat, ja l\xe4hiverkko vie ne eteenp\xe4in.\n"
+		L"Aseman nimi erottaa l\xe4hett\xe4j\xe4n, jotta oma rivi ei tule takaisin.\n"
+		L"Lopeta synkka pys\xe4ytt\xe4\xe4 t\xe4yssynkan. JAHOnline-siirto j\xe4\xe4 p\xe4\xe4lle.\n"
 		L"Synkkaa ei käynnistetä, jos kisaa ei ole avattu.\n"
 		L"Asetukset tallennetaan kilpailun kansion jahonline_api.ini -tiedostoon\n"
 		L"ja luetaan sieltä, kun kilpailu avataan.\n"
@@ -689,7 +734,9 @@ void __fastcall TFormApiYhteydet::BtnOKClick(TObject *Sender)
 {
 	KirjoitaTiedot();
 	ApiConfigTallenna();
-	if (apiconfig.kaynnissa && TApiIntegration::GetInstance()->OnKilpailuAvattu())
+	if (TApiIntegration::GetInstance()->OnKilpailuAvattu()
+		&& apiconfig.kilpailuId > 0 && apiconfig.apiKey[0] != 0
+		&& (apiconfig.kaynnissa || apiconfig.siirtotapa == 1))
 		TApiIntegration::GetInstance()->Alusta();
 	PaivitaTila(L"Asetukset tallennettu: " + ApiConfigPolku());
 	Close();
@@ -698,4 +745,172 @@ void __fastcall TFormApiYhteydet::BtnOKClick(TObject *Sender)
 void __fastcall TFormApiYhteydet::BtnPeruutaClick(TObject *Sender)
 {
 	Close();
+}
+
+static CRITICAL_SECTION gTapahtumaCs;
+static bool gTapahtumaCsOk = false;
+static std::vector<UnicodeString> gTapahtumaJono;
+static int gTapahtumaPudotettu = 0;
+static int gTapahtumaPudotettuIlmoitus = 0;
+static ApiTapahtumaSovellaFn gTapahtumaSovella = NULL;
+static DWORD gSovellusSaie = 0;
+
+static void TapahtumaCsAlusta(void)
+{
+	if (!gTapahtumaCsOk) {
+		InitializeCriticalSection(&gTapahtumaCs);
+		gTapahtumaCsOk = true;
+	}
+}
+
+bool ApiSiirtoOnJahonline(void)
+{
+	return apiconfig.siirtotapa == 1;
+}
+
+int api_siirto_jahonline(void)
+{
+	return ApiSiirtoOnJahonline() ? 1 : 0;
+}
+
+UnicodeString ApiAsemaNimi(void)
+{
+	if (apiconfig.asema[0] != 0)
+		return UnicodeString(apiconfig.asema);
+	wchar_t nimi[64];
+	DWORD n = 64;
+	if (GetComputerNameW(nimi, &n) && nimi[0] != 0)
+		return UnicodeString(nimi);
+	return UnicodeString(L"pirila");
+}
+
+void ApiAsetaTapahtumaSovella(ApiTapahtumaSovellaFn fn)
+{
+	gTapahtumaSovella = fn;
+}
+
+void ApiSovellusAlkaa(void)
+{
+	gSovellusSaie = GetCurrentThreadId();
+}
+
+void ApiSovellusLoppuu(void)
+{
+	gSovellusSaie = 0;
+}
+
+bool ApiSovellusKaynnissa(void)
+{
+	return gSovellusSaie != 0 && gSovellusSaie == GetCurrentThreadId();
+}
+
+void ApiJonotaTapahtuma(const UnicodeString& objJson)
+{
+	if (!ApiSiirtoOnJahonline() || ApiSovellusKaynnissa())
+		return;
+	if (objJson.IsEmpty())
+		return;
+	TapahtumaCsAlusta();
+	EnterCriticalSection(&gTapahtumaCs);
+	if ((int)gTapahtumaJono.size() < 256)
+		gTapahtumaJono.push_back(objJson);
+	else {
+		gTapahtumaPudotettu++;
+		gTapahtumaPudotettuIlmoitus++;
+	}
+	LeaveCriticalSection(&gTapahtumaCs);
+}
+
+int ApiTapahtumaPudotettuOta(void)
+{
+	TapahtumaCsAlusta();
+	EnterCriticalSection(&gTapahtumaCs);
+	int n = gTapahtumaPudotettuIlmoitus;
+	gTapahtumaPudotettuIlmoitus = 0;
+	LeaveCriticalSection(&gTapahtumaCs);
+	return n;
+}
+
+int ApiLahetaTapahtumaJono(void)
+{
+	if (!ApiSiirtoOnJahonline())
+		return 0;
+	if (apiconfig.kilpailuId <= 0 || apiconfig.apiKey[0] == 0)
+		return -1;
+	TapahtumaCsAlusta();
+	std::vector<UnicodeString> era;
+	int pudotettu = 0;
+	EnterCriticalSection(&gTapahtumaCs);
+	era.swap(gTapahtumaJono);
+	pudotettu = gTapahtumaPudotettu;
+	gTapahtumaPudotettu = 0;
+	LeaveCriticalSection(&gTapahtumaCs);
+	if (era.empty())
+		return 0;
+
+	UnicodeString arr = L"[";
+	for (size_t i = 0; i < era.size(); i++) {
+		if (i > 0)
+			arr += L",";
+		arr += era[i];
+	}
+	arr += L"]";
+	UnicodeString body =
+		L"{\"action\":\"tapahtumat\",\"kilpailu_id\":" + IntToStr(apiconfig.kilpailuId)
+		+ L",\"lahde\":" + ApiJsonString(ApiAsemaNimi())
+		+ L",\"tapahtumat\":" + arr
+		+ L"}";
+	UnicodeString vastaus;
+	if (!ApiHttpPostJson(ApiBridgeUrl(), body, vastaus) || !ApiJsonStatusOk(vastaus)) {
+		EnterCriticalSection(&gTapahtumaCs);
+		if ((int)gTapahtumaJono.size() + (int)era.size() <= 256)
+			gTapahtumaJono.insert(gTapahtumaJono.begin(), era.begin(), era.end());
+		else {
+			gTapahtumaPudotettu += (int)era.size();
+			gTapahtumaPudotettuIlmoitus += (int)era.size();
+		}
+		gTapahtumaPudotettu += pudotettu;
+		LeaveCriticalSection(&gTapahtumaCs);
+		return -2;
+	}
+	return (int)era.size();
+}
+
+int ApiHaeTapahtumat(void)
+{
+	if (!ApiSiirtoOnJahonline() || gTapahtumaSovella == NULL)
+		return 0;
+	if (apiconfig.kilpailuId <= 0 || apiconfig.apiKey[0] == 0)
+		return -1;
+	if (apiconfig.tapahtumaCursorKilpailu != apiconfig.kilpailuId) {
+		apiconfig.tapahtumaCursor = 0;
+		apiconfig.tapahtumaCursorKilpailu = apiconfig.kilpailuId;
+	}
+	UnicodeString body =
+		L"{\"action\":\"tapahtumat_hae\",\"kilpailu_id\":" + IntToStr(apiconfig.kilpailuId)
+		+ L",\"lahde\":" + ApiJsonString(ApiAsemaNimi())
+		+ L",\"jalkeen\":" + IntToStr(apiconfig.tapahtumaCursor)
+		+ L",\"raja\":100}";
+	UnicodeString vastaus;
+	if (!ApiHttpPostJson(ApiBridgeUrl(), body, vastaus))
+		return -2;
+	if (!ApiJsonStatusOk(vastaus))
+		return -3;
+
+	std::vector<UnicodeString> objs;
+	int n = ApiJsonExtractObjectArray(vastaus, L"tapahtumat", objs);
+	int viimeinen = apiconfig.tapahtumaCursor;
+	for (int i = 0; i < n; i++) {
+		int id = 0;
+		ApiJsonFindInt(objs[i], L"id", id);
+		gTapahtumaSovella(objs[i]);
+		if (id > viimeinen)
+			viimeinen = id;
+	}
+	if (viimeinen != apiconfig.tapahtumaCursor) {
+		apiconfig.tapahtumaCursor = viimeinen;
+		apiconfig.tapahtumaCursorKilpailu = apiconfig.kilpailuId;
+		ApiConfigTallenna();
+	}
+	return n;
 }

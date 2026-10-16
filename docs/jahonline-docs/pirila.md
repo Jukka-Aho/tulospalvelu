@@ -67,6 +67,18 @@ säikeen. Synkkaa ei käynnistetä, jos kilpailua ei ole avattu.
 | `synkkaa` | Pirilä → JAHOnline | Osanottajat, ajat, lähtöajat, läsnäolo, `valiajat[]` (online + Emit-rastit `rasti_koodi`) |
 | `kilpailijat` | JAHOnline → Pirilä | Haku `KILP.DAT`:iin (myös väliajat) |
 | `tapahtuma` | live molempiin | Online-rasti heti (`piste`, `aika_sec`, viestissä `osuus`) |
+| `tapahtumat` | asema → loki | Kilpailija, status, aika (`aika_tick`), sakko, emit |
+| `tapahtumat_hae` | loki → asema | Rivin jälkeen, ei omaa lähdettä |
+
+Synkka ei katkaise lähiverkkoa. Yksi kone voi puhua nettiin, ja muut koneet
+ovat sen kanssa samassa lähiverkossa. Tapahtumaloki tällä koneella on lisä:
+se tuo puhelimen rivit ja välittää ne lähiverkkoon.
+Puhelin: Hallinta → Ajanotto → **Mobiili: kilpailija**.
+
+Kun netissä on ruksi *Jaettu ajanottolista* ja Pirilässä *Maaliajat ilman numeroa*,
+maaliaika kirjataan Pirilässä ja kilpailijan numero selaimen Numerot-sivulla.
+Ne kohtaavat samassa listassa. Juoksun oma ajanotto (ruudukko, nappi, numerot)
+jää käyttöön, ja sen voi yhdistää Pirilään samalla ruksilla.
 
 HkKisaWin: `"tyyppi":"yksilo"`. ViestiWin: `"tyyppi":"viesti"` + `"osuus"`.
 

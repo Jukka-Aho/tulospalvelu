@@ -159,9 +159,20 @@ taustahaulla vain jos paikallinen kenttä on tyhjä.
 kun verkko lähettää arvon `> 0`. Nollaa/nullia ei silti kirjoiteta paikallisen
 tuloksen päälle.
 
-Viestissä `lasna: true` ei muuta DNS-merkintää (`T`) läsnä-merkiksi. Poissa / vakantti
+Viestissä `lasna: true` ei muuta tarkistettua (`T`) läsnä-merkiksi. Poissa / ei lähtenyt / vakantti
 (`E`/`P`/`V`/`B`) voi muuttua läsnäolevaksi. Viesti luo puuttuvan joukkueen haulla
 jos `sarja_nimi` täsmää paikalliseen sarjaan.
+
+Statuskirjaimet kulkevat kentässä `keskhyl`. Sanastatus on sama kirjain:
+
+| Kirjain | status |
+|---------|--------|
+| `T` | `OK` (tarkistettu) |
+| `H` | `DSQ` |
+| `K` | `DNF` |
+| `E` / `P` / `V` | `DNS` |
+| `N` | `LASNA`, jos tulosta ei ole, muuten `OK` |
+| `-` | `OK` tai `LASNA` |
 
 Jos live-jono (256) täyttyy, ylimääräiset merkitään lokiin (`Jono taynna`), niitä
 ei pudoteta ääneti.
@@ -227,6 +238,62 @@ Viesti (osuus 1-pohjainen JSON:ssa, 0-pohjainen Pirilässä):
 - JAHOnline-bridgen (`kilpailijat_bridge.php`) pitää hyväksyä `action=tapahtuma`
   ja kirjoittaa `valiajat` / maaliaika (viestissä myös `osuus`)
 
+### Työasemien siirto: `tapahtumat` ja `tapahtumat_hae`
+
+Automaatio-välilehden **Työasemien siirto** valitsee, miten Pirilän asemat vaihtavat
+samaa kilpailijadataa.
+
+Lähiverkko (`laheta` / `comfl`) säilyy, vaikka synkka on päällä. Yksi kone
+voi olla ainoa, joka puhuu nettiin. Muut koneet ovat sen kanssa samassa
+lähiverkossa ja lähettävät muutokset sille. Se kone vie ne JAHOnlineen.
+
+- **Ei tällä koneella** (`siirtotapa=0`): tämä kone ei lue tapahtumalokia.
+  Julkaisusynkka (`synkkaa`, `tapahtuma`) toimii silti, kun ping on käynnissä,
+  ja lähiverkko toimii, jos se on määritetty.
+- **Tämä kone** (`siirtotapa=1`): tämä kone kirjoittaa ja lukee tapahtumalokia
+  lähiverkon lisäksi. Lokista tuleva rivi tallennetaan ja lähtee `laheta`-liikenteenä
+  muille lähiverkon koneille. Konsoliohjelmat eivät käytä lokia.
+
+Lähetys (`action=tapahtumat`), lähde on aseman nimi (tai tietokoneen nimi):
+
+```json
+{
+  "action":"tapahtumat",
+  "kilpailu_id":11,
+  "lahde":"maali-pc",
+  "tapahtumat":[
+    {"tyyppi":"kilpailija","numero":101,"vaihe":0,"sukunimi":"Meikäläinen","etunimi":"Matti","keskhyl":"T"},
+    {"tyyppi":"status","numero":101,"vaihe":0,"keskhyl":"K"},
+    {"tyyppi":"aika","numero":101,"vaihe":0,"piste":0,"aika_tick":2700000},
+    {"tyyppi":"sakko","numero":101,"vaihe":0,"asakot":"02"},
+    {"tyyppi":"emit","numero":101,"leimat":[{"jarjestys":1,"koodi":31,"aika_sec":184}]}
+  ]
+}
+```
+
+Viestissä `vaihe`-kentän tilalla on `osuus` (1-pohjainen). `aika_tick` on Pirilän
+tikki (`SEK = 1000`): henkilökohtaisessa kisassa tuloksen tikit, viestissä
+`Maali()`-kellonaika. Viesti lähettää lisäksi `aika_sec` (osuuden juoksuaika
+sekunteina). Sivusto tallentaa `aika_sec`:n, jos se on mukana, muuten
+`intdiv(aika_tick, 1000)`. Toinen Pirilä-asema soveltaa `aika_tick`-arvon
+sellaisenaan.
+
+Haku (`action=tapahtumat_hae`) palauttaa rivit, joiden `id` on suurempi kuin
+`jalkeen` ja joiden `lahde` ei ole oma asema:
+
+```json
+{"action":"tapahtumat_hae","kilpailu_id":11,"lahde":"maali-pc","jalkeen":0,"raja":100}
+```
+
+Vastauksen `tapahtumat[]` on tallennettu JSON plus `id`, `lahde` ja `tyyppi`.
+Asema ei saa omia rivejään takaisin. Vastaanotto ylikirjoittaa paikallisen
+arvon (ei täytä vain tyhjää). Emit-leimoja ei kirjoiteta takaisin EMIT-tiedostoon;
+ne näkyvät sivustolla ja puhelimessa.
+
+Puhelimen sivu `public/mobiili_kilpailija.php` kirjoittaa samaan lokiin lähteellä
+`mobiili-<käyttäjä>`. Se kirjaa nimen, statuksen ja ampumasakot. Emit-leimat
+näkyvät, mutta puhelin ei lue USB-lukijaa.
+
 ## Käyttö (HkKisaWin ja ViestiWin)
 
 1. Valikko → **JAHOnline API (synkka)**
@@ -235,11 +302,19 @@ Viesti (osuus 1-pohjainen JSON:ssa, 0-pohjainen Pirilässä):
 4. **Testaa (ping)** (vain kun paikallinen kilpailu on auki — käynnistää taustasynkan)
 5. **Lähetä kilpailijat nyt** / **Hae kilpailijat nyt**
 6. **Lopeta synkka** pysäyttää taustasäikeen
-7. Automaatio: välilehti *Automaatio* + **Testaa (ping)** + OK
+7. Automaatio: välilehti *Automaatio*. **Tapahtumaloki** on oletuksena
+   *Ei tällä koneella*. *Tämä kone* lukee lokin lähiverkon lisäksi.
+   Lähiverkkoa ei katkaista. Aseman nimi erottaa lähettäjän.
+   **Testaa (ping)** + OK käynnistää täyssynkan
    (`lahetysvali` = koko listan lähetysväli, oletus 10 s)
 8. Osanottajakaavakkeen tallennus / lähtöajan muutos → `synkkaa` noin 200 ms:ssa
    kun synkka on käynnissä
 9. Live-väliajat: rastileima ajanotossa → `tapahtuma` heti
+10. **Maaliajat ilman numeroa**: Automaatio-välilehden ruksi ja netissä
+    kilpailun ruksi *Jaettu ajanottolista*. Tapahtumaloki on päällä.
+    Maaliaika lähtee lokiin ilman numeroa. Numero syötetään selaimen
+    Numerot-sivulla, ja pari palaa Pirilään sekä tuloksiin.
+    Juoksukisa toimii yhä myös ilman tätä ruksia.
 
 Asetukset tallentuvat kilpailun kansioon: `jahonline_api.ini`.
 Tiedosto luetaan automaattisesti, kun kilpailu avataan (`Initialisoi`).

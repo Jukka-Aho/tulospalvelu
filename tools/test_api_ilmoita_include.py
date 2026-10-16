@@ -80,8 +80,20 @@ def test_include_order_compile():
     print("ok include order compile")
 
 
+def test_numerot_selaimesta():
+    hk = read(os.path.join(CBHK, "ApiSaike.cpp"))
+    vi = read(os.path.join(VWIN, "ApiSaike.cpp"))
+    hdr = read(os.path.join(CBHK, "ApiYhteydet.h"))
+    assert "numerotSelaimesta" in hdr
+    assert 'tyyppi":"leima"' in hk.replace('\\"', '"')
+    assert 'tyyppi":"leima"' in vi.replace('\\"', '"')
+    assert "if (comfl)" in read(os.path.join(CBHK, "..", "Hk", "HkDat.cpp")).replace("\r", "")
+    print("ok numerot selaimesta")
+
+
 def main():
     test_headers()
+    test_numerot_selaimesta()
     test_include_order_compile()
     print("all ok")
     return 0

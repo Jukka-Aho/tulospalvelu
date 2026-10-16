@@ -82,9 +82,10 @@ void TApiIntegration::KilpailuAvattu(void)
 {
 	kilpailuAvattu = true;
 	ApiConfigLataa();
-	// Resume background sync only when this competition's ini has kaynnissa=1
-	// (set by a successful ping). Never start before a competition is open.
-	if (apiconfig.kaynnissa)
+	// Full sync resumes when this competition's ini has kaynnissa=1 (successful ping).
+	// JAHOnline workstation transport (siirtotapa=1) also keeps the thread up.
+	// Never start before a competition is open.
+	if (apiconfig.kaynnissa || apiconfig.siirtotapa == 1)
 		Alusta();
 }
 

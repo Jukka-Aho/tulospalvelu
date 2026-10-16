@@ -50,7 +50,7 @@ def test_source():
     assert "asetaMuokkaustila(false)" in peruuta
     assert "Kilp = Kilp1" in peruuta
     assert "BtnSalliClick" not in peruuta
-    assert "asetaMuokkaustila(false)" in tallenna
+    assert "asetaMuokkaustila(false)" not in tallenna
     assert "BtnPeruutaClick" in tallenna
     assert "BtnSalliClick" not in tallenna
     assert "asetaMuokkaustila(false)" in close
@@ -125,8 +125,6 @@ class Form(object):
         if save_ok:
             self.kilp1 = self.kilp
             self.BtnPeruutaClick()
-        else:
-            self.asetaMuokkaustila(False)
         self.focus = "EdtKilpno"
 
     def FormClose(self, yes, save_ok=True):
@@ -211,11 +209,11 @@ def test_modes():
     assert f.kilp == "saved"
     assert f.kilp1 == "saved"
 
-    # 6. Tallenna failure: leave edit (existing #24), data not reverted here.
+    # 6. Tallenna failure stays in edit so the error can be fixed immediately.
     f.BtnSalliClick()
     f.kilp = "fail"
     f.BtnTallennaClick(False)
-    f.assert_view()
+    f.assert_edit()
     assert f.kilp == "fail"
 
     # 7. New competitor: enter edit then naytaTiedot still hides Salli.

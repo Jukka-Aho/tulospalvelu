@@ -168,7 +168,8 @@ def test_synkka_merge():
         assert "lasnaJonoPudotettu" in text
         assert "t == L'E' || t == L'P' || t == L'V' || t == L'B'" in text
         assert "t == L'E' || t == L'P' || t == L'V' || t == L'B' || t == L'T'" not in text
-        assert "m == L'T' && onTulos" in text
+        assert "m == L'E' && onTulos" in text
+        assert "m == L'T' && onTulos" not in text
     vi = open(os.path.join(ROOT, "TPsource", "V52", "ViestiWin", "ApiSaike.cpp"),
               encoding="utf-8", errors="replace").read()
     assert "addtall(&kilp, &nd, 0)" in vi
@@ -325,11 +326,26 @@ def test_synkka_not_started_without_kilpailu():
     assert "OnKilpailuAvattu()" in yht
     assert "void __fastcall TFormApiYhteydet::LopetaSynkka(void)" in yht
     assert "BtnLopetaSynkkaClick" in yht
-    # Opening a competition must not start the thread unless kaynnissa.
+    # Opening a competition starts the thread for a running sync or the JAHOnline bus.
     avattu = integ.split("void TApiIntegration::KilpailuAvattu(void)", 1)[1]
     avattu = avattu.split("void TApiIntegration::KilpailuSuljettu(void)", 1)[0]
-    assert "if (apiconfig.kaynnissa)" in avattu
-    assert avattu.find("if (apiconfig.kaynnissa)") < avattu.find("Alusta()")
+    assert "if (apiconfig.kaynnissa || apiconfig.siirtotapa == 1)" in avattu
+    assert avattu.find("if (apiconfig.kaynnissa || apiconfig.siirtotapa == 1)") < avattu.find("Alusta()")
+    assert "siirtotapa" in yht
+    assert "tapahtumat_hae" in yht
+    assert "ApiTapahtumaPudotettuOta" in yht
+    hkdat = open(os.path.join(ROOT, "TPsource", "V52", "Hk", "HkDat.cpp"),
+                 encoding="utf-8", errors="replace").read()
+    vdat = open(os.path.join(ROOT, "TPsource", "V52", "Juk", "vdat.cpp"),
+                encoding="utf-8", errors="replace").read()
+    assert "comfl && !api_siirto_jahonline()" not in hkdat
+    assert "if (comfl)" in hkdat
+    assert "comfl && !api_siirto_jahonline()" not in vdat
+    dfm = open(os.path.join(ROOT, "TPsource", "V52", "cbHk", "ApiYhteydet.dfm"),
+               encoding="utf-8", errors="replace").read()
+    assert "LabelSiirtoOhje" in dfm
+    assert "Tapahtumaloki:" in dfm
+    assert "hiverkko koneelta koneelle" in dfm
     print("ok synkka lifecycle")
 
 
@@ -339,12 +355,12 @@ def lasna_hk(tark):
 
 def status_merkki(keskhyl, on_lasna, on_tulos):
     if keskhyl == u"T":
-        return u"DNS"
+        return u"OK"
     if keskhyl == u"H":
-        return u"DNF"
-    if keskhyl == u"K":
         return u"DSQ"
-    if keskhyl == u"E":
+    if keskhyl == u"K":
+        return u"DNF"
+    if keskhyl in (u"E", u"P", u"V"):
         return u"DNS"
     if on_lasna and not on_tulos:
         return u"LASNA"
@@ -398,6 +414,10 @@ def test_ilmoittautunut_tark():
     assert status_merkki(u"N", True, False) == u"LASNA"
     assert status_merkki(u"-", True, False) == u"LASNA"
     assert status_merkki(u"N", True, True) == u"OK"
+    assert status_merkki(u"T", True, True) == u"OK"
+    assert status_merkki(u"H", True, True) == u"DSQ"
+    assert status_merkki(u"K", True, False) == u"DNF"
+    assert status_merkki(u"E", False, False) == u"DNS"
     assert parse_lasna_text(u"esItys") == u"I"
     assert parse_lasna_text(u"Ilmoittautunut") == u"N"
     assert parse_lasna_text(u"Ilmoitt.") == u"N"
@@ -447,6 +467,9 @@ def test_ilmoittautunut_tark():
             ):
         text = open(os.path.join(ROOT, rel), encoding="utf-8", errors="replace").read()
         assert 'case L\'N\': return L"ILMOITTAUTUNUT"' not in text
+        assert 'case L\'T\': return L"OK"' in text
+        assert 'case L\'H\': return L"DSQ"' in text
+        assert 'case L\'K\': return L"DNF"' in text
         assert 'CompareIC(L"ILMOITTAUTUNUT")' in text
         assert "ApiIlmoittautunutEmitLasna" in text
         assert "ApiStatusEmitLasna" not in text
@@ -476,9 +499,14 @@ def test_ilmoittautunut_tark():
 
     oo = open(os.path.join(ROOT, "TPsource", "V52", "cbHk", "UnitOsanottajat.cpp"),
               encoding="utf-8", errors="replace").read()
-    assert "case L'N'" in oo
-    assert "Ilmoittautunut" in oo
+    # Grid text comes from tark_selite(); typing IL... stores status N.
+    assert "tark_selite(" in oo
+    assert "set_tark(L'N'" in oo
     assert "THKIEVPXMBN" in oo
+    khto = open(os.path.join(ROOT, "TPsource", "V52", "tputilv2", "khtostr.cpp"),
+                encoding="utf-8", errors="replace").read()
+    assert "case L'N'" in khto
+    assert "Ilmoittautunut" in khto
 
     hk_menu = open(os.path.join(ROOT, "TPsource", "V52", "cbHk", "WinHk.dfm"),
                    encoding="utf-8", errors="replace").read()

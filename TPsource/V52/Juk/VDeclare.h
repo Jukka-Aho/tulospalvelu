@@ -308,6 +308,7 @@ void kaikkisijat(tulostusparamtp *tulprm, int srj);
 void addtapahtuma(kilptietue *kilp, int osuus, int piste);
 void api_ilmoita_kilpailija(int kilpno);
 void api_ilmoita_tapahtuma(int kilpno, int osuus, int piste, int aikaSec);
+int api_siirto_jahonline(void);
 int wcstomaksu(wchar_t *st);
 void startaf(INT kysy);
 int kirjXmlOoOsuus(TextFl *outfl, kilptietue &kilp, int os, int piste, int level);

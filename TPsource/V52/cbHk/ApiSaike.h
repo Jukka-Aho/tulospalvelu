@@ -14,6 +14,7 @@ private:
 	void __fastcall Kasittele(void);
 	void __fastcall Paivita(const UnicodeString msg, bool virhe = false);
 	void __fastcall LisaaMemo(void);
+	void __fastcall PaivitaOsanottajat(void);
 
 protected:
 	void __fastcall Execute(void);
@@ -34,6 +35,10 @@ int ApiSovellaKilpailijatJson(const UnicodeString& json, bool korvaaKentat = fal
 
 // Emit-luenta: jonoita kilpailija JAHOnline-läsnäolosynkkaan
 void ApiIlmoitaLasna(int kilpno);
+
+// Osanottajat-ruudukko, kun synkka muutti rivejä
+void ApiPaivitaOsanottajaNakyma(void);
+UnicodeString ApiPaikallinenKello(void);
 
 // Online-rasti / väliaika (piste 0 = maali, 1+ = online)
 void ApiIlmoitaTapahtuma(int kilpno, int piste, int aikaSec);

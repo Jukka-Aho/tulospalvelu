@@ -32,9 +32,9 @@ def test_source():
     assert "EdBtnClick" in peruuta
 
     assert "BtnPeruutaClick" in tallenna
-    assert "asetaMuokkaustila(false)" in tallenna
-    # After a successful save Peruuta already left edit mode; toggling
-    # Salli would turn editing back on.
+    # A failed save stays in edit mode. Leaving edit happens only through
+    # Peruuta, which a successful save calls.
+    assert "asetaMuokkaustila(false)" not in tallenna
     assert "BtnSalliClick" not in tallenna
     assert "FocusControl(EdtKilpno)" in tallenna
     print("ok peruuta source")
@@ -51,7 +51,6 @@ def test_mode_after_actions():
     def tallenna(sallimuokkaus, lisays, save_ok):
         if save_ok:
             return peruuta(sallimuokkaus, lisays)
-        sallimuokkaus = False
         return sallimuokkaus, lisays
 
     # Old existing-competitor cancel stayed in edit; now view.
@@ -62,8 +61,8 @@ def test_mode_after_actions():
     assert tallenna(True, False, True) == (False, False)
     # Successful save of new add: view, Lisays cleared, not edit again.
     assert tallenna(True, True, True) == (False, False)
-    # Failed save still leaves view mode, Lisays unchanged.
-    assert tallenna(True, True, False) == (False, True)
+    # Failed save stays in edit mode so the number or field can be corrected.
+    assert tallenna(True, True, False) == (True, True)
     print("ok peruuta modes")
 
 

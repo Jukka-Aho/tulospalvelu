@@ -38,6 +38,7 @@
 void addtapahtuma(kilptietue *kilp, int osuus, int piste) {}
 void api_ilmoita_kilpailija(int kilpno) {}
 void api_ilmoita_tapahtuma(int kilpno, int osuus, int piste, int aikaSec) {}
+int api_siirto_jahonline(void) { return 0; }
 void paivita_aikanaytto(void) {}
 void sendTestLopetus(void) {}
 

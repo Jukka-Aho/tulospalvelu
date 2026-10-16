@@ -79,6 +79,7 @@ EDITFLD editfld[] = {
 void addtapahtuma(kilptietue *kilp, int piste) { }
 void api_ilmoita_kilpailija(int kilpno) { }
 void api_ilmoita_tapahtuma(int kilpno, int piste, int aikaSec) { }
+int api_siirto_jahonline(void) { return 0; }
 
 void paivita_aikanaytto(void) { }
 

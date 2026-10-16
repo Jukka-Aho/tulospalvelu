@@ -11,6 +11,13 @@ syöttökaavakkeella, jota käsitellään ohjeiden [luvussa 3.1](3.1_ilmoittautu
 useiden osanottajien tarkasteluun ja heitä koskevien muutosten tekemiseen, yksittäisen osanottajan tietojen tarkastelu ja muokkaaminen on selkeintä
 kaavakkeella *Kilpailijatiedot*, joka avataan valitsemalla valikosta *Yksi osanottaja* tai klikkaamalla riviä osanottajataulukossa.
 
+Valikosta *Osanottajat / Näytä maastossa olevat kilpailijat* avautuu
+taulukko niistä kilpailijoista, joilla ei ole vielä maaliaikaa ja joita ei ole
+merkitty poissaoleviksi, ei-lähteneiksi, vakanteiksi, keskeyttäneiksi tai
+hylätyiksi. Taulukossa näkyvät lähtöpaikka (sarjan lähtönumero ja radan
+lähtö), lähtöaika ja kaikki käytössä olevat väliaikapisteet. Sarja voidaan
+valita yläreunan luettelosta; painike *Hae* päivittää listan.
+
 Sekä taulukossa että kaavakkeella edellyttää muutosten tekeminen, että ne sallitaan painikkeella *Salli muutokset*. Väliaikoja ei näytetä
 tällä kaavakkeella, vaan niiden tarkastelu ja muuttaminen tapahtuvat kaavakkeella, joka avataan painikkeella *Online väliajat*. Muutettaessa tulokseen vaikuttavia
 tietoja kaavakkeella *Kilpailijatiedot* muuttuu joko maaliaika tai
@@ -33,7 +40,9 @@ Kun kaavake on muokkaustilassa, eivät hakutoiminnot ole
 käytettävissä. Painike *Salli muokkaus* piilotetaan, jotta sillä ei voi
 poistua muokkaustilasta. Painike *Peruuta muutokset* hylkää muutokset ja
 palauttaa haku- ja katselutilan. Painike *Tallenna* tallentaa tiedot ja
-palauttaa samoin haku- ja katselutilan. Muokkaustilasta poistutaan näillä
+palauttaa haku- ja katselutilan, jos tallennus onnistuu. Jos tallennus epäonnistuu
+(esimerkiksi varattu numero), kaavake jää muokkaustilaan, jotta tiedot
+voi korjata ja tallentaa heti uudelleen. Muokkaustilasta poistutaan näillä
 painikkeilla tai sulkemalla kaavake.
 
 Jos kaavake suljetaan muokkaustilan ollessa päällä (painike *Sulje* tai

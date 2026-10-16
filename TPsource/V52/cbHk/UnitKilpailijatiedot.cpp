@@ -1264,8 +1264,8 @@ void __fastcall TFormKilpailijatiedot::FormDestroy(TObject *Sender)
 // Switch the competitor form between view and edit.
 // Close() only hides this form, so edit mode must be turned off on close
 // or the next Show() still has writable fields.
-// Hide Salli muokkaus while editing: it used to leave edit without
-// Tallenna/Peruuta, which discarded or stranded unsaved changes.
+// Hide Salli muokkaus while editing so it cannot leave edit without
+// Tallenna, Peruuta or Sulje. A failed Tallenna stays in edit mode.
 void __fastcall TFormKilpailijatiedot::asetaMuokkaustila(bool paalle)
 {
 	sallimuokkaus = paalle;
@@ -1335,8 +1335,6 @@ void __fastcall TFormKilpailijatiedot::BtnTallennaClick(TObject *Sender)
 	if (tallennaTiedot() == 0) {
 		BtnPeruutaClick(Sender);
 		}
-	else
-		asetaMuokkaustila(false);
 	FocusControl(EdtKilpno);
 }
 //---------------------------------------------------------------------------

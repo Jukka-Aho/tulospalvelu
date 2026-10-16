@@ -4,6 +4,11 @@ Muutoshistoria pääkehityshaaraan (main) tehdyistä committeista, uusin ensin.
 
 | Pvm | # | Muutos |
 |---|---|---|
+| 2026-09-30 | — | Yhdistetty PirilaTP/main: Zebra FX9600 ja Sirit, lähtöaikojen ristiriitatarkistus, yhteistulossarakkeiden poisto, viestin CSV-tuonti ei merkitse HTIKEP-ratanimeä hylätyksi, kartan kaksoisleimat, GUI-käännös ja julkaisupaketti |
+| 2026-09-21 | #70 | Joukkuetiedot: Peruuta toistuvien lisäysten tilassa jättää muokkaustilan päälle |
+| 2026-09-21 | #68 | Kilpailijatiedot: epäonnistunut Tallenna jättää muokkaustilan päälle, jotta virheen voi korjata heti |
+| 2026-09-18 | #67 | Kilpailijatiedot: sulku muokkaustilassa kysyy tallennusta ja palauttaa haku- ja katselutilan |
+| 2026-09-18 | #66 | Maastossa olevat kilpailijat: taulukko ilman maaliaikaa olevista; HkKisaWin ja ViestiWin |
 | 2026-09-20 | #30 | Maastossa (ViestiWin): listalla vain emit ja merkitty lähtöaika; suljettu aiempi osuus ei riitä ilman lähtöaikaa |
 | 2026-09-20 | #29 | Maastossa (ViestiWin): ääkköset seuran, sarjan ja väliaikaotsikoiden näytössä (Seura/Sarjanimi/MbsToWcs) |
 | 2026-09-19 | #28 | Joukkuetiedot: Salli muokkaus piilotetaan muokkaustilassa; pois muokkauksesta Tallenna, Peruuta tai Sulje |

@@ -256,6 +256,56 @@ object FormApiYhteydet: TFormApiYhteydet
         Height = 13
         Caption = 'sekuntia'
       end
+      object LabelSiirtotapa: TLabel
+        Left = 16
+        Top = 268
+        Width = 360
+        Height = 13
+        Caption = 'Tapahtumaloki:'
+      end
+      object ComboSiirtotapa: TComboBox
+        Left = 16
+        Top = 288
+        Width = 360
+        Height = 21
+        Style = csDropDownList
+        TabOrder = 7
+        Items.Strings = (
+          'Ei t'#228'll'#228' koneella'
+          'T'#228'm'#228' kone (l'#228'hiverkko s'#228'ilyy)')
+      end
+      object LabelSiirtoOhje: TLabel
+        Left = 16
+        Top = 316
+        Width = 540
+        Height = 32
+        AutoSize = False
+        WordWrap = True
+        Caption = 'L'#228'hiverkko koneelta koneelle s'#228'ilyy. Yksi kone voi olla ainoa netiss'#228'; muut ovat samassa l'#228'hiverkossa.'
+      end
+      object LabelAsema: TLabel
+        Left = 16
+        Top = 356
+        Width = 360
+        Height = 13
+        Caption = 'Aseman nimi lokissa (tyhj'#228' = tietokoneen nimi):'
+      end
+      object EditAsema: TEdit
+        Left = 16
+        Top = 376
+        Width = 280
+        Height = 21
+        TabOrder = 8
+      end
+      object CBNumerotSelaimesta: TCheckBox
+        Left = 16
+        Top = 408
+        Width = 540
+        Height = 34
+        Caption = 'Maaliajat ilman numeroa. Numerot sy'#246'tet'#228#228'n selaimessa (jaettu lista).'
+        TabOrder = 9
+        WordWrap = True
+      end
     end
     object TabTila: TTabSheet
       Caption = 'Loki'
