@@ -124,6 +124,23 @@ object FormApiYhteydet: TFormApiYhteydet
         TabOrder = 4
         OnClick = BtnHaeKilpailutClick
       end
+      object BtnLuoKilpailu: TButton
+        Left = 406
+        Top = 252
+        Width = 170
+        Height = 25
+        Caption = 'Luo uusi JAHOnline-kisa'
+        TabOrder = 10
+        Visible = False
+        OnClick = BtnLuoKilpailuClick
+      end
+      object LabelLuonne: TLabel
+        Left = 160
+        Top = 340
+        Width = 416
+        Height = 13
+        AutoSize = False
+      end
       object EditKilpailuId: TEdit
         Left = 16
         Top = 254
@@ -137,7 +154,7 @@ object FormApiYhteydet: TFormApiYhteydet
         Top = 376
         Width = 140
         Height = 32
-        Caption = 'Testaa (ping)'
+        Caption = 'Yhdist'#228
         Font.Style = [fsBold]
         ParentFont = False
         TabOrder = 6

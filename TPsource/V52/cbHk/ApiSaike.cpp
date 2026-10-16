@@ -17,16 +17,32 @@ extern CRITICAL_SECTION tall_CriticalSection;
 
 static int gOsanottajaLika = 0;
 
-UnicodeString ApiPaikallinenKello(void)
+wchar_t ApiPirilaLaji(void)
 {
-	SYSTEMTIME st;
-	wchar_t buf[24];
+	return kilpparam.kilplaji;
+}
 
-	GetLocalTime(&st);
-	swprintf(buf, L"%04d-%02d-%02d %02d:%02d:%02d",
-		(int) st.wYear, (int) st.wMonth, (int) st.wDay,
-		(int) st.wHour, (int) st.wMinute, (int) st.wSecond);
-	return UnicodeString(buf);
+wchar_t ApiPirilaAlalaji(void)
+{
+	return kilpparam.alalaji;
+}
+
+UnicodeString ApiPirilaKilpailuNimi(void)
+{
+	return UnicodeString(kilpailu).Trim();
+}
+
+UnicodeString ApiPirilaPvm(void)
+{
+	wchar_t st[12];
+
+	stDateNo(st, pvparam[0].Date);
+	return UnicodeString(st);
+}
+
+int ApiPirilaVaiheet(void)
+{
+	return kilpparam.n_pv > 0 ? kilpparam.n_pv : 1;
 }
 
 static CRITICAL_SECTION lasnaJonoCS;

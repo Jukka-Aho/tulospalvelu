@@ -14,6 +14,43 @@
 
 extern CRITICAL_SECTION tall_CriticalSection;
 
+wchar_t ApiPirilaLaji(void)
+{
+	return kilpparam.kilplaji;
+}
+
+wchar_t ApiPirilaAlalaji(void)
+{
+	return kilpparam.alalaji;
+}
+
+UnicodeString ApiPirilaKilpailuNimi(void)
+{
+	UnicodeString nimi = UnicodeString(kilpailu).Trim();
+	if (nimi.IsEmpty())
+		nimi = UnicodeString(kilpparam.Name).Trim();
+	return nimi;
+}
+
+// kilpparam.Date is free text from Kilpailun m‰‰ritykset; send vvvv-kk-pp when it parses.
+UnicodeString ApiPirilaPvm(void)
+{
+	wchar_t pvm[14], st[12];
+
+	wcsncpy(pvm, kilpparam.Date, 13);
+	pvm[13] = 0;
+	int dn = DateNoFromSt(pvm);
+	if (dn <= 0)
+		return UnicodeString(pvm).Trim();
+	stDateNo(st, dn);
+	return UnicodeString(st);
+}
+
+int ApiPirilaVaiheet(void)
+{
+	return 1;
+}
+
 static CRITICAL_SECTION lasnaJonoCS;
 static bool lasnaJonoAlustettu = false;
 static int lasnaJono[256];
