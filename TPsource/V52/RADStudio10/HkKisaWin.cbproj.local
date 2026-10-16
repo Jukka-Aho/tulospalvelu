@@ -290,6 +290,7 @@
     <File Path="..\cbHk\UnitLahtoRistiriita.dfm"/>
     <File Path="..\cbHk\UnitLahtoRistiriita.h"/>
     <File Path="..\cbHk\UnitMaastossa.cpp"/>
+    <File Path="..\cbHk\UnitMaastossa.cpp"/>
     <File Path="..\cbHk\UnitMaastossa.dfm"/>
     <File Path="..\cbHk\UnitMaastossa.h"/>
     <File Path="..\cbTp"/>

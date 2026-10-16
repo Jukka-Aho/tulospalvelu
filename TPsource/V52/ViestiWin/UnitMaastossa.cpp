@@ -97,20 +97,6 @@ static void MaastossaVaOts(int srjVal, int p, wchar_t *ots, int otsLen)
 	swprintf(ots, L"%d.va", p);
 }
 
-static UnicodeString MaastossaLahtoPaikka(kilptietue& kilp, int srj, int os)
-{
-	UnicodeString lp = L"";
-	if (srj >= 0 && srj < sarjaluku && Sarjat[srj].lno > 0)
-		lp = IntToStr(Sarjat[srj].lno);
-	ratatp *rt = haerata(&kilp, os);
-	if (rt && rt->lahto[0]) {
-		if (!lp.IsEmpty())
-			lp += L" ";
-		lp += UnicodeString(rt->lahto);
-	}
-	return lp;
-}
-
 static bool MaastossaOnEmit(kilptietue& kilp, int os)
 {
 	if (os < 0)
@@ -127,6 +113,20 @@ static bool MaastossaNaytaOsuus(kilptietue& kilp, int os)
 	if (!MaastossaOnEmit(kilp, os))
 		return false;
 	return kilp.Lahto(os) != TMAALI0;
+}
+
+static UnicodeString MaastossaLahtoPaikka(kilptietue& kilp, int srj, int os)
+{
+	UnicodeString lp = L"";
+	if (srj >= 0 && srj < sarjaluku && Sarjat[srj].lno > 0)
+		lp = IntToStr(Sarjat[srj].lno);
+	ratatp *rt = haerata(&kilp, os);
+	if (rt && rt->lahto[0]) {
+		if (!lp.IsEmpty())
+			lp += L" ";
+		lp += UnicodeString(rt->lahto);
+	}
+	return lp;
 }
 
 void __fastcall TFormMaastossa::asetaSarakkeet(void)
