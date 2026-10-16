@@ -65,11 +65,35 @@ pois ja HkKisaWin jättää `tyyppi: viesti` -rivit, ViestiWin muut kuin viestin
 Kentät: `id` (tai `kilpailu_id`), `nimi` (tai `name` / `otsikko`), valinnainen
 `pvm` / `date`, `tyyppi` (`yksilo` / `viesti`), `pirila` (boolean).
 
+Vastauksen kilpailurivillä voi olla myös `luonne` (`suunnistus`, `hiihto`,
+`juoksu`, …) ja `yhdistetty` (boolean).
+
+### `yhdista` (Pirilän **Yhdistä**-painike)
+```json
+{"action":"yhdista","kilpailu_id":11,"lahde":"HkKisaWin","tyyppi":"yksilo",
+ "asema":"MAALI-PC","kansio":"C:\\Kisat\\Kevatkisa","pirila_nimi":"Kevätkisa",
+ "laji":"S","luonne":"suunnistus","kello":"2026-10-16 12:00:00"}
+```
+→ kuten `ping`. Palvelin kirjaa yhteyden (`pirila_yhteydet`). Jos vastaus ei ole
+`ok`, Pirilä yrittää vanhaa `ping`-pyyntöä, joten vanha palvelin toimii yhä.
+
 ### `ping`
 ```json
 {"action":"ping","kilpailu_id":11}
 ```
 → `{ "status":"ok", "kilpailu": {...}, "server_time":"..." }`
+
+### `luo_kilpailu` (Pirilän **Luo uusi JAHOnline-kisa**)
+```json
+{"action":"luo_kilpailu","lahde":"HkKisaWin","tyyppi":"yksilo","pirila":true,
+ "nimi":"Kevätkisa","pvm":"2026-04-12","luonne":"suunnistus","laji":"S",
+ "alalaji":"","vaiheet":1}
+```
+→ `{"status":"ok","kilpailu_id":15,"kilpailu":{"id":15,"nimi":"Kevätkisa","luonne":"suunnistus"}}`
+
+Luonne tulee Pirilän kilpailulajista ja ohjaa, mitkä valikot netissä näkyvät
+(juoksussa ajanotto, suunnistuksessa ratatiedot ja Emit-sivut). Palvelimen
+toteutusohje: [jahonline-docs/kisan-luonne.md](jahonline-docs/kisan-luonne.md).
 
 ### `kilpailijat` (JAHOnline → Pirilä)
 ```json
@@ -126,7 +150,7 @@ ja lähettää yhden kilpailijan `synkkaa`-sanoman heti (`lasna: true`).
 Osanottaja- ja tulosmuutokset (nimi, seura, emit, **lähtöaika**, maali, status)
 lähtevät nettiin samalla hetkellä kuin Pirilän sisäinen tiedonsiirto (`laheta`
 `tallenna`-funktiossa). Ero: JAHOnline-jono ei vaadi `comfl` / RS-232 / TCP-asemaverkkoa.
-Säie tyhjentää jonon noin 200 ms välein, kun kilpailu on auki, **Testaa (ping)**
+Säie tyhjentää jonon noin 200 ms välein, kun kilpailu on auki, **Yhdistä**
 on onnistunut (`kaynnissa`) ja taustasäie on käynnissä. Ilman avattua kisaa
 synkkaa ei käynnistetä. **Lopeta synkka** pysäyttää säikeen ja nollaa `kaynnissa`.
 
@@ -299,13 +323,16 @@ näkyvät, mutta puhelin ei lue USB-lukijaa.
 1. Valikko → **JAHOnline API (synkka)**
 2. Aseta Bridge-URL ja **käyttäjäkohtainen API-avain**
 3. **Hae kilpailut** → valitse listasta netissä luotu Pirilä-kilpailu
-4. **Testaa (ping)** (vain kun paikallinen kilpailu on auki — käynnistää taustasynkan)
+4. **Yhdistä** (vain kun paikallinen kilpailu on auki — käynnistää taustasynkan).
+   Yhdistetyt kisat muistetaan (`jahonline_yhdistetyt.ini` exe-kansiossa).
+   **Luo uusi JAHOnline-kisa** näkyy, kun yhteys on luotu, ja luo netin kisan
+   avatusta kilpailusta (nimi, päivämäärä, luonne).
 5. **Lähetä kilpailijat nyt** / **Hae kilpailijat nyt**
 6. **Lopeta synkka** pysäyttää taustasäikeen
 7. Automaatio: välilehti *Automaatio*. **Tapahtumaloki** on oletuksena
    *Ei tällä koneella*. *Tämä kone* lukee lokin lähiverkon lisäksi.
    Lähiverkkoa ei katkaista. Aseman nimi erottaa lähettäjän.
-   **Testaa (ping)** + OK käynnistää täyssynkan
+   **Yhdistä** + OK käynnistää täyssynkan
    (`lahetysvali` = koko listan lähetysväli, oletus 10 s)
 8. Osanottajakaavakkeen tallennus / lähtöajan muutos → `synkkaa` noin 200 ms:ssa
    kun synkka on käynnissä
@@ -317,6 +344,9 @@ näkyvät, mutta puhelin ei lue USB-lukijaa.
     Juoksukisa toimii yhä myös ilman tätä ruksia.
 
 Asetukset tallentuvat kilpailun kansioon: `jahonline_api.ini`.
+Yhdistetyt kisat, API-avain ja URL tallentuvat lisäksi exe-kansion
+`jahonline_yhdistetyt.ini`-tiedostoon. Uusi kilpailukansio saa niistä avaimen
+ja siitä kansiosta viimeksi yhdistetyn kisan.
 Tiedosto luetaan automaattisesti, kun kilpailu avataan (`Initialisoi`).
 Jos kilpailun kansiossa ei ole tiedostoa, vanha exe-kansion `jahonline_api.ini`
 kopioidaan sinne ensimmäisellä avauksella.
