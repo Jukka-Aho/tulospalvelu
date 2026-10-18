@@ -585,22 +585,24 @@ static UnicodeString ApiKilpailijaObj(kilptietue& kilp, int ipv)
 			arr += L",\"asakot\":" + ApiJsonString(sakko)
 				+ L",\"ampsakot\":" + ApiJsonString(sakko);
 	}
-	{
+	if (apiconfig.lahetaTulokset) {
 		int tsec = ApiTulosSec(tls);
 		if (tsec > 0)
 			arr += L",\"aika_sec\":" + IntToStr(tsec);
 		else
 			arr += L",\"aika_sec\":null";
+		INT16 sija = 0;
+		if (kilp.pv)
+			sija = kilp.pv[ipv].ysija;
+		if (sija > 0)
+			arr += L",\"sija\":" + IntToStr((int)sija);
+		else
+			arr += L",\"sija\":null";
+		arr += L",\"valiajat\":" + valia;
+	} else {
+		arr += L",\"aika_sec\":null,\"sija\":null,\"valiajat\":[]";
 	}
-	INT16 sija = 0;
-	if (kilp.pv)
-		sija = kilp.pv[ipv].ysija;
-	if (sija > 0)
-		arr += L",\"sija\":" + IntToStr((int)sija);
-	else
-		arr += L",\"sija\":null";
 	arr += ApiLahtoKentat(ApiKilpailijanLahto(kilp, ipv));
-	arr += L",\"valiajat\":" + valia;
 	arr += L",\"tyyppi\":\"yksilo\"";
 	arr += L"}";
 	return arr;
@@ -1018,7 +1020,8 @@ int ApiSynkkaaHaeKaikki(bool korvaaKentat)
 		return -1;
 
 	UnicodeString body =
-		L"{\"action\":\"kilpailijat\",\"kilpailu_id\":" + IntToStr(apiconfig.kilpailuId) + L"}";
+		L"{\"action\":\"kilpailijat\",\"kilpailu_id\":" + IntToStr(apiconfig.kilpailuId)
+		+ L",\"tyyppi\":\"yksilo\"}";
 	UnicodeString vastaus;
 	if (!ApiHttpPostJson(ApiBridgeUrl(), body, vastaus))
 		return -2;

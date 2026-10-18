@@ -53,7 +53,7 @@ JAHOnline-lähetys ei vaadi `comfl`-asemaverkkoa: tarvitaan `kilpailu_id` ja
 API-avain. Jono lähtee noin 200 ms välein.
 
 Taustasynkka (välilehti *Automaatio*) lähettää lisäksi koko listan valitun välein
-(`lahetysvali`, oletus 10 s) kun ping on onnistunut. **Lopeta synkka** pysäyttää
+(`lahetysvali`, oletus 10 s) kun Yhdistä on onnistunut. **Lopeta synkka** pysäyttää
 säikeen. Synkkaa ei käynnistetä, jos kilpailua ei ole avattu.
 
 ## API
@@ -88,7 +88,7 @@ jää käyttöön, ja sen voi yhdistää Pirilään samalla ruksilla.
 
 HkKisaWin: `"tyyppi":"yksilo"`. ViestiWin: `"tyyppi":"viesti"` + `"osuus"`.
 
-Protokolla: [docs/api-jahonline.md](https://github.com/jaho81-sys/tulospalvelu/blob/cursor/api-kilpailijat-kaksisuuntainen-90ec/docs/api-jahonline.md).
+Protokolla: [docs/api-jahonline.md](https://github.com/Jukka-Aho/tulospalvelu/blob/main/docs/api-jahonline.md).
 
 ## Kaksi “väliaika”-käsitettä (näyttö)
 

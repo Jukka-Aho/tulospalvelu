@@ -574,6 +574,10 @@ void __fastcall TFormApiYhteydet::NaytaYhteysTila(void)
 	if (kay) {
 		LabelYhteysTila->Caption = L"AKTIIVINEN";
 		LabelYhteysTila->Font->Color = clGreen;
+	} else if (apiconfig.siirtotapa == 1
+			&& TApiIntegration::GetInstance()->OnAktiivinen()) {
+		LabelYhteysTila->Caption = L"TAPAHTUMALOKI";
+		LabelYhteysTila->Font->Color = clNavy;
 	} else {
 		LabelYhteysTila->Caption = L"EI AKTIIVINEN";
 		LabelYhteysTila->Font->Color = clRed;

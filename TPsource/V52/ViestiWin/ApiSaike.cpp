@@ -406,20 +406,22 @@ static UnicodeString ApiOsuusObj(kilptietue& kilp, int os)
 	arr += L",\"lasna\":" + ApiJsonBool(onLasna);
 	arr += L",\"status\":" + ApiJsonString(StatusMerkki(tark, onLasna, ApiAikaOk(maaliKello)));
 	arr += L",\"keskhyl\":" + ApiJsonString(UnicodeString(tark));
-	{
+	if (apiconfig.lahetaTulokset) {
 		int tsec = ApiTulosSec(tls);
 		if (tsec > 0)
 			arr += L",\"aika_sec\":" + IntToStr(tsec);
 		else
 			arr += L",\"aika_sec\":null";
+		INT16 sija = kilp.Sija(os, 0);
+		if (sija > 0)
+			arr += L",\"sija\":" + IntToStr((int)sija);
+		else
+			arr += L",\"sija\":null";
+		arr += L",\"valiajat\":" + valia;
+	} else {
+		arr += L",\"aika_sec\":null,\"sija\":null,\"valiajat\":[]";
 	}
-	INT16 sija = kilp.Sija(os, 0);
-	if (sija > 0)
-		arr += L",\"sija\":" + IntToStr((int)sija);
-	else
-		arr += L",\"sija\":null";
 	arr += ApiLahtoKentat(kilp.Lahto(os));
-	arr += L",\"valiajat\":" + valia;
 	arr += L",\"tyyppi\":\"viesti\"";
 	arr += L"}";
 	return arr;
@@ -977,7 +979,13 @@ void __fastcall TApiSaike::Kasittele(void)
 	}
 
 	ApiSynkkaaJonosta();
-	ApiLahetaTapahtumatNyt();
+	int nt = ApiLahetaTapahtumatNyt();
+	if (apiconfig.lahetaValiajat) {
+		if (nt > 0)
+			Paivita(L"Lähetetty online-rasteja: " + IntToStr(nt));
+		else if (nt < 0)
+			Paivita(L"Online-rastien lähetys epäonnistui (" + IntToStr(nt) + L")", true);
+	}
 
 	if (apiconfig.lahetaKilpailijat || apiconfig.lahetaTulokset || apiconfig.lahetaValiajat) {
 		int n = ApiSynkkaaLahetaKaikki();
@@ -985,14 +993,6 @@ void __fastcall TApiSaike::Kasittele(void)
 			Paivita(L"Lähetetty osuuksia: " + IntToStr(n));
 		else
 			Paivita(L"Lähetys epäonnistui (" + IntToStr(n) + L")", true);
-	}
-
-	if (apiconfig.lahetaValiajat) {
-		int n = ApiLahetaTapahtumatNyt();
-		if (n > 0)
-			Paivita(L"Lähetetty online-rasteja: " + IntToStr(n));
-		else if (n < 0)
-			Paivita(L"Online-rastien lähetys epäonnistui (" + IntToStr(n) + L")", true);
 	}
 
 	if (apiconfig.vastaanottaKilpailijat || apiconfig.vastaanottaValiajat) {

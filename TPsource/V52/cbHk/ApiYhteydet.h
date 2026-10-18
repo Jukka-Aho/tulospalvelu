@@ -15,7 +15,7 @@
 #include <vector>
 
 //---------------------------------------------------------------------------
-// API configuration â€” JAHOnline /public/api/pirila_bridge.php (tai kilpailijat_bridge.php)
+// API configuration â€” JAHOnline /public/api/kilpailijat_bridge.php
 typedef struct {
 	wchar_t apiUrl[512];           // Full bridge URL (preferred) or host base
 	int apiPort;                   // 0 = use URL scheme default; else override
@@ -27,11 +27,11 @@ typedef struct {
 	int vastaanottaKilpailijat;    // Pull roster from server (action=kilpailijat)
 	int lahetaValiajat;            // Push live punches / splits (action=tapahtuma)
 	int vastaanottaValiajat;       // Pull splits from JAHOnline (kilpailijat.valiajat)
-	int lahetaTulokset;            // Alias: also push results with synkkaa
+	int lahetaTulokset;            // Include aika_sec / sija / valiajat in synkkaa
 	int vastaanottaEiLahteneet;    // Apply DNS/DNF from pull
 	int lahetysvali;               // Interval seconds
 	int kaynnissa;                 // Sync thread active intent
-	int siirtotapa;                // 0 = suora koneelta koneelle, 1 = JAHOnline-loki
+	int siirtotapa;                // 0 = ei tapahtumalokia, 1 = tama kone lukee lokia
 	int numerotSelaimesta;         // Maaliaika ilman numeroa, numero selaimessa
 	wchar_t asema[64];             // Lähettäjän nimi lokissa
 	int tapahtumaCursor;           // Viimeksi sovellettu lokirivi

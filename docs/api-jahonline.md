@@ -270,7 +270,7 @@ voi olla ainoa, joka puhuu nettiin. Muut koneet ovat sen kanssa samassa
 lähiverkossa ja lähettävät muutokset sille. Se kone vie ne JAHOnlineen.
 
 - **Ei tällä koneella** (`siirtotapa=0`): tämä kone ei lue tapahtumalokia.
-  Julkaisusynkka (`synkkaa`, `tapahtuma`) toimii silti, kun ping on käynnissä,
+  Julkaisusynkka (`synkkaa`, `tapahtuma`) toimii silti, kun Yhdistä on onnistunut,
   ja lähiverkko toimii, jos se on määritetty.
 - **Tämä kone** (`siirtotapa=1`): tämä kone kirjoittaa ja lukee tapahtumalokia
   lähiverkon lisäksi. Lokista tuleva rivi tallennetaan ja lähtee `laheta`-liikenteenä
@@ -320,11 +320,11 @@ näkyvät, mutta puhelin ei lue USB-lukijaa.
 
 1. Valikko → **JAHOnline API (synkka)**
 2. Aseta Bridge-URL ja **käyttäjäkohtainen API-avain**
-3. **Hae kilpailut** → valitse listasta netissä luotu Pirilä-kilpailu
+3. **Hae kilpailut** → valitse listasta netissä luotu Pirilä-kilpailu.
+   Jos kisaa ei vielä ole netissä, **Luo uusi JAHOnline-kisa** (näkyy, kun
+   Hae kilpailut tai Yhdistä on onnistunut) luo sen avatusta kilpailusta.
 4. **Yhdistä** (vain kun paikallinen kilpailu on auki — käynnistää taustasynkan).
    Yhdistetyt kisat muistetaan (`jahonline_yhdistetyt.ini` exe-kansiossa).
-   **Luo uusi JAHOnline-kisa** näkyy, kun yhteys on luotu, ja luo netin kisan
-   avatusta kilpailusta (nimi, päivämäärä, luonne).
 5. **Lähetä kilpailijat nyt** / **Hae kilpailijat nyt**
 6. **Lopeta synkka** pysäyttää taustasäikeen
 7. Automaatio: välilehti *Automaatio*. **Tapahtumaloki** on oletuksena

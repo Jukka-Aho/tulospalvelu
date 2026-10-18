@@ -4,6 +4,7 @@ Muutoshistoria pääkehityshaaraan (main) tehdyistä committeista, uusin ensin.
 
 | Pvm | # | Muutos |
 |---|---|---|
+| 2026-10-18 | — | JAHOnline-palvelin: Kompassi 26 siirretty kokonaan `jahonline`-kantaan (kolme puuttunutta D14-kilpailijaa palautettu); `pirila_sync` poistettu. Korjattu kaatuvat `tulokset.php` (ohjaus online-tuloksiin) ja `live_tulokset.php` (puuttuva `live_tapahtumat`). Pirilä: Tulokset-valintaruutu rajaa JSON-kentät, ViestiWin ei lähetä online-rasteja kahdesti, Hk-hakuun `tyyppi=yksilo`, tilanäyttö TAPAHTUMALOKI |
 | 2026-10-18 | — | JAHOnline-palvelin: vain JAHOnline API jää siirtotavaksi. Poistettu *Synkka-tila*-sivu ja vanha siirto (MySQL-välikanta `pirila_sync` + daemon, CSV/XML-tuonti, `pirila_live.php`, `pirila_bridge.php`, KILP.DAT-silta, Sync Manager); tarpeelliset tiedot (yhdistetyt Pirilä-asemat, viimeisin synkka, luonne) siirretty *Pirilä-asetukset*-sivulle; lähtöluenta hakee kilpailijan emit-koodilla JAHOnlinen kilpailijoista. HkKisaWin: Yhdistä-varapolun tilaviesti ilman ping-sanaa |
 | 2026-10-16 | — | JAHOnline-palvelin: uuden kilpailun luonti omalla sivullaan (`admin/kilpailut.php?uusi=1`), kilpailulistassa painike *Lisää uusi kilpailu*; lista ei enää näytä luontilomaketta alla |
 | 2026-10-16 | — | JAHOnline-palvelin: `luo_kilpailu` ja `yhdista` toteutettu; kisalla on luonne (hallinnan valinta *Kisan luonne*), joka valitsee näkyvät valikot: suunnistuksessa radat ja Emit-sivut, juoksussa ja hiihdossa ajanotto, ampumalajeissa ampumapaikka (dokumentti `docs/jahonline-docs/kisan-luonne.md`) |

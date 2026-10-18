@@ -26,7 +26,7 @@ lähettää tiedon heti nettiin.
    (suunnistus, hiihto, juoksu, …) ja määrää, mitkä valikot netissä näkyvät:
    esimerkiksi juoksussa ajanottosivut, suunnistuksessa ratatiedot ja
    Emit-sivut.
-6. Paina **Yhdistä**. Onnistunut yhdistäminen aktivoi yhteyden. Ohjelma muistaa
+6. Paina **Yhdistä** (paikallisen kilpailun pitää olla auki). Onnistunut yhdistäminen aktivoi yhteyden. Ohjelma muistaa
    yhdistetyt kisat, joten seuraavalla kerralla kisa on valmiina listassa.
 7. **Lähetä kilpailijat nyt** vie Pirilän osanottajat (nimet, emit-koodit, ajat,
    lähtöajat, läsnäolo, online-väliajat ja Emit-rastiväliajat) JAHOnlineen.
@@ -111,7 +111,7 @@ kertatuontiin **ennen** kisaa.
 ## Lisätietoja
 
 - JAHOnline-sivun korvaava ohje (kopioitavaksi palvelimelle
-  `docs/pirila.md`): [docs/jahonline-docs/pirila.md](https://github.com/jaho81-sys/tulospalvelu/blob/cursor/api-kilpailijat-kaksisuuntainen-90ec/docs/jahonline-docs/pirila.md)
-- Protokolla: [JAHOnline API](https://github.com/jaho81-sys/tulospalvelu/blob/cursor/api-kilpailijat-kaksisuuntainen-90ec/docs/api-jahonline.md)
-  (ping / synkkaa / kilpailijat, Bearer-avain)
+  `docs/pirila.md`): [docs/jahonline-docs/pirila.md](https://github.com/Jukka-Aho/tulospalvelu/blob/main/docs/jahonline-docs/pirila.md)
+- Protokolla: [JAHOnline API](https://github.com/Jukka-Aho/tulospalvelu/blob/main/docs/api-jahonline.md)
+  (Yhdistä / synkkaa / kilpailijat, Bearer-avain)
 - Valikko (HkKisaWin ja ViestiWin): **JAHOnline API (synkka)**
