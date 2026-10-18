@@ -675,7 +675,7 @@ void __fastcall TFormApiYhteydet::Yhdista(void)
 		UnicodeString pingVastaus;
 		if (ApiHttpPostJson(url, ping, pingVastaus) && ApiJsonStatusOk(pingVastaus)) {
 			PaivitaTila(L"Palvelin ei hyv\xe4ksynyt yhdista-pyynt\xf6\xe4 (" + vastaus.SubString(1, 120)
-				+ L"), ping onnistui.");
+				+ L"), yhteys toimii silti.");
 			vastaus = pingVastaus;
 		}
 	}
