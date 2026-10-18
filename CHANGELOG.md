@@ -4,6 +4,7 @@ Muutoshistoria pääkehityshaaraan (main) tehdyistä committeista, uusin ensin.
 
 | Pvm | # | Muutos |
 |---|---|---|
+| 2026-10-18 | — | HkKisaWin: Osanottajat-ikkuna ei enää välähdä JAHOnline-synkan aikana: samoja ampumasakkoja ei enää merkitä muuttuneiksi joka synkkakierroksella, taulukko päivitetään piirto estettynä ja vierityskohta säilyy; muokkaustilassa (F9) synkka ei enää hylkää tallentamattomia muutoksia vaan päivittää ikkunan vasta tallennuksen tai peruutuksen jälkeen |
 | 2026-10-16 | — | JAHOnline-palvelin: uuden kilpailun luonti omalla sivullaan (`admin/kilpailut.php?uusi=1`), kilpailulistassa painike *Lisää uusi kilpailu*; lista ei enää näytä luontilomaketta alla |
 | 2026-10-16 | — | JAHOnline-palvelin: `luo_kilpailu` ja `yhdista` toteutettu; kisalla on luonne (hallinnan valinta *Kisan luonne*), joka valitsee näkyvät valikot: suunnistuksessa radat ja Emit-sivut, juoksussa ja hiihdossa ajanotto, ampumalajeissa ampumapaikka (dokumentti `docs/jahonline-docs/kisan-luonne.md`) |
 | 2026-10-16 | — | JAHOnline API: *Testaa (ping)* on nyt *Yhdistä* (`action=yhdista`, vanhalle palvelimelle ping); yhdistetyt kisat ja API-avain muistetaan (`jahonline_yhdistetyt.ini`); uusi painike *Luo uusi JAHOnline-kisa* (näkyy, kun yhteys on luotu) luo netin kisan avatusta kilpailusta luonteella, joka tulee Pirilän kilpailulajista (suunnistus, hiihto, juoksu, …); ViestiWin: `ApiPaikallinenKello` siirretty yhteiseen `ApiYhteydet.cpp`:hen (puuttui ViestiWinistä) |

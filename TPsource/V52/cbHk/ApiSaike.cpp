@@ -709,15 +709,18 @@ static void ApiVarmistaSakkoPaikat(kilptietue& kilp, int vaihe, int n)
 
 // Web stores one digit per bout ("24" = 2 then 4). Pirila with maxasakko > 9
 // reads slash-separated bouts, so "24" would become a single value of 24.
-static void ApiAsetaSakko(kilptietue& kilp, int vaihe, const wchar_t* sak)
+// Palauttaa true vain, jos sakot oikeasti muuttuivat: palvelin l‰hett‰‰ samat
+// sakot joka synkkakierroksella, eik‰ se saa merkit‰ kilpailijaa muuttuneeksi.
+static bool ApiAsetaSakko(kilptietue& kilp, int vaihe, const wchar_t* sak)
 {
 	wchar_t buf[40];
 	wchar_t out[40];
+	wchar_t ennen[LSAKKO + 1];
 	int n = 0;
 	int i;
 
-	if (!sak || vaihe < 0)
-		return;
+	if (!sak || vaihe < 0 || !kilp.pv)
+		return false;
 	wcsncpy(buf, sak, 39);
 	buf[39] = 0;
 	if (!wcschr(buf, L'/') && !wcschr(buf, L';')
@@ -743,9 +746,11 @@ static void ApiAsetaSakko(kilptietue& kilp, int vaihe, const wchar_t* sak)
 		}
 	}
 	if (!n)
-		return;
+		return false;
+	wmemcpy(ennen, kilp.pv[vaihe].asakot, LSAKKO + 1);
 	ApiVarmistaSakkoPaikat(kilp, vaihe, n);
 	kilp.set_Asakot(buf, vaihe);
+	return wmemcmp(ennen, kilp.pv[vaihe].asakot, LSAKKO + 1) != 0;
 }
 
 int ApiSovellaKilpailijatJson(const UnicodeString& json, bool korvaaKentat)
@@ -893,10 +898,8 @@ int ApiSovellaKilpailijatJson(const UnicodeString& json, bool korvaaKentat)
 					UnicodeString sakkoIn;
 					if (!ApiJsonFindString(o, L"ampsakot", sakkoIn))
 						ApiJsonFindString(o, L"asakot", sakkoIn);
-					if (!sakkoIn.IsEmpty()) {
-						ApiAsetaSakko(kilp, ipv, sakkoIn.c_str());
+					if (!sakkoIn.IsEmpty() && ApiAsetaSakko(kilp, ipv, sakkoIn.c_str()))
 						muuttui = true;
-					}
 				}
 				if (aikaSec > 0 && (haeKilp || haeVa)) {
 					INT32 localTls = kilp.tulos_pv(ipv, false, 1);
@@ -1351,19 +1354,38 @@ void __fastcall TApiSaike::Kasittele(void)
 
 void ApiPaivitaOsanottajaNakyma(void)
 {
-	gOsanottajaLika = 0;
-	if (!FormOsanottajat || !FormOsanottajat->Visible || !FormOsanottajat->OoGrid)
+	if (!FormOsanottajat || !FormOsanottajat->Visible || !FormOsanottajat->OoGrid) {
+		gOsanottajaLika = 0;
 		return;
+	}
 	TStringGrid *g = FormOsanottajat->OoGrid;
+	// Muokkaustilassa (F9) naytaTiedot hylk‰isi tallentamattomat muutokset.
+	// P‰ivitys tehd‰‰n, kun muokkaus on tallennettu tai peruttu.
+	if (g->Options.Contains(goEditing))
+		return;
+	gOsanottajaLika = 0;
 	int rr = g->Row;
 	int cc = g->Col;
-	FormOsanottajat->naytaTiedot();
-	if (rr >= g->RowCount)
-		rr = g->RowCount - 1;
-	if (rr > 0)
-		g->Row = rr;
-	if (cc > 0 && cc < g->ColCount)
-		g->Col = cc;
+	int top = g->TopRow;
+	// naytaTiedot tyhjent‰‰ taulukon ja rakentaa sen uudelleen; ilman piirron
+	// est‰mist‰ tyhj‰ taulukko n‰kyy hetken (v‰l‰hdys).
+	SendMessage(g->Handle, WM_SETREDRAW, FALSE, 0);
+	try {
+		FormOsanottajat->naytaTiedot();
+		if (rr >= g->RowCount)
+			rr = g->RowCount - 1;
+		if (top > g->RowCount - g->VisibleRowCount)
+			top = g->RowCount - g->VisibleRowCount;
+		if (top >= g->FixedRows)
+			g->TopRow = top;
+		if (rr >= g->FixedRows)
+			g->Row = rr;
+		if (cc >= g->FixedCols && cc < g->ColCount)
+			g->Col = cc;
+	} __finally {
+		SendMessage(g->Handle, WM_SETREDRAW, TRUE, 0);
+		g->Invalidate();
+	}
 }
 
 void __fastcall TApiSaike::PaivitaOsanottajat(void)
@@ -1454,7 +1476,7 @@ static void ApiSovellaTapahtumaJson(const UnicodeString& o)
 				ApiKopioiW(kilp.seura, LSEURA + 1, seura);
 				muuttui = true;
 			}
-			if (!maa.IsEmpty()) {
+			if (!maa.IsEmpty() && UnicodeString(kilp.maa) != maa.SubString(1, 3)) {
 				ApiKopioiW(kilp.maa, 4, maa);
 				muuttui = true;
 			}
@@ -1518,10 +1540,8 @@ static void ApiSovellaTapahtumaJson(const UnicodeString& o)
 			UnicodeString sak;
 			if (!ApiJsonFindString(o, L"asakot", sak))
 				ApiJsonFindString(o, L"ampsakot", sak);
-			if (!sak.IsEmpty()) {
-				ApiAsetaSakko(kilp, vaihe, sak.c_str());
+			if (!sak.IsEmpty() && ApiAsetaSakko(kilp, vaihe, sak.c_str()))
 				muuttui = true;
-			}
 		}
 		if (muuttui) {
 			if (uusi) {
