@@ -1,8 +1,8 @@
 # Pirilä synkka (JAHOnline)
 
 Kilpailijat, läsnäolo, maaliajat ja online-rastit siirtyvät **HkKisaWinistä**
-ja **ViestiWinistä** suoraan JAHOnline-tulospalveluun. **Erillistä
-siirto-ohjelmaa, CSV-bridgeä tai MySQL-välikantaa ei tarvita.**
+ja **ViestiWinistä** suoraan JAHOnline-tulospalveluun. JAHOnline API on
+ainoa siirtotapa; netin asetukset ovat sivulla **Hallinta → Pirilä-asetukset**.
 
 Valikko (HkKisaWin ja ViestiWin): **JAHOnline API (synkka)**.
 
@@ -104,12 +104,6 @@ henkilökohtaisessa kisassa että viestissä.
 
 JAHOnlinen tulossivu näyttää online-sarakkeet (`sarjat.valia_lkm`, rivit ilman
 `rasti_koodi`) ja rastiväliajat (`/public/valiajat.php`, rivit joissa `rasti_koodi`).
-
-## Mitä ei enää tarvita
-
-- Erillistä CSV-bridgeä (`pirila_live.php`) tai Sync Manager -työpöytäohjelmaa
-- MySQL-välikantaa (`UnitMySQL` / `kilpsql.txt`) kisapäivän kilpailijasiirtoon
-- Manuaalista tiedostokopiota JAHOnlineen pelkkien osanottajatietojen vuoksi
 
 Keräilylähtöiset CSV/IRMA/Kilmo-tuonnit HkKisaWinissä toimivat edelleen
 kertatuontiin **ennen** kisaa.

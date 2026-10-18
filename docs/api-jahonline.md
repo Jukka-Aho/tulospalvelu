@@ -13,8 +13,7 @@ Pirilä lähettää saman avaimen: `Authorization: Bearer <api_token>`.
 Avaimella haetaan lista netissä luoduista **Pirilä-kilpailuista**, joista
 valitaan yhdistettävä kisa (`kilpailu_id`).
 
-Erillistä siirto-ohjelmaa, CSV-bridgeä tai MySQL-välikantaa ei tarvita:
-kaksisuuntainen synkka on HkKisaWinissä ja ViestiWinissä (valikko
+JAHOnline API on ainoa siirtotapa. Kaksisuuntainen synkka on HkKisaWinissä ja ViestiWinissä (valikko
 **JAHOnline API (synkka)**). Osanottajat, läsnäolo, maaliajat, online-rastit ja Emit-rastiväliajat
 kulkevat samaa siltaa.
 
@@ -26,8 +25,6 @@ kulkevat samaa siltaa.
 Oletus-URL:
 
 `https://jahonline.com/public/api/kilpailijat_bridge.php`
-
-(Sama protokolla toimii myös `public/api/pirila_bridge.php`-polussa, jos se on käytössä.)
 
 ## Auth
 
