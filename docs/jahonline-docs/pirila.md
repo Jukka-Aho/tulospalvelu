@@ -3,8 +3,8 @@
 Kilpailijat, läsnäolo, maaliajat ja **online-rastit** siirtyvät **HkKisaWinistä**
 ja **ViestiWinistä** suoraan JAHOnlineen HTTP-APIn kautta.
 
-**Erillistä siirto-ohjelmaa, CSV-bridgeä (`pirila_live.php`), Sync Manageria
-tai MySQL-välikantaa (`UnitMySQL` / `kilpsql.txt`) ei tarvita.**
+JAHOnline API on ainoa siirtotapa. Netin asetukset ovat sivulla
+**Hallinta → Pirilä-asetukset**.
 
 Lähdekoodi: [jaho81-sys/tulospalvelu](https://github.com/jaho81-sys/tulospalvelu)
 (valikko **JAHOnline API (synkka)**).
@@ -53,7 +53,7 @@ JAHOnline-lähetys ei vaadi `comfl`-asemaverkkoa: tarvitaan `kilpailu_id` ja
 API-avain. Jono lähtee noin 200 ms välein.
 
 Taustasynkka (välilehti *Automaatio*) lähettää lisäksi koko listan valitun välein
-(`lahetysvali`, oletus 10 s) kun ping on onnistunut. **Lopeta synkka** pysäyttää
+(`lahetysvali`, oletus 10 s) kun Yhdistä on onnistunut. **Lopeta synkka** pysäyttää
 säikeen. Synkkaa ei käynnistetä, jos kilpailua ei ole avattu.
 
 ## API
@@ -88,7 +88,7 @@ jää käyttöön, ja sen voi yhdistää Pirilään samalla ruksilla.
 
 HkKisaWin: `"tyyppi":"yksilo"`. ViestiWin: `"tyyppi":"viesti"` + `"osuus"`.
 
-Protokolla: [docs/api-jahonline.md](https://github.com/jaho81-sys/tulospalvelu/blob/cursor/api-kilpailijat-kaksisuuntainen-90ec/docs/api-jahonline.md).
+Protokolla: [docs/api-jahonline.md](https://github.com/Jukka-Aho/tulospalvelu/blob/main/docs/api-jahonline.md).
 
 ## Kaksi “väliaika”-käsitettä (näyttö)
 
@@ -121,15 +121,6 @@ siirto-ohjelmaa.
 - Tulokset: **online-va + maaliaika + ero kärkeen**
 - Rastiväliajat: Emit-/API-väliajat (synkan `valiajat[]` + `rasti_koodi`)
 - Maastossa: kulunut aika suluissa; ei Emit-rastilistaa
-
-## Mitä ei käytetä kisapäivän kilpailijasiirtoon
-
-- Sync Manager / `tools/JAHOnlineSyncManager`
-- CSV-bridge `POST /api/pirila_live.php`
-- MySQL-välikanta (`UnitMySQL.cpp`, `kilpsql.txt`, `osanotot` / `osottopv`)
-
-MySQL-luku HkKisaWinissä (Tiedostot / MySQL) on yhä olemassa vanhaan
-tietokantakäyttöön, mutta JAHOnline-synkka ei kulje sen kautta.
 
 ## Kisan luonne
 
