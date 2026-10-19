@@ -4,6 +4,7 @@ Muutoshistoria pääkehityshaaraan (main) tehdyistä committeista, uusin ensin.
 
 | Pvm | # | Muutos |
 |---|---|---|
+| 2026-10-19 | — | JAHOnline-logo musta-kultainen (PWA-ikonit, sivulataus, yläpalkki); painikkeet säilyvät vihreinä |
 | 2026-10-19 | — | AhoAuto (`/ahoauto/`) asennettavissa omaksi PWA:ksi: JAHOnlinen sovellusalue rajattu `/public/`-polkuun, AhoAutolla oma manifest ja service worker. Osoite `/AhoAuto/` ohjaa `/ahoauto/`-kansioon |
 | 2026-10-19 | — | JAHOnline PWA: kotinäytön logo rajattu täyttämään ikoni (192/512/180, maskable). Sivulatauksessa animoitu JAH-logo |
 | 2026-10-18 | — | JAHOnline-palvelin: Kompassi 26 siirretty kokonaan `jahonline`-kantaan (kolme puuttunutta D14-kilpailijaa palautettu); `pirila_sync` poistettu. Korjattu kaatuvat `tulokset.php` (ohjaus online-tuloksiin) ja `live_tulokset.php` (puuttuva `live_tapahtumat`). Pirilä: Tulokset-valintaruutu rajaa JSON-kentät, ViestiWin ei lähetä online-rasteja kahdesti, Hk-hakuun `tyyppi=yksilo`, tilanäyttö TAPAHTUMALOKI |
