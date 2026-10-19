@@ -4,6 +4,7 @@ Muutoshistoria pääkehityshaaraan (main) tehdyistä committeista, uusin ensin.
 
 | Pvm | # | Muutos |
 |---|---|---|
+| 2026-10-19 | — | JAHOnline-sivujen vihreä brändiväri vaihdettu logon kultaan (`#c49a22` / tumma `#e4c35a`); painikkeet, linkit, GPS ja live-taulut |
 | 2026-10-19 | — | Sivulatauksen logo pienennetty (6rem), jotta rasteritunnus ei pikselöidy |
 | 2026-10-19 | — | JAHOnline-logo musta-kultainen (PWA-ikonit, sivulataus, yläpalkki); painikkeet säilyvät vihreinä |
 | 2026-10-19 | — | AhoAuto (`/ahoauto/`) asennettavissa omaksi PWA:ksi: JAHOnlinen sovellusalue rajattu `/public/`-polkuun, AhoAutolla oma manifest ja service worker. Osoite `/AhoAuto/` ohjaa `/ahoauto/`-kansioon |
