@@ -17,16 +17,32 @@ extern CRITICAL_SECTION tall_CriticalSection;
 
 static int gOsanottajaLika = 0;
 
-UnicodeString ApiPaikallinenKello(void)
+wchar_t ApiPirilaLaji(void)
 {
-	SYSTEMTIME st;
-	wchar_t buf[24];
+	return kilpparam.kilplaji;
+}
 
-	GetLocalTime(&st);
-	swprintf(buf, L"%04d-%02d-%02d %02d:%02d:%02d",
-		(int) st.wYear, (int) st.wMonth, (int) st.wDay,
-		(int) st.wHour, (int) st.wMinute, (int) st.wSecond);
-	return UnicodeString(buf);
+wchar_t ApiPirilaAlalaji(void)
+{
+	return kilpparam.alalaji;
+}
+
+UnicodeString ApiPirilaKilpailuNimi(void)
+{
+	return UnicodeString(kilpailu).Trim();
+}
+
+UnicodeString ApiPirilaPvm(void)
+{
+	wchar_t st[12];
+
+	stDateNo(st, pvparam[0].Date);
+	return UnicodeString(st);
+}
+
+int ApiPirilaVaiheet(void)
+{
+	return kilpparam.n_pv > 0 ? kilpparam.n_pv : 1;
 }
 
 static CRITICAL_SECTION lasnaJonoCS;
@@ -569,22 +585,24 @@ static UnicodeString ApiKilpailijaObj(kilptietue& kilp, int ipv)
 			arr += L",\"asakot\":" + ApiJsonString(sakko)
 				+ L",\"ampsakot\":" + ApiJsonString(sakko);
 	}
-	{
+	if (apiconfig.lahetaTulokset) {
 		int tsec = ApiTulosSec(tls);
 		if (tsec > 0)
 			arr += L",\"aika_sec\":" + IntToStr(tsec);
 		else
 			arr += L",\"aika_sec\":null";
+		INT16 sija = 0;
+		if (kilp.pv)
+			sija = kilp.pv[ipv].ysija;
+		if (sija > 0)
+			arr += L",\"sija\":" + IntToStr((int)sija);
+		else
+			arr += L",\"sija\":null";
+		arr += L",\"valiajat\":" + valia;
+	} else {
+		arr += L",\"aika_sec\":null,\"sija\":null,\"valiajat\":[]";
 	}
-	INT16 sija = 0;
-	if (kilp.pv)
-		sija = kilp.pv[ipv].ysija;
-	if (sija > 0)
-		arr += L",\"sija\":" + IntToStr((int)sija);
-	else
-		arr += L",\"sija\":null";
 	arr += ApiLahtoKentat(ApiKilpailijanLahto(kilp, ipv));
-	arr += L",\"valiajat\":" + valia;
 	arr += L",\"tyyppi\":\"yksilo\"";
 	arr += L"}";
 	return arr;
@@ -1002,7 +1020,8 @@ int ApiSynkkaaHaeKaikki(bool korvaaKentat)
 		return -1;
 
 	UnicodeString body =
-		L"{\"action\":\"kilpailijat\",\"kilpailu_id\":" + IntToStr(apiconfig.kilpailuId) + L"}";
+		L"{\"action\":\"kilpailijat\",\"kilpailu_id\":" + IntToStr(apiconfig.kilpailuId)
+		+ L",\"tyyppi\":\"yksilo\"}";
 	UnicodeString vastaus;
 	if (!ApiHttpPostJson(ApiBridgeUrl(), body, vastaus))
 		return -2;

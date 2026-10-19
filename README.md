@@ -34,7 +34,7 @@ HkKisaWin ja ViestiWin ↔ https://jahonline.com (Bearer, käyttäjäkohtainen `
 Osanottajat, läsnäolo, maaliajat, online-rastit ja Emit-rastiväliajat
 (`valiajat[]` + `rasti_koodi`) kulkevat samaa siltaa.
 Yhdistäminen: **Hae kilpailut** listaa netin Pirilä-kilpailut, joista valitaan kisa.
-Erillistä siirto-ohjelmaa, CSV-bridgeä tai MySQL-välikantaa ei tarvita.
+JAHOnline API on ainoa siirtotapa; netin asetukset ovat sivulla *Pirilä-asetukset*.
 
 - Ohje (lähde): [`docs/api-jahonline.md`](docs/api-jahonline.md)
 - Pirilä synkka (asennus): [docs-site/docs/asentaminen/jahonline.md](docs-site/docs/asentaminen/jahonline.md)

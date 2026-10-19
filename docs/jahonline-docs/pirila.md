@@ -3,8 +3,8 @@
 Kilpailijat, läsnäolo, maaliajat ja **online-rastit** siirtyvät **HkKisaWinistä**
 ja **ViestiWinistä** suoraan JAHOnlineen HTTP-APIn kautta.
 
-**Erillistä siirto-ohjelmaa, CSV-bridgeä (`pirila_live.php`), Sync Manageria
-tai MySQL-välikantaa (`UnitMySQL` / `kilpsql.txt`) ei tarvita.**
+JAHOnline API on ainoa siirtotapa. Netin asetukset ovat sivulla
+**Hallinta → Pirilä-asetukset**.
 
 Lähdekoodi: [jaho81-sys/tulospalvelu](https://github.com/jaho81-sys/tulospalvelu)
 (valikko **JAHOnline API (synkka)**).
@@ -18,7 +18,11 @@ Lähdekoodi: [jaho81-sys/tulospalvelu](https://github.com/jaho81-sys/tulospalvel
      (oletus)
    - **API-avain:** JAHOnline-käyttäjän `api_token` (Hallinta → käyttäjä)
 4. Paina **Hae kilpailut** ja valitse listasta netissä luotu Pirilä-kilpailu.
-5. Paina **Testaa (ping)** (paikallisen kilpailun pitää olla auki).
+   Jos kisaa ei vielä ole netissä, paina **Luo uusi JAHOnline-kisa**. Se luo
+   kisan avatun kilpailun nimellä, päivämäärällä ja luonteella
+   (Pirilän kilpailulaji: suunnistus, hiihto, juoksu, …).
+5. Paina **Yhdistä** (paikallisen kilpailun pitää olla auki). Pirilä muistaa
+   yhdistetyt kisat, joten seuraavalla kerralla kisa on valmiina listassa.
 6. **Lähetä kilpailijat nyt** vie osanottajat (nimet, emit, ajat, lähtöajat,
    läsnäolo, online-väliajat ja Emit-rastiväliajat) Pirilästä JAHOnlineen.
 7. **Lopeta synkka** pysäyttää taustasynkan.
@@ -49,7 +53,7 @@ JAHOnline-lähetys ei vaadi `comfl`-asemaverkkoa: tarvitaan `kilpailu_id` ja
 API-avain. Jono lähtee noin 200 ms välein.
 
 Taustasynkka (välilehti *Automaatio*) lähettää lisäksi koko listan valitun välein
-(`lahetysvali`, oletus 10 s) kun ping on onnistunut. **Lopeta synkka** pysäyttää
+(`lahetysvali`, oletus 10 s) kun Yhdistä on onnistunut. **Lopeta synkka** pysäyttää
 säikeen. Synkkaa ei käynnistetä, jos kilpailua ei ole avattu.
 
 ## API
@@ -63,7 +67,9 @@ säikeen. Synkkaa ei käynnistetä, jos kilpailua ei ole avattu.
 | Action | Suunta | Käyttö |
 |--------|--------|--------|
 | `kilpailut` | JAHOnline → Pirilä | Käyttäjän Pirilä-kilpailut valintalistaan |
-| `ping` | — | Yhteystesti valitulle kisalle |
+| `yhdista` | Pirilä → JAHOnline | Yhdistä-painike: kirjaa yhteyden, palauttaa kisan ja luonteen |
+| `ping` | — | Yhteystesti (vanha palvelin) |
+| `luo_kilpailu` | Pirilä → JAHOnline | Uusi kisa nimellä, päivämäärällä ja luonteella |
 | `synkkaa` | Pirilä → JAHOnline | Osanottajat, ajat, lähtöajat, läsnäolo, `valiajat[]` (online + Emit-rastit `rasti_koodi`) |
 | `kilpailijat` | JAHOnline → Pirilä | Haku `KILP.DAT`:iin (myös väliajat) |
 | `tapahtuma` | live molempiin | Online-rasti heti (`piste`, `aika_sec`, viestissä `osuus`) |
@@ -82,7 +88,7 @@ jää käyttöön, ja sen voi yhdistää Pirilään samalla ruksilla.
 
 HkKisaWin: `"tyyppi":"yksilo"`. ViestiWin: `"tyyppi":"viesti"` + `"osuus"`.
 
-Protokolla: [docs/api-jahonline.md](https://github.com/jaho81-sys/tulospalvelu/blob/cursor/api-kilpailijat-kaksisuuntainen-90ec/docs/api-jahonline.md).
+Protokolla: [docs/api-jahonline.md](https://github.com/Jukka-Aho/tulospalvelu/blob/main/docs/api-jahonline.md).
 
 ## Kaksi “väliaika”-käsitettä (näyttö)
 
@@ -116,14 +122,13 @@ siirto-ohjelmaa.
 - Rastiväliajat: Emit-/API-väliajat (synkan `valiajat[]` + `rasti_koodi`)
 - Maastossa: kulunut aika suluissa; ei Emit-rastilistaa
 
-## Mitä ei käytetä kisapäivän kilpailijasiirtoon
+## Kisan luonne
 
-- Sync Manager / `tools/JAHOnlineSyncManager`
-- CSV-bridge `POST /api/pirila_live.php`
-- MySQL-välikanta (`UnitMySQL.cpp`, `kilpsql.txt`, `osanotot` / `osottopv`)
-
-MySQL-luku HkKisaWinissä (Tiedostot / MySQL) on yhä olemassa vanhaan
-tietokantakäyttöön, mutta JAHOnline-synkka ei kulje sen kautta.
+Kisan luonne (`suunnistus`, `hiihto`, `juoksu`, `ampumahiihto`, …) tulee
+Pirilän kilpailulajista, kun kisa luodaan Pirilästä. Sen voi muuttaa kisan
+tiedoista. Luonne määrää, mitkä valikot näkyvät: esimerkiksi juoksussa
+ajanottosivut, suunnistuksessa ratatiedot ja Emit-sivut. Tarkemmin:
+[kisan-luonne.md](kisan-luonne.md).
 
 ## Online-rastit
 

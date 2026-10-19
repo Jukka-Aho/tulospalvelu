@@ -14,6 +14,43 @@
 
 extern CRITICAL_SECTION tall_CriticalSection;
 
+wchar_t ApiPirilaLaji(void)
+{
+	return kilpparam.kilplaji;
+}
+
+wchar_t ApiPirilaAlalaji(void)
+{
+	return kilpparam.alalaji;
+}
+
+UnicodeString ApiPirilaKilpailuNimi(void)
+{
+	UnicodeString nimi = UnicodeString(kilpailu).Trim();
+	if (nimi.IsEmpty())
+		nimi = UnicodeString(kilpparam.Name).Trim();
+	return nimi;
+}
+
+// kilpparam.Date is free text from Kilpailun m‰‰ritykset; send vvvv-kk-pp when it parses.
+UnicodeString ApiPirilaPvm(void)
+{
+	wchar_t pvm[14], st[12];
+
+	wcsncpy(pvm, kilpparam.Date, 13);
+	pvm[13] = 0;
+	int dn = DateNoFromSt(pvm);
+	if (dn <= 0)
+		return UnicodeString(pvm).Trim();
+	stDateNo(st, dn);
+	return UnicodeString(st);
+}
+
+int ApiPirilaVaiheet(void)
+{
+	return 1;
+}
+
 static CRITICAL_SECTION lasnaJonoCS;
 static bool lasnaJonoAlustettu = false;
 static int lasnaJono[256];
@@ -369,20 +406,22 @@ static UnicodeString ApiOsuusObj(kilptietue& kilp, int os)
 	arr += L",\"lasna\":" + ApiJsonBool(onLasna);
 	arr += L",\"status\":" + ApiJsonString(StatusMerkki(tark, onLasna, ApiAikaOk(maaliKello)));
 	arr += L",\"keskhyl\":" + ApiJsonString(UnicodeString(tark));
-	{
+	if (apiconfig.lahetaTulokset) {
 		int tsec = ApiTulosSec(tls);
 		if (tsec > 0)
 			arr += L",\"aika_sec\":" + IntToStr(tsec);
 		else
 			arr += L",\"aika_sec\":null";
+		INT16 sija = kilp.Sija(os, 0);
+		if (sija > 0)
+			arr += L",\"sija\":" + IntToStr((int)sija);
+		else
+			arr += L",\"sija\":null";
+		arr += L",\"valiajat\":" + valia;
+	} else {
+		arr += L",\"aika_sec\":null,\"sija\":null,\"valiajat\":[]";
 	}
-	INT16 sija = kilp.Sija(os, 0);
-	if (sija > 0)
-		arr += L",\"sija\":" + IntToStr((int)sija);
-	else
-		arr += L",\"sija\":null";
 	arr += ApiLahtoKentat(kilp.Lahto(os));
-	arr += L",\"valiajat\":" + valia;
 	arr += L",\"tyyppi\":\"viesti\"";
 	arr += L"}";
 	return arr;
@@ -940,7 +979,13 @@ void __fastcall TApiSaike::Kasittele(void)
 	}
 
 	ApiSynkkaaJonosta();
-	ApiLahetaTapahtumatNyt();
+	int nt = ApiLahetaTapahtumatNyt();
+	if (apiconfig.lahetaValiajat) {
+		if (nt > 0)
+			Paivita(L"L‰hetetty online-rasteja: " + IntToStr(nt));
+		else if (nt < 0)
+			Paivita(L"Online-rastien l‰hetys ep‰onnistui (" + IntToStr(nt) + L")", true);
+	}
 
 	if (apiconfig.lahetaKilpailijat || apiconfig.lahetaTulokset || apiconfig.lahetaValiajat) {
 		int n = ApiSynkkaaLahetaKaikki();
@@ -948,14 +993,6 @@ void __fastcall TApiSaike::Kasittele(void)
 			Paivita(L"L‰hetetty osuuksia: " + IntToStr(n));
 		else
 			Paivita(L"L‰hetys ep‰onnistui (" + IntToStr(n) + L")", true);
-	}
-
-	if (apiconfig.lahetaValiajat) {
-		int n = ApiLahetaTapahtumatNyt();
-		if (n > 0)
-			Paivita(L"L‰hetetty online-rasteja: " + IntToStr(n));
-		else if (n < 0)
-			Paivita(L"Online-rastien l‰hetys ep‰onnistui (" + IntToStr(n) + L")", true);
 	}
 
 	if (apiconfig.vastaanottaKilpailijat || apiconfig.vastaanottaValiajat) {
