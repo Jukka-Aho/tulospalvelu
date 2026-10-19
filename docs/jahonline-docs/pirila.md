@@ -30,12 +30,20 @@ Lähdekoodi: [jaho81-sys/tulospalvelu](https://github.com/jaho81-sys/tulospalvel
    `KILP.DAT`:iin. Taustahaku ei ylikirjoita paikallista maaliaikaa, väliaikaa
    eikä lähtöaikaa; se täyttää vain tyhjät kentät. `aika_sec: 0` ei tyhjennä
    tulosta. Viesti luo puuttuvan joukkueen, jos `sarja_nimi` tunnetaan.
+   Sama haku (ja Yhdistä-jälkeinen taustasynkka) tuo netti-ilmoittautumiset
+   Pirilään, kun ilmoittautujalla on numero.
 
 Asetukset tallentuvat tiedostoon `jahonline_api.ini` **kilpailun kansioon**.
 Tiedosto luetaan, kun kilpailu avataan.
 
-Suunnistuksessa osanottajat elävät Pirilässä (IRMA / CSV / käsin). JAHOnline
-näyttää ne synkan jälkeen — erillistä ilmoittautumislomaketta ei käytetä.
+Osanottajat voi syöttää Pirilässä (IRMA / CSV / käsin) tai JAHOnlinen
+julkisella ilmoittautumissivulla. Hallinta → kilpailu → *Ilmoittautumissivu
+käytössä*. Pirilä-kisassa ilmoittautuja saa automaattisesti numeron (1–9979)
+ja merkin ilmoittautunut (`keskhyl=N`). Tiedot tallentuvat verkkoon heti.
+Kun kisa on yhdistetty API:n kautta, taustasynkka ja **Hae kilpailijat nyt**
+luovat puuttuvat tietueet `KILP.DAT`:iin. Sarjojen nimien pitää täsmätä
+Pirilän sarjoihin. Avaa ilmoittautuminen vasta yhdistämisen jälkeen, tai
+varmista ettei samoja numeroita ole jo Pirilässä.
 
 ## Läsnäolo (emit)
 
