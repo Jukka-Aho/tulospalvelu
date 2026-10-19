@@ -6,8 +6,11 @@ ainoa siirtotapa; netin asetukset ovat sivulla **Hallinta → Pirilä-asetukset*
 
 Valikko (HkKisaWin ja ViestiWin): **JAHOnline API (synkka)**.
 
-Suunnistuksessa osanottajat elävät Pirilässä (IRMA / CSV / käsin). JAHOnline
-näyttää ne synkan jälkeen. Emit-luenta merkitsee lähtijän läsnäolevaksi ja
+Osanottajat voi syöttää Pirilässä (IRMA / CSV / käsin) tai JAHOnlinen
+ilmoittautumissivulla (Hallinta → kilpailu → *Ilmoittautumissivu käytössä*).
+Pirilä-kisassa ilmoittautuja saa numeron verkossa; **Yhdistä** käynnistää
+taustasynkan, joka hakee heidät `KILP.DAT`:iin (myös **Hae kilpailijat nyt**).
+Sarjojen nimien pitää täsmätä. Emit-luenta merkitsee lähtijän läsnäolevaksi ja
 lähettää tiedon heti nettiin.
 
 ## Käyttöönotto
@@ -30,9 +33,9 @@ lähettää tiedon heti nettiin.
    yhdistetyt kisat, joten seuraavalla kerralla kisa on valmiina listassa.
 7. **Lähetä kilpailijat nyt** vie Pirilän osanottajat (nimet, emit-koodit, ajat,
    lähtöajat, läsnäolo, online-väliajat ja Emit-rastiväliajat) JAHOnlineen.
-8. **Hae kilpailijat nyt** vain jos netistä pitää tuoda päivityksiä takaisin
-   paikalliseen `KILP.DAT`-kantaan. Taustahaku täyttää vain tyhjät ajat; se ei
-   pyyhi Pirilässä jo olevaa maalia.
+8. **Hae kilpailijat nyt** tuo netistä päivityksiä `KILP.DAT`:iin, myös
+   ilmoittautumissivulta tulleet uudet osanottajat (numero pakollinen).
+   Taustahaku täyttää vain tyhjät ajat; se ei pyyhi Pirilässä jo olevaa maalia.
 
 Asetukset tallentuvat tiedostoon `jahonline_api.ini` **kilpailun kansioon**
 (sama hakemisto kuin `laskenta.cfg` / `KILP.DAT`). Tiedosto luetaan, kun

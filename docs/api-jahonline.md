@@ -179,7 +179,9 @@ taustahaulla vain jos paikallinen kenttä on tyhjä.
 
 **Hae kilpailijat nyt** (`korvaaKentat`) saa korvata nimet, emit-koodin ja ajat
 kun verkko lähettää arvon `> 0`. Nollaa/nullia ei silti kirjoiteta paikallisen
-tuloksen päälle.
+tuloksen päälle. Sama haku luo uuden `KILP.DAT`-tietueen, jos numerolla ei ole
+paikallista riviä (`numero > 0`). Näin JAHOnlinen ilmoittautumissivun rivit
+siirtyvät Pirilään Yhdistä-jälkeisessä taustasynkassa.
 
 Viestissä `lasna: true` ei muuta tarkistettua (`T`) läsnä-merkiksi. Poissa / ei lähtenyt / vakantti
 (`E`/`P`/`V`/`B`) voi muuttua läsnäolevaksi. Viesti luo puuttuvan joukkueen haulla
