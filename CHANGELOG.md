@@ -4,6 +4,7 @@ Muutoshistoria pääkehityshaaraan (main) tehdyistä committeista, uusin ensin.
 
 | Pvm | # | Muutos |
 |---|---|---|
+| 2026-10-19 | — | AhoAuto (`/ahoauto/`) asennettavissa omaksi PWA:ksi: JAHOnlinen sovellusalue rajattu `/public/`-polkuun, AhoAutolla oma manifest ja service worker. Osoite `/AhoAuto/` ohjaa `/ahoauto/`-kansioon |
 | 2026-10-19 | — | JAHOnline PWA: kotinäytön logo rajattu täyttämään ikoni (192/512/180, maskable). Sivulatauksessa animoitu JAH-logo |
 | 2026-10-18 | — | JAHOnline-palvelin: Kompassi 26 siirretty kokonaan `jahonline`-kantaan (kolme puuttunutta D14-kilpailijaa palautettu); `pirila_sync` poistettu. Korjattu kaatuvat `tulokset.php` (ohjaus online-tuloksiin) ja `live_tulokset.php` (puuttuva `live_tapahtumat`). Pirilä: Tulokset-valintaruutu rajaa JSON-kentät, ViestiWin ei lähetä online-rasteja kahdesti, Hk-hakuun `tyyppi=yksilo`, tilanäyttö TAPAHTUMALOKI |
 | 2026-10-18 | — | JAHOnline-palvelin: vain JAHOnline API jää siirtotavaksi. Poistettu *Synkka-tila*-sivu ja vanha siirto (MySQL-välikanta `pirila_sync` + daemon, CSV/XML-tuonti, `pirila_live.php`, `pirila_bridge.php`, KILP.DAT-silta, Sync Manager); tarpeelliset tiedot (yhdistetyt Pirilä-asemat, viimeisin synkka, luonne) siirretty *Pirilä-asetukset*-sivulle; lähtöluenta hakee kilpailijan emit-koodilla JAHOnlinen kilpailijoista. HkKisaWin: Yhdistä-varapolun tilaviesti ilman ping-sanaa |
