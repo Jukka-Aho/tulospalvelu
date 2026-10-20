@@ -4,7 +4,7 @@ Muutoshistoria pääkehityshaaraan (main) tehdyistä committeista, uusin ensin.
 
 | Pvm | # | Muutos |
 |---|---|---|
-| 2026-10-20 | — | Sivulatauksen logo pysyy paikallaan (ei skaalausta eikä kiertoa); päälle avautuu kultainen varjostus latauksen ajaksi |
+| 2026-10-20 | — | Sivulatauksen logo sama terävä tunnus kuin yläpalkissa (musta tausta, ei blurin läpi), pyöräytys palautettu, päälle avautuu varjostus |
 | 2026-10-19 | — | JAHOnline: Pirilä-kisan ilmoittautumissivu käyttöön (ruksi Hallinta → kilpailu). Ilmoittautuja saa numeron 1–9979; tiedot tallentuvat verkkoon ja siirtyvät Pirilään taustasynkassa / *Hae kilpailijat nyt* kun kisa on yhdistetty API:n kautta |
 | 2026-10-19 | — | Väliaikasivut: 1. sijan ajat (sija 1 ja ero 0) vihreänä, muu brändiväri pysyy kultaisena |
 | 2026-10-19 | — | Etusivun yläpalkkiin lisää tilaa yläreunaan, jotta iso logo ei ole kiinni näytön laidassa |
