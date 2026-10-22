@@ -313,8 +313,23 @@ arvon (ei täytä vain tyhjää). Emit-leimoja ei kirjoiteta takaisin EMIT-tiedo
 ne näkyvät sivustolla ja puhelimessa.
 
 Puhelimen sivu `public/mobiili_kilpailija.php` kirjoittaa samaan lokiin lähteellä
-`mobiili-<käyttäjä>`. Se kirjaa nimen, statuksen ja ampumasakot. Emit-leimat
-näkyvät, mutta puhelin ei lue USB-lukijaa.
+`mobiili-<käyttäjä>`. Se kirjaa nimen, statuksen ja ampumasakot.
+
+Leimantarkistus puhelimella: `public/leimantarkastus.php` ja Emit-lukijan
+tila *Maalileimat*. Palvelin vertaa leimat rataan (`tarkista`-logiikka) ja
+laskee ajan radan `ennakko`-kentän mukaan:
+
+- `ennakko >= 0` (nollaus lähtöhetkellä tai kiinteä ennakko): tulos = maalirastin
+  korttiaika − ennakko (`maalilaji` 4)
+- `ennakko < 0` (arvontalähtö): tulos = maalikello − `lahto_sec`; maalikello
+  USB-leimasta tai napautuksesta
+
+Tulos menee lokiin `status` (`T`/`I`) ja `aika` (`aika_sec`). Pirilän USB-luenta
+HkKisaWinissä ei muutu. Emit-leimoja ei kirjoiteta takaisin EMIT-tiedostoon.
+
+`synkkaa` lähettää radoille myös `ennakko` ja `maalilaji` (vanha palvelin
+ohittaa kentät). Synkka ei korvaa netissä jo olevaa `T`/`I`/`H`-tarkistusta
+kirjaimella `-` tai `N`; Pirilän oma `T`/`I`/`H`/`K` ylikirjoittaa.
 
 ## Käyttö (HkKisaWin ja ViestiWin)
 

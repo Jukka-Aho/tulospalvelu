@@ -142,6 +142,15 @@ Täysi lista kulkee myös `synkkaa`-sanoman `valiajat[]`-kentässä
 JAHOnline-bridgen pitää hyväksyä `action=tapahtuma` ja kirjoittaa
 `valiajat` / maaliaika (viestissä myös `osuus`).
 
+## Leimantarkastus puhelimella
+
+Suunnistuksessa **Leimantarkastus** ja Emit-lukijan *Maalileimat* tarkistavat
+radan rastit ja ottavat ajan. Aika lähtee nollausleimauksesta (`ennakko = 0`)
+tai arvontalähtöajasta (`ennakko < 0`). HkKisaWinin USB-luenta pysyy ennallaan.
+
+Synkka vie radoille kentät `ennakko` ja `maalilaji`.
+
 ## Ei vielä
 
 - Sakot / tarkemmat leimausvirheet UI:ssa
+- Kuvio-hajonnat (sama rasti, eri koodi) puhelimen tarkistuksessa

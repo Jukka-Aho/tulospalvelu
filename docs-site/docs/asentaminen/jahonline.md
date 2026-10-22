@@ -82,8 +82,10 @@ asemaliikenne suoraan koneelta koneelle vai JAHOnlinen kautta.
 loki jää päälle.
 
 Puhelimella samaa kisaa voi kirjata sivulta **Hallinta → Ajanotto →
-Mobiili: kilpailija** (nimi, status, ampumasakot). Emit-leimat näkyvät
-sivulla; puhelin ei lue USB-lukijaa.
+Mobiili: kilpailija** (nimi, status, ampumasakot). Suunnistuksessa
+**Leimantarkastus** ja Emit-lukijan *Maalileimat* tarkistavat rastit ja
+ottavat ajan (nollausleimaus tai arvontalähtö). Pirilän USB-luenta
+tietokoneella toimii kuten ennen.
 
 Kun netissä on ruksi *Jaettu ajanottolista* ja Pirilässä *Maaliajat ilman numeroa*,
 maaliaika kirjataan Pirilässä ja numero selaimen Numerot-sivulla. Juoksun oma

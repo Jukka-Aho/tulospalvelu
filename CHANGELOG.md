@@ -4,6 +4,7 @@ Muutoshistoria pääkehityshaaraan (main) tehdyistä committeista, uusin ensin.
 
 | Pvm | # | Muutos |
 |---|---|---|
+| 2026-10-22 | — | Puhelimen leimantarkastus: rastit tarkistetaan radalta ja aika otetaan nollausleimauksesta tai arvontalähtöajasta. HkKisaWin synkkaa radoille `ennakko` ja `maalilaji`. USB-luenta Pirilässä ennallaan |
 | 2026-10-19 | — | Väliaikasivut: 1. sijan ajat (sija 1 ja ero 0) vihreänä, muu brändiväri pysyy kultaisena |
 | 2026-10-19 | — | Etusivun yläpalkkiin lisää tilaa yläreunaan, jotta iso logo ei ole kiinni näytön laidassa |
 | 2026-10-19 | — | JAHOnline-sivujen vihreä brändiväri vaihdettu logon kultaan (`#c49a22` / tumma `#e4c35a`); painikkeet, linkit, GPS ja live-taulut |
