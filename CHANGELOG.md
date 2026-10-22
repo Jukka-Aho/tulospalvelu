@@ -4,6 +4,7 @@ Muutoshistoria pääkehityshaaraan (main) tehdyistä committeista, uusin ensin.
 
 | Pvm | # | Muutos |
 |---|---|---|
+| 2026-10-22 | — | JAHOnline: nollaleimaus merkitsee lähtöajan nollaushetkestä; lähtöaika-mallissa tulos lasketaan kilpailijan kellosta tai sarjan lähdöstä |
 | 2026-10-22 | — | JAHOnline: radan määrityksessä valinta *Ajanotto käynnistyy* (nollaleimauksesta / lähtöajasta); leimantarkastus laskee tuloksen sen mukaan |
 | 2026-10-22 | — | JAHOnline: kisan asetuksissa *Pirilä-synkka* (ent. kilpailutyyppi). Päällä kisa on Pirilä-kilpailu; pois päältä kisa tehdään sovelluksessa ja luonne valitsee valikot |
 | 2026-10-22 | — | JAHOnline: *Pirilä-asetukset*-sivulle takaisin-painike (*Kisan hallinta*) |

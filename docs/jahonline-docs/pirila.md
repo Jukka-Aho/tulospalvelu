@@ -153,7 +153,9 @@ synkasta. Niitä ei muokata JAHOnessa.
 Jos Pirilä-synkka ei ole päällä, samalla sivulla voi määritellä radat
 sovelluksessa: tunnus, matkat, rastikoodit, sarjat ja se, käynnistyykö
 ajanotto nollaleimauksesta vai lähtöajasta. Leimantarkastus laskee tuloksen
-tämän valinnan mukaan.
+tämän valinnan mukaan. Nollaleimauksesta merkitään myös kilpailijan
+lähtöaika (nollaushetki). Lähtöajasta-mallissa käytetään kilpailijan kelloa
+ja sen puuttuessa sarjan lähtöä.
 
 ## Kisan luonne
 
