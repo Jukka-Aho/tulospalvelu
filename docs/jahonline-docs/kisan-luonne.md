@@ -78,8 +78,13 @@ CREATE TABLE IF NOT EXISTS pirila_yhteydet (
 
 `luonne = NULL` (vanhat kisat) tarkoittaa: näytä kaikki valikot kuten ennen.
 
-Kisan tietojen hallintasivulle lisätään valinta **Kisan luonne** (yllä olevat
-arvot). Ylläpitäjä voi muuttaa sitä, Pirilä ei ylikirjoita sitä yhdistäessä.
+Kisan tietojen hallintasivulla on valinta **Kisan luonne** (yllä olevat arvot)
+ja ruksi **Pirilä-synkka**. Ylläpitäjä voi muuttaa luonnetta; Pirilä ei
+ylikirjoita sitä yhdistäessä.
+
+**Pirilä-synkka** määrää, onko kisa Pirilä-kilpailu. Kun ruksi on päällä, sarjat,
+radat, kilpailijat ja ajat tulevat HkKisaWinistä / ViestiWinistä. Kun ruksi on
+pois, kisa tehdään JAHOnessa ja luonne valitsee näkyvät valikot.
 
 ## API
 
@@ -183,14 +188,33 @@ Luonne ohjaa, mitkä valikot kisan sivuilla ja hallinnassa näkyvät:
 | Valikko / sivu | suunnistus | ampumasuunnistus | hiihto | ampumahiihto | juoksu | uinti | sotilas5ottelu, meri5ottelu | muu |
 |---|---|---|---|---|---|---|---|---|
 | Ratatiedot (hallinta: Radat) | kyllä | kyllä | ei | ei | ei | ei | ei | ei |
-| Emit-sivut (Emit-lukija, Pirilä-kisan Lähtöluenta) | kyllä | kyllä | ei | ei | ei | ei | ei | ei |
+| Emit-sivut (sisäänluku ja leimantarkastus) | kyllä | kyllä | ei | ei | ei | ei | ei | ei |
 | Ajanotto (Mobiiliajanotto, Maalinappi, Numerot) | ei | ei | kyllä | kyllä | kyllä | kyllä | kyllä | kyllä |
-| Ampumapaikka | ei | kyllä | ei | kyllä | ei | ei | kyllä | ei |
+| Ampumapaikka | ei* | kyllä* | ei* | kyllä* | ei* | ei* | kyllä* | ei* |
 | Kilpailijat, Sarjat, Lähdöt, Nimenhuuto, Lähtökello, tulokset, seuranta | kyllä | kyllä | kyllä | kyllä | kyllä | kyllä | kyllä | kyllä |
+
+Hallinnan kehys on **Kilpailutoiminnat** (ent. Ajanotto). Sen alla on **Lähtö**
+(lähtöluenta, nimenhuuto, lähtökello). Kenttäkäyttäjän rooli *lähtötoiminnat*
+avaa nämä. Ampumapaikka-valikko näkyy vain, jos kisaan on ruksittu
+**Ampumapaikat**; vanhoille ampumalajeille ruksi asetetaan siirrossa.
+Käyttöoikeus *ampumapaikat* näyttää valikon.
+
+Hallinnan **Sarjat** ja **Radat** merkitään Pirilä-kisassa **Sarjat (Pirila)**
+ja **Radat (Pirila)**. Nimet, matkat, lähdöt, radat ja rastit tulevat synkasta;
+muokkaus on vain HkKisaWinissä tai ViestiWinissä. Jos kisaa ei ole liitetty
+Pirilään, sarjat ja radat määritetään sovelluksessa (sarjoilla nimi, matka,
+lähtö ja järjestys; radoilla tunnus, matkat, rastikoodit, sarjat ja
+ajanoton käynnistys nollaleimauksesta tai lähtöajasta). Nollaleimaus merkitsee
+lähtöajaksi nollaushetken; lähtöaika-mallissa tulos lasketaan kilpailijan
+kellosta tai sarjan lähdöstä. Ilman Pirilää Radat-sivu näkyy hallinnassa luonteen
+*ratatiedot*-suodatuksesta riippumatta, jotta leimantarkastukseen saa koodit.
 
 Luonne vain piilottaa valikoita, se ei tuo uusia. Pirilä-kisan omat säännöt
 pysyvät: Pirilä-kisassa ajanoton ruudukko ja Maalinappi eivät näy (ajat tulevat
 Pirilästä), ja Numerot näkyy vain jaetulla ajanottolistalla.
+
+\* Ampumapaikka vaatii lisäksi kisan raksin *Ampumapaikat* ja käyttäjän
+käyttöoikeuden *ampumapaikat* (pääkäyttäjä näkee valikon hallinnassa).
 
 `luonne = NULL`: kaikki valikot näkyvät.
 
