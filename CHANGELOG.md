@@ -4,6 +4,7 @@ Muutoshistoria pääkehityshaaraan (main) tehdyistä committeista, uusin ensin.
 
 | Pvm | # | Muutos |
 |---|---|---|
+| 2026-10-22 | — | JAHOnline: hallinnan *Radat* on Pirilä-kisassa *Radat (Pirila)* (muokkaus vain Pirilässä); ilman Pirilää radat, rastikoodit ja sarjaliitokset määritetään sovelluksessa |
 | 2026-10-22 | — | JAHOnline: hallinnan kehys *Kilpailutoiminnat* (ent. Ajanotto), alakehys *Lähtö* (lähtöluenta, nimenhuuto, lähtökello) ja käyttöoikeus *lähtötoiminnat*. Ampumapaikka-valikko vain, jos kisaan on merkitty ampumapaikat; käyttöoikeus *ampumapaikat* |
 | 2026-10-19 | — | Väliaikasivut: 1. sijan ajat (sija 1 ja ero 0) vihreänä, muu brändiväri pysyy kultaisena |
 | 2026-10-19 | — | Etusivun yläpalkkiin lisää tilaa yläreunaan, jotta iso logo ei ole kiinni näytön laidassa |

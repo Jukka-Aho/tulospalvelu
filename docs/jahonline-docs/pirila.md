@@ -123,6 +123,17 @@ siirto-ohjelmaa.
 - Rastiväliajat: Emit-/API-väliajat (synkan `valiajat[]` + `rasti_koodi`)
 - Maastossa: kulunut aika suluissa; ei Emit-rastilistaa
 
+## Radat
+
+Pirilä-kisassa hallinnan valikko on **Radat (Pirila)**. Radat, rastikoodit,
+pituudet ja sarjojen rataliitokset tulevat HkKisaWinin / ViestiWinin
+synkasta. Niitä ei muokata JAHOnessa.
+
+Jos kisaa ei ole liitetty Pirilään, samalla sivulla voi määritellä radat
+sovelluksessa: tunnus, pituus, nousu, viimeiseltä maaliin, nollausennakko,
+maalilaji 4, rastikoodit ja sarjat tälle radalle. Leimantarkastus käyttää
+näitä koodeja.
+
 ## Kisan luonne
 
 Kisan luonne (`suunnistus`, `hiihto`, `juoksu`, `ampumahiihto`, …) tulee
