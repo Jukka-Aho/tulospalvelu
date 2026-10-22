@@ -194,12 +194,13 @@ avaa nämä. Ampumapaikka-valikko näkyy vain, jos kisaan on ruksittu
 **Ampumapaikat**; vanhoille ampumalajeille ruksi asetetaan siirrossa.
 Käyttöoikeus *ampumapaikat* näyttää valikon.
 
-Hallinnan **Radat** merkitään Pirilä-kisassa **Radat (Pirila)**. Radat, rastit
-ja sarjaliitokset tulevat synkasta; muokkaus on vain HkKisaWinissä tai
-ViestiWinissä. Jos kisaa ei ole liitetty Pirilään, radat määritetään
-sovelluksessa (tunnus, matkat, nollausennakko, maalilaji 4, rastikoodit ja
-sarjat). Ilman Pirilää Radat-sivu näkyy hallinnassa luonteen *ratatiedot*-
-suodatuksesta riippumatta, jotta leimantarkastukseen saa koodit.
+Hallinnan **Sarjat** ja **Radat** merkitään Pirilä-kisassa **Sarjat (Pirila)**
+ja **Radat (Pirila)**. Nimet, matkat, lähdöt, radat ja rastit tulevat synkasta;
+muokkaus on vain HkKisaWinissä tai ViestiWinissä. Jos kisaa ei ole liitetty
+Pirilään, sarjat ja radat määritetään sovelluksessa (sarjoilla nimi, matka,
+lähtö ja järjestys; radoilla tunnus, matkat, nollausennakko, maalilaji 4,
+rastikoodit ja sarjat). Ilman Pirilää Radat-sivu näkyy hallinnassa luonteen
+*ratatiedot*-suodatuksesta riippumatta, jotta leimantarkastukseen saa koodit.
 
 Luonne vain piilottaa valikoita, se ei tuo uusia. Pirilä-kisan omat säännöt
 pysyvät: Pirilä-kisassa ajanoton ruudukko ja Maalinappi eivät näy (ajat tulevat

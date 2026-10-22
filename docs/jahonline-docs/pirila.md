@@ -123,6 +123,18 @@ siirto-ohjelmaa.
 - Rastiväliajat: Emit-/API-väliajat (synkan `valiajat[]` + `rasti_koodi`)
 - Maastossa: kulunut aika suluissa; ei Emit-rastilistaa
 
+## Sarjat
+
+Pirilä-kisassa hallinnan valikko on **Sarjat (Pirila)**. Nimi, matka, lähtö ja
+järjestys tulevat HkKisaWinin / ViestiWinin synkasta. Niitä ei lisätä, muokata
+eikä poisteta JAHOnessa.
+
+Jos kisaa ei ole liitetty Pirilään, samalla sivulla voi määritellä sarjat
+sovelluksessa.
+
+**Online-va** (netin väliaikasarakkeiden määrä) on JAHOnlinen asetus: synkka
+ei ylikirjoita sitä. Pirilä-kisassa sen voi asettaa sarjalistasta.
+
 ## Radat
 
 Pirilä-kisassa hallinnan valikko on **Radat (Pirila)**. Radat, rastikoodit,

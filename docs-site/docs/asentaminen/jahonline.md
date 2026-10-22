@@ -86,9 +86,10 @@ Lähtöluenta, nimenhuuto ja lähtökello ovat kehyksessä **Lähtö**
 (käyttöoikeus *lähtötoiminnat*). Ampumapaikka näkyy, kun kisaan on merkitty
 ampumapaikat (käyttöoikeus *ampumapaikat*).
 
-Pirilä-kisassa hallinnan **Radat** on **Radat (Pirila)**: radat ja rastikoodit
-tulevat synkasta, muokkaus vain Pirilässä. Jos kisaa ei ole liitetty Pirilään,
-radat määritetään JAHOnlinen hallinnassa.
+Pirilä-kisassa hallinnan **Sarjat** ja **Radat** ovat **Sarjat (Pirila)** ja
+**Radat (Pirila)**: nimet, matkat, radat ja rastikoodit tulevat synkasta,
+muokkaus vain Pirilässä. Jos kisaa ei ole liitetty Pirilään, sarjat ja radat
+määritetään JAHOnlinen hallinnassa.
 
 Kun netissä on ruksi *Jaettu ajanottolista* ja Pirilässä *Maaliajat ilman numeroa*,
 maaliaika kirjataan Pirilässä ja numero selaimen Numerot-sivulla. Juoksun oma
