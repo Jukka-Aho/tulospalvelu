@@ -167,6 +167,7 @@ vaihtaa tilaa. Kortin luku:
 - uusi kortti kysyy, luetaanko lähteväksi vai maaliin; maaliin kysytään
   sarja ja nimi ja leimat tallennetaan
 - sisäänluvussa merkitään läsnä ja lähtöaika (nollaleimaus / lukuhetki)
+- leimantarkastus näyttää radan rastit: puuttuva rasti punaisella tekstillä *puuttuu*, kortilla oleva väärä koodi tekstillä *väärä* (viivoitus ja musta reuna, ei pelkkä väri)
 
 ## Kisan luonne
 
