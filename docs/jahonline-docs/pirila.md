@@ -79,7 +79,8 @@ säikeen. Synkkaa ei käynnistetä, jos kilpailua ei ole avattu.
 Synkka ei katkaise lähiverkkoa. Yksi kone voi puhua nettiin, ja muut koneet
 ovat sen kanssa samassa lähiverkossa. Tapahtumaloki tällä koneella on lisä:
 se tuo puhelimen rivit ja välittää ne lähiverkkoon.
-Puhelin: Hallinta → Ajanotto → **Mobiili: kilpailija**.
+Puhelin: Hallinta → Ajanotto → **Muokkaa kilpailijaa** (nimi, status, emit-leimat).
+Leimantarkastus lukee kortin USB-lukijalta.
 
 Kun netissä on ruksi *Jaettu ajanottolista* ja Pirilässä *Maaliajat ilman numeroa*,
 maaliaika kirjataan Pirilässä ja kilpailijan numero selaimen Numerot-sivulla.
@@ -142,6 +143,15 @@ Täysi lista kulkee myös `synkkaa`-sanoman `valiajat[]`-kentässä
 JAHOnline-bridgen pitää hyväksyä `action=tapahtuma` ja kirjoittaa
 `valiajat` / maaliaika (viestissä myös `osuus`).
 
+## Leimantarkastus puhelimella
+
+Suunnistuksessa **Leimantarkastus** ja Emit-lukijan *Maalileimat* tarkistavat
+radan rastit ja ottavat ajan. Aika lähtee nollausleimauksesta (`ennakko = 0`)
+tai arvontalähtöajasta (`ennakko < 0`). HkKisaWinin USB-luenta pysyy ennallaan.
+
+Synkka vie radoille kentät `ennakko` ja `maalilaji`.
+
 ## Ei vielä
 
 - Sakot / tarkemmat leimausvirheet UI:ssa
+- Kuvio-hajonnat (sama rasti, eri koodi) puhelimen tarkistuksessa

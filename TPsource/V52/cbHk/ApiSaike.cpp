@@ -466,6 +466,10 @@ static UnicodeString ApiRakennaRadatJson(void)
 		arr += L",\"pituus_m\":" + IntToStr(rata[i].ratapit);
 		arr += L",\"nousu_m\":" + IntToStr(rata[i].nousu);
 		arr += L",\"maaliin_m\":" + IntToStr(rata[i].viitmatka);
+		// ennakko: 0 = nollaus at start, >0 fixed sec, <0 draw start.
+		// maalilaji 4 = result from last control. Old servers ignore extra fields.
+		arr += L",\"ennakko\":" + IntToStr(rata[i].ennakko);
+		arr += L",\"maalilaji\":" + IntToStr(rata[i].maalilaji);
 		arr += L",\"rastit\":[";
 		for (r = 0; r < nras; r++) {
 			if (r)
