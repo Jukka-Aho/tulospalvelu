@@ -185,12 +185,21 @@ Luonne ohjaa, mitkä valikot kisan sivuilla ja hallinnassa näkyvät:
 | Ratatiedot (hallinta: Radat) | kyllä | kyllä | ei | ei | ei | ei | ei | ei |
 | Emit-sivut (Emit-lukija, Pirilä-kisan Lähtöluenta) | kyllä | kyllä | ei | ei | ei | ei | ei | ei |
 | Ajanotto (Mobiiliajanotto, Maalinappi, Numerot) | ei | ei | kyllä | kyllä | kyllä | kyllä | kyllä | kyllä |
-| Ampumapaikka | ei | kyllä | ei | kyllä | ei | ei | kyllä | ei |
+| Ampumapaikka | ei* | kyllä* | ei* | kyllä* | ei* | ei* | kyllä* | ei* |
 | Kilpailijat, Sarjat, Lähdöt, Nimenhuuto, Lähtökello, tulokset, seuranta | kyllä | kyllä | kyllä | kyllä | kyllä | kyllä | kyllä | kyllä |
+
+Hallinnan kehys on **Kilpailutoiminnat** (ent. Ajanotto). Sen alla on **Lähtö**
+(lähtöluenta, nimenhuuto, lähtökello). Kenttäkäyttäjän rooli *lähtötoiminnat*
+avaa nämä. Ampumapaikka-valikko näkyy vain, jos kisaan on ruksittu
+**Ampumapaikat**; vanhoille ampumalajeille ruksi asetetaan siirrossa.
+Käyttöoikeus *ampumapaikat* näyttää valikon.
 
 Luonne vain piilottaa valikoita, se ei tuo uusia. Pirilä-kisan omat säännöt
 pysyvät: Pirilä-kisassa ajanoton ruudukko ja Maalinappi eivät näy (ajat tulevat
 Pirilästä), ja Numerot näkyy vain jaetulla ajanottolistalla.
+
+\* Ampumapaikka vaatii lisäksi kisan raksin *Ampumapaikat* ja käyttäjän
+käyttöoikeuden *ampumapaikat* (pääkäyttäjä näkee valikon hallinnassa).
 
 `luonne = NULL`: kaikki valikot näkyvät.
 
