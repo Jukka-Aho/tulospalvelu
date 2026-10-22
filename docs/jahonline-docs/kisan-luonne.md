@@ -78,8 +78,13 @@ CREATE TABLE IF NOT EXISTS pirila_yhteydet (
 
 `luonne = NULL` (vanhat kisat) tarkoittaa: näytä kaikki valikot kuten ennen.
 
-Kisan tietojen hallintasivulle lisätään valinta **Kisan luonne** (yllä olevat
-arvot). Ylläpitäjä voi muuttaa sitä, Pirilä ei ylikirjoita sitä yhdistäessä.
+Kisan tietojen hallintasivulla on valinta **Kisan luonne** (yllä olevat arvot)
+ja ruksi **Pirilä-synkka**. Ylläpitäjä voi muuttaa luonnetta; Pirilä ei
+ylikirjoita sitä yhdistäessä.
+
+**Pirilä-synkka** määrää, onko kisa Pirilä-kilpailu. Kun ruksi on päällä, sarjat,
+radat, kilpailijat ja ajat tulevat HkKisaWinistä / ViestiWinistä. Kun ruksi on
+pois, kisa tehdään JAHOnessa ja luonne valitsee näkyvät valikot.
 
 ## API
 

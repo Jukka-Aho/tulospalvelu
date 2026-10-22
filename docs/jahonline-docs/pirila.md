@@ -123,13 +123,22 @@ siirto-ohjelmaa.
 - Rastiväliajat: Emit-/API-väliajat (synkan `valiajat[]` + `rasti_koodi`)
 - Maastossa: kulunut aika suluissa; ei Emit-rastilistaa
 
+## Pirilä-synkka
+
+Kisan asetuksissa ruksi **Pirilä-synkka** (ent. kilpailutyyppi *Pirila-kisa*).
+Kun se on päällä, hallinta näyttää Pirilä-kilpailun: *Sarjat (Pirila)*,
+*Radat (Pirila)*, synkka ja muokkaus vain Pirilässä.
+
+Kun ruksi on pois, kisa tehdään JAHOnessa. **Kisan luonne** valitsee valikot
+(suunnistuksessa radat ja Emit, juoksussa ja hiihdossa ajanotto).
+
 ## Sarjat
 
 Pirilä-kisassa hallinnan valikko on **Sarjat (Pirila)**. Nimi, matka, lähtö ja
 järjestys tulevat HkKisaWinin / ViestiWinin synkasta. Niitä ei lisätä, muokata
 eikä poisteta JAHOnessa.
 
-Jos kisaa ei ole liitetty Pirilään, samalla sivulla voi määritellä sarjat
+Jos Pirilä-synkka ei ole päällä, samalla sivulla voi määritellä sarjat
 sovelluksessa.
 
 **Online-va** (netin väliaikasarakkeiden määrä) on JAHOnlinen asetus: synkka
@@ -141,7 +150,7 @@ Pirilä-kisassa hallinnan valikko on **Radat (Pirila)**. Radat, rastikoodit,
 pituudet ja sarjojen rataliitokset tulevat HkKisaWinin / ViestiWinin
 synkasta. Niitä ei muokata JAHOnessa.
 
-Jos kisaa ei ole liitetty Pirilään, samalla sivulla voi määritellä radat
+Jos Pirilä-synkka ei ole päällä, samalla sivulla voi määritellä radat
 sovelluksessa: tunnus, pituus, nousu, viimeiseltä maaliin, nollausennakko,
 maalilaji 4, rastikoodit ja sarjat tälle radalle. Leimantarkastus käyttää
 näitä koodeja.

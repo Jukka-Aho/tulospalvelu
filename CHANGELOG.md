@@ -4,6 +4,7 @@ Muutoshistoria pääkehityshaaraan (main) tehdyistä committeista, uusin ensin.
 
 | Pvm | # | Muutos |
 |---|---|---|
+| 2026-10-22 | — | JAHOnline: kisan asetuksissa *Pirilä-synkka* (ent. kilpailutyyppi). Päällä kisa on Pirilä-kilpailu; pois päältä kisa tehdään sovelluksessa ja luonne valitsee valikot |
 | 2026-10-22 | — | JAHOnline: *Pirilä-asetukset*-sivulle takaisin-painike (*Kisan hallinta*) |
 | 2026-10-22 | — | JAHOnline: hallinnan *Sarjat* on Pirilä-kisassa *Sarjat (Pirila)* (nimet, matkat ja lähdöt vain Pirilässä); ilman Pirilää sarjat määritetään sovelluksessa. Online-va jää netin sarakemääräksi |
 | 2026-10-22 | — | JAHOnline: hallinnan *Radat* on Pirilä-kisassa *Radat (Pirila)* (muokkaus vain Pirilässä); ilman Pirilää radat, rastikoodit ja sarjaliitokset määritetään sovelluksessa |
