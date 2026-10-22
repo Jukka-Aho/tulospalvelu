@@ -79,7 +79,8 @@ säikeen. Synkkaa ei käynnistetä, jos kilpailua ei ole avattu.
 Synkka ei katkaise lähiverkkoa. Yksi kone voi puhua nettiin, ja muut koneet
 ovat sen kanssa samassa lähiverkossa. Tapahtumaloki tällä koneella on lisä:
 se tuo puhelimen rivit ja välittää ne lähiverkkoon.
-Puhelin: Hallinta → Ajanotto → **Mobiili: kilpailija**.
+Puhelin: Hallinta → Ajanotto → **Muokkaa kilpailijaa** (nimi, status, emit-leimat).
+Leimantarkastus lukee kortin USB-lukijalta.
 
 Kun netissä on ruksi *Jaettu ajanottolista* ja Pirilässä *Maaliajat ilman numeroa*,
 maaliaika kirjataan Pirilässä ja kilpailijan numero selaimen Numerot-sivulla.

@@ -312,17 +312,19 @@ Asema ei saa omia rivejään takaisin. Vastaanotto ylikirjoittaa paikallisen
 arvon (ei täytä vain tyhjää). Emit-leimoja ei kirjoiteta takaisin EMIT-tiedostoon;
 ne näkyvät sivustolla ja puhelimessa.
 
-Puhelimen sivu `public/mobiili_kilpailija.php` kirjoittaa samaan lokiin lähteellä
-`mobiili-<käyttäjä>`. Se kirjaa nimen, statuksen ja ampumasakot.
+Puhelimen sivu `public/mobiili_kilpailija.php` (**Muokkaa kilpailijaa**) kirjoittaa
+samaan lokiin lähteellä `mobiili-<käyttäjä>`. Se kirjaa nimen, statuksen ja
+ampumasakot. Emit-leimoja muokataan sivulla `public/emit_leimat.php`
+(lisäys, poisto, rastikoodi ja leimausaika).
 
-Leimantarkistus puhelimella: `public/leimantarkastus.php` ja Emit-lukijan
-tila *Maalileimat*. Palvelin vertaa leimat rataan (`tarkista`-logiikka) ja
-laskee ajan radan `ennakko`-kentän mukaan:
+Leimantarkistus puhelimella: `public/leimantarkastus.php` lukee Emit-kortin
+USB-lukijalta (sama kuin Emit-lukijan tila *Maalileimat*). Palvelin vertaa
+leimat rataan (`tarkista`-logiikka) ja laskee ajan radan `ennakko`-kentän mukaan:
 
 - `ennakko >= 0` (nollaus lähtöhetkellä tai kiinteä ennakko): tulos = maalirastin
   korttiaika − ennakko (`maalilaji` 4)
 - `ennakko < 0` (arvontalähtö): tulos = maalikello − `lahto_sec`; maalikello
-  USB-leimasta tai napautuksesta
+  USB-leimasta
 
 Tulos menee lokiin `status` (`T`/`I`) ja `aika` (`aika_sec`). Pirilän USB-luenta
 HkKisaWinissä ei muutu. Emit-leimoja ei kirjoiteta takaisin EMIT-tiedostoon.
