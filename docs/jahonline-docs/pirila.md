@@ -157,6 +157,17 @@ tämän valinnan mukaan. Nollaleimauksesta merkitään myös kilpailijan
 lähtöaika (nollaushetki). Lähtöajasta-mallissa käytetään kilpailijan kelloa
 ja sen puuttuessa sarjan lähtöä.
 
+## Emit-lukija (sovelluskisa)
+
+Sama USB-lukija hoitaa **sisäänluvun** ja **leimantarkastuksen**. Painike
+vaihtaa tilaa. Kortin luku:
+
+- jo lähtölistalla oleva (luettu lähteväksi) menee automaattisesti
+  leimantarkastukseen, jos kortilla on rastit
+- uusi kortti kysyy, luetaanko lähteväksi vai maaliin; maaliin kysytään
+  sarja ja nimi ja leimat tallennetaan
+- sisäänluvussa merkitään läsnä ja lähtöaika (nollaleimaus / lukuhetki)
+
 ## Kisan luonne
 
 Kisan luonne (`suunnistus`, `hiihto`, `juoksu`, `ampumahiihto`, …) tulee
