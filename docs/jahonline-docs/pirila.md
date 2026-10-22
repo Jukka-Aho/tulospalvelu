@@ -151,9 +151,9 @@ pituudet ja sarjojen rataliitokset tulevat HkKisaWinin / ViestiWinin
 synkasta. Niitä ei muokata JAHOnessa.
 
 Jos Pirilä-synkka ei ole päällä, samalla sivulla voi määritellä radat
-sovelluksessa: tunnus, pituus, nousu, viimeiseltä maaliin, nollausennakko,
-maalilaji 4, rastikoodit ja sarjat tälle radalle. Leimantarkastus käyttää
-näitä koodeja.
+sovelluksessa: tunnus, matkat, rastikoodit, sarjat ja se, käynnistyykö
+ajanotto nollaleimauksesta vai lähtöajasta. Leimantarkastus laskee tuloksen
+tämän valinnan mukaan.
 
 ## Kisan luonne
 

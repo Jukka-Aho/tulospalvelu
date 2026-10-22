@@ -203,8 +203,8 @@ Hallinnan **Sarjat** ja **Radat** merkitään Pirilä-kisassa **Sarjat (Pirila)*
 ja **Radat (Pirila)**. Nimet, matkat, lähdöt, radat ja rastit tulevat synkasta;
 muokkaus on vain HkKisaWinissä tai ViestiWinissä. Jos kisaa ei ole liitetty
 Pirilään, sarjat ja radat määritetään sovelluksessa (sarjoilla nimi, matka,
-lähtö ja järjestys; radoilla tunnus, matkat, nollausennakko, maalilaji 4,
-rastikoodit ja sarjat). Ilman Pirilää Radat-sivu näkyy hallinnassa luonteen
+lähtö ja järjestys; radoilla tunnus, matkat, rastikoodit, sarjat ja
+ajanoton käynnistys nollaleimauksesta tai lähtöajasta). Ilman Pirilää Radat-sivu näkyy hallinnassa luonteen
 *ratatiedot*-suodatuksesta riippumatta, jotta leimantarkastukseen saa koodit.
 
 Luonne vain piilottaa valikoita, se ei tuo uusia. Pirilä-kisan omat säännöt
