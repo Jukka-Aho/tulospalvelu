@@ -78,7 +78,11 @@ Vaihda tapahtuma palauttaa hubiin.
 
 ## Radat
 
-Tapahtuman asetukset → **Radat**. Iltarastissa lomake on yksinkertainen:
+Tapahtuman asetukset näyttää radat taulukkona (nimi, matka, rastikoodit).
+**Lisää rata** / **Muokkaa** avaa lomakkeen ja palaa tallennuksen jälkeen
+asetuksiin.
+
+Iltarastissa lomake on yksinkertainen:
 
 - radan nimi (tuloksissa **rata**, ei sarja)
 - matka (km); listassa sama yksikkö, ei metrejä
@@ -130,8 +134,9 @@ kannassa.
 ## Osanottajat
 
 Hamburger → **Osanottajat**: radat välilehdillä. Sarjan alussa näkyy
-montako on vielä maastossa. Nimeä voi muokata. Maastossa olevan voi
-merkitä pois ilman leimauskorttia. Lisäys on tulospalvelun sisäänluvussa.
+montako on vielä maastossa. Maastossa olevan tila on *Maastossa* (ei
+*Lähtenyt*). Nimeä voi muokata. Maastossa olevan voi merkitä pois ilman
+leimauskorttia. Lisäys on tulospalvelun sisäänluvussa.
 
 ## `keskhyl` iltarastissa
 
