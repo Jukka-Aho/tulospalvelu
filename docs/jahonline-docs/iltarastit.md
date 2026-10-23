@@ -91,7 +91,8 @@ Kentät: etunimi, sukunimi, seura, rata, kilpailukortti, lainakortti,
 ei aikaa. Kortti tulee lukijalta; kirjaus onnistuu myös ilman korttia.
 
 Molemmissa tiloissa **Yhdistä lukija**. Yhdistettynä näkyy vain
-lukijakuvake (klikkaus katkaisee).
+lukijakuvake (klikkaus katkaisee). *Kirjaa* on AJAX eikä avaa
+sivulatausikonia.
 
 | Tilanne | Toiminta |
 |---|---|
