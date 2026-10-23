@@ -87,8 +87,15 @@ Iltarastissa lomake on yksinkertainen:
 - radan nimi (tuloksissa **rata**, ei sarja)
 - matka (km); listassa sama yksikkö, ei metrejä
 - rastikoodit järjestyksessä (välilyönti tai pilkku); sama koodi saa toistua
-  (silmukka esim. 12–13–12). Väliaikasarakkeet tulevat tästä järjestyksestä,
-  ei yksilöllisistä koodeista.
+  (silmukka esim. 12–13–12), mutta ei peräkkäin (12–12 kielletty).
+  Väliaikasarakkeet tulevat tästä järjestyksestä, ei yksilöllisistä koodeista.
+
+Radan tallennus kesken illan tarkistaa sen radan kilpailijat uudelleen:
+väliajat kirjoitetaan uusiksi leimoista, ja hyväksytty/esitys (`T`/`E`)
+lasketaan uudestaan. Maastossa (`-`) tai käsin merkitty `H`/`K` eivät vaihdu
+automaattisesti. Osanottajissa on myös **Tarkista leimat uudelleen**.
+Kilpailukortin numeron muutos ei siirrä jo tallennettuja leimoja; ne on
+avainnettu henkilöön. Seuraava kortin luku käyttää uutta numeroa.
 
 Lähtö on aina nollaleimasimelta (`ennakko = 0`, `maalilaji = 4`). Jokainen
 rata luo samannimisen sarjan (1:1). Henkilöt kirjataan tälle radalle.
@@ -135,8 +142,10 @@ kannassa.
 
 Hamburger → **Osanottajat**: radat välilehdillä. Sarjan alussa näkyy
 montako on vielä maastossa. Maastossa olevan tila on *Maastossa* (ei
-*Lähtenyt*). Nimeä voi muokata. Maastossa olevan voi merkitä pois ilman
-leimauskorttia. Lisäys on tulospalvelun sisäänluvussa.
+*Lähtenyt*). Nimeä, rataa ja kortin numeroa voi muokata. Radan vaihto
+tai **Tarkista leimat uudelleen** laskee leimat ja väliajat uudestaan.
+Maastossa olevan voi merkitä pois ilman leimauskorttia. Lisäys on
+tulospalvelun sisäänluvussa.
 
 ## `keskhyl` iltarastissa
 

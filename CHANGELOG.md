@@ -4,6 +4,7 @@ Muutoshistoria pääkehityshaaraan (main) tehdyistä committeista, uusin ensin.
 
 | Pvm | # | Muutos |
 |---|---|---|
+| 2026-10-24 | — | JAHOnline iltarastit: sama rastikoodi saa toistua mutta ei peräkkäin; radan tallennus ja osanottajien tarkistus laskevat leimat ja väliajat uudelleen |
 | 2026-10-24 | — | JAHOnline iltarastit: asetuksissa rastikoodit ja poisto; radan tallennus palaa asetuksiin; osanottajissa Maastossa; hamburgerissa tila suomeksi |
 | 2026-10-24 | — | JAHOnline iltarastit: matkat näytetään kilometreinä (lista ja lomake); metreiksi jäänyt 5 korjataan 5 km:ksi |
 | 2026-10-24 | — | JAHOnline iltarastit: B-radan (silmukka 12–13–12) väliaikasarakkeet näkyvät; toistuva rastikoodi ei enää tyhjennä sarjan rasteja |
