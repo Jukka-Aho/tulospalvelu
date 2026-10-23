@@ -4,6 +4,7 @@ Muutoshistoria pääkehityshaaraan (main) tehdyistä committeista, uusin ensin.
 
 | Pvm | # | Muutos |
 |---|---|---|
+| 2026-10-24 | — | JAHOnline iltarastit: turha käsinkirjaus pois sisäänluvusta |
 | 2026-10-24 | — | JAHOnline iltarastit: hamburgerissa Väliajat; Rastilippu-vientiaineisto valmiina |
 | 2026-10-24 | — | JAHOnline iltarastit: osanottajia voi muokata ja merkitä pois maastosta |
 | 2026-10-23 | — | JAHOnline iltarastit: leimantarkastuksessa nimi, tulos ja Hyväksytty/Esitys |
