@@ -57,7 +57,10 @@ paikka). Luonti ja *Avaa* vievät tulospalveluun.
 Sama Rastilippu-tapahtuma luodaan seuralle vain kerran
 (`UNIQUE (seura_id, rastilippu_event_id)`).
 
-Tulosten lähetystä Rastilippuun ei ole tässä vaiheessa.
+Tulosten ja rastiväliaikojen lähetys Rastilippuun liitetään myöhemmin.
+Aineisto kootaan jo (`rastilippuVieaineisto`): nimet, radat, ajat, tilat
+ja emit-väliajat. `rastilippuLahetaTulokset` palauttaa toistaiseksi
+että vienti ei ole vielä käytössä.
 
 ## Avattu tapahtuma
 
@@ -68,6 +71,7 @@ Hamburger:
 - Tapahtuman asetukset (nimi, paikka, alku, loppu, radat)
 - Osanottajat
 - Tulospalvelu (oletusavaus)
+- Väliajat (rastiväliajat kuten Pirilä-kisoissa)
 - Tulokset (seuranta upotettuna)
 
 Vaihda tapahtuma palauttaa hubiin.
@@ -143,6 +147,7 @@ sisäänluvussa.
 | `admin/iltarastit.php` | Hub: avain, illan valinta, paikallinen luonti, tunnukset |
 | `admin/iltarasti_asetukset.php` | Nimi, paikka, alku, loppu, radat |
 | `admin/iltarasti_tulokset.php` | Tulokset upotettuna |
+| `admin/iltarasti_valiajat.php` | Rastiväliajat upotettuna |
 | `includes/layout.php` / `admin_nav.php` | Kokoikkuna-kuori ja hamburger |
 | `includes/kisa_luonne.php` | luonne `iltarasti` |
 | `includes/tili.php` / `auth.php` | palvelu `iltarastit`, rooli `iltarasti` |
