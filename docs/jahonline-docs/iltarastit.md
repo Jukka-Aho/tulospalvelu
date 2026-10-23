@@ -91,8 +91,9 @@ rata luo samannimisen sarjan (1:1). Henkilöt kirjataan tälle radalle.
 ei aikaa. Lomake on tiivis, jotta se mahtuu kännykän näytölle kerralla.
 Kortti tulee lukijalta; kirjaus onnistuu myös ilman korttia.
 
-**Leimantarkastus:** vain ruutu, johon kortin leimat ja tulos tulevat
-lukuhetkellä. Ei lisäyslomaketta.
+**Leimantarkastus:** ruutu, johon lukuhetkellä tulevat henkilön nimi,
+tulosaika, tila (Hyväksytty tai Esitys) ja leimat. Esitys vaihdetaan
+Hyväksytty / Hyl / Kesk. Ei lisäyslomaketta.
 
 Molemmissa tiloissa vihreä **Yhdistä lukija** omalla rivillään. Yhdistettynä
 näkyy vain lukijakuvake (klikkaus katkaisee). Valittu välilehti on täytetty.
