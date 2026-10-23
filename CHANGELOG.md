@@ -4,6 +4,8 @@ Muutoshistoria pääkehityshaaraan (main) tehdyistä committeista, uusin ensin.
 
 | Pvm | # | Muutos |
 |---|---|---|
+| 2026-10-24 | — | JAHOnline iltarastit: B-radan (silmukka 12–13–12) väliaikasarakkeet näkyvät; toistuva rastikoodi ei enää tyhjennä sarjan rasteja |
+| 2026-10-24 | — | JAHOnline iltarastit: tunnettu kortti siirtyy leimantarkastukseen, tuntematon kysyy lähteväksi vai maaliin; nimen voi lisätä myös leimantarkastuksessa |
 | 2026-10-24 | — | JAHOnline iltarastit: tulokset ja rastiväliajat samalla sivulla (Pirilän välilehdet, rata yläpuolella); osanottajat sarjoittain; matka kilometreinä; toistuva rastikoodi ei enää estä radan tallennusta |
 | 2026-10-24 | — | JAHOnline iltarastit: turha käsinkirjaus pois sisäänluvusta |
 | 2026-10-24 | — | JAHOnline iltarastit: hamburgerissa Väliajat; Rastilippu-vientiaineisto valmiina |

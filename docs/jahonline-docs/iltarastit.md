@@ -83,6 +83,8 @@ Tapahtuman asetukset → **Radat**. Iltarastissa lomake on yksinkertainen:
 - radan nimi (tuloksissa **rata**, ei sarja)
 - matka (km)
 - rastikoodit järjestyksessä (välilyönti tai pilkku); sama koodi saa toistua
+  (silmukka esim. 12–13–12). Väliaikasarakkeet tulevat tästä järjestyksestä,
+  ei yksilöllisistä koodeista.
 
 Lähtö on aina nollaleimasimelta (`ennakko = 0`, `maalilaji = 4`). Jokainen
 rata luo samannimisen sarjan (1:1). Henkilöt kirjataan tälle radalle.
@@ -97,7 +99,10 @@ Kortti tulee lukijalta; kirjaus onnistuu myös ilman korttia.
 
 **Leimantarkastus:** ruutu, johon lukuhetkellä tulevat henkilön nimi,
 tulosaika, tila (Hyväksytty tai Esitys) ja leimat. Esitys vaihdetaan
-Hyväksytty / Hyl / Kesk. Ei lisäyslomaketta.
+Hyväksytty / Hyl / Kesk. Uuden kortin voi kirjata nimellä myös tässä.
+
+Kortin luku vaihtaa välilehden automaattisesti: tunnettu kortti menee
+leimantarkastukseen, tuntematon kysyy *Lähteväksi* vai *Maaliin*.
 
 Molemmissa tiloissa vihreä **Yhdistä lukija** omalla rivillään. Yhdistettynä
 näkyy vain lukijakuvake (klikkaus katkaisee). Valittu välilehti on täytetty.
@@ -105,8 +110,9 @@ näkyy vain lukijakuvake (klikkaus katkaisee). Valittu välilehti on täytetty.
 
 | Tilanne | Toiminta |
 |---|---|
-| Kortti sisäänluvussa | Täyttää kilpailukortin ja nimen, jos tunnettu |
-| Kortti leimantarkastuksessa | Leimat ja tulos ruutuun. Tunnettu: rastitarkistus |
+| Tunnettu kortti | Siirtyy leimantarkastukseen, rastitarkistus |
+| Tuntematon kortti | Kysyy lähteväksi vai maaliin; sitten nimilomake |
+| Kortti leimantarkastuksessa | Leimat ja tulos ruutuun. Uudelle kortille myös nimi |
 | Kirjaa kortilla | Lähtö nollaleimauksesta / leimantarkastus |
 | Ei aikaa tai ei korttia | Maastoon (sisäänluku) tai pois (leimantarkastus) |
 | Lainakortti | `kilpailijat.laina = X` |
