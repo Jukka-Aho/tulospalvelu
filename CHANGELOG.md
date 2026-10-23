@@ -4,6 +4,7 @@ Muutoshistoria pääkehityshaaraan (main) tehdyistä committeista, uusin ensin.
 
 | Pvm | # | Muutos |
 |---|---|---|
+| 2026-10-23 | — | JAHOnline iltarastit: Yhdistä-painike ja valittu välilehti selkeämmin; lainakortti ja ei aikaa isommat |
 | 2026-10-23 | — | JAHOnline iltarastit: kilpailijan lisäys mahtuu kännykän näytölle (tiivis lomake) |
 | 2026-10-23 | — | JAHOnline iltarastit: uuden henkilön Kirjaa ei enää jätä latausikonia päälle (AJAX-lomake) |
 | 2026-10-23 | — | JAHOnline iltarastit: alkamis- ja päättymisajankohta; avattu ilta koko ikkunaan (nimi + hamburger: asetukset, osanottajat, tulospalvelu, tulokset); tulospalvelussa tiivis sisäänluku/leimantarkastus, lainakortti, ei aikaa, lukijakuvake |

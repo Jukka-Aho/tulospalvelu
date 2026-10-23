@@ -91,8 +91,8 @@ Kentät: etunimi, sukunimi, seura, rata, kilpailukortti, lainakortti,
 ei aikaa. Lomake on tiivis, jotta se mahtuu kännykän näytölle kerralla.
 Kortti tulee lukijalta; kirjaus onnistuu myös ilman korttia.
 
-Molemmissa tiloissa **Yhdistä lukija**. Yhdistettynä näkyy vain
-lukijakuvake (klikkaus katkaisee). *Kirjaa* on AJAX eikä avaa
+Molemmissa tiloissa vihreä **Yhdistä lukija**. Yhdistettynä näkyy vain
+lukijakuvake (klikkaus katkaisee). Valittu välilehti on täytetty. *Kirjaa* on AJAX eikä avaa
 sivulatausikonia.
 
 | Tilanne | Toiminta |
