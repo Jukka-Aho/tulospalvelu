@@ -81,7 +81,7 @@ Vaihda tapahtuma palauttaa hubiin.
 Tapahtuman asetukset → **Radat**. Iltarastissa lomake on yksinkertainen:
 
 - radan nimi (tuloksissa **rata**, ei sarja)
-- matka (km)
+- matka (km); listassa sama yksikkö, ei metrejä
 - rastikoodit järjestyksessä (välilyönti tai pilkku); sama koodi saa toistua
   (silmukka esim. 12–13–12). Väliaikasarakkeet tulevat tästä järjestyksestä,
   ei yksilöllisistä koodeista.
