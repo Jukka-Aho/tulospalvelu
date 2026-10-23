@@ -4,6 +4,7 @@ Muutoshistoria pääkehityshaaraan (main) tehdyistä committeista, uusin ensin.
 
 | Pvm | # | Muutos |
 |---|---|---|
+| 2026-10-23 | — | JAHOnline iltarastit: 18 korjausta (avain ei pyyhity, välimuisti, paikallinen ilta, Esitys ei OK, T tallentaa ajan, rata-sanat, kevyt henkilösivu, tunnusten hallinta, kenttäoikeudet, illan tila päivästä) plus kirjaus nimellä maastoon/pois ilman aikaa (emit valinnainen). Dokumentti `docs/jahonline-docs/iltarastit.md` |
 | 2026-10-23 | — | JAHOnline: iltarastit kisojen rinnalla. Seuran Rastilippu-JWT, tapahtuma alasvetovalikosta, radat (nimi/matka/koodit), Emit-sisäänluku ja leimantarkastus, esitys + rata-vaihto. Dokumentti `docs/jahonline-docs/iltarastit.md` |
 | 2026-10-19 | — | Väliaikasivut: 1. sijan ajat (sija 1 ja ero 0) vihreänä, muu brändiväri pysyy kultaisena |
 | 2026-10-19 | — | Etusivun yläpalkkiin lisää tilaa yläreunaan, jotta iso logo ei ole kiinni näytön laidassa |
