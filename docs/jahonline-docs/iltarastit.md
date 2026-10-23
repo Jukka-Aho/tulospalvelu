@@ -87,9 +87,12 @@ rata luo samannimisen sarjan (1:1). Henkilöt kirjataan tälle radalle.
 
 `/public/emit_lukija.php` sisäänluku / leimantarkastus, ilman ohjetekstejä.
 
-Kentät: etunimi, sukunimi, seura, rata, kilpailukortti, lainakortti,
+**Sisäänluku:** etunimi, sukunimi, seura, rata, kilpailukortti, lainakortti,
 ei aikaa. Lomake on tiivis, jotta se mahtuu kännykän näytölle kerralla.
 Kortti tulee lukijalta; kirjaus onnistuu myös ilman korttia.
+
+**Leimantarkastus:** vain ruutu, johon kortin leimat ja tulos tulevat
+lukuhetkellä. Ei lisäyslomaketta.
 
 Molemmissa tiloissa vihreä **Yhdistä lukija**. Yhdistettynä näkyy vain
 lukijakuvake (klikkaus katkaisee). Valittu välilehti on täytetty. *Kirjaa* on AJAX eikä avaa
@@ -98,7 +101,7 @@ sivulatausikonia.
 | Tilanne | Toiminta |
 |---|---|
 | Kortti sisäänluvussa | Täyttää kilpailukortin ja nimen, jos tunnettu |
-| Kortti leimantarkastuksessa | Tunnettu: rastitarkistus. Tuntematon: lomake |
+| Kortti leimantarkastuksessa | Leimat ja tulos ruutuun. Tunnettu: rastitarkistus |
 | Kirjaa kortilla | Lähtö nollaleimauksesta / leimantarkastus |
 | Ei aikaa tai ei korttia | Maastoon (sisäänluku) tai pois (leimantarkastus) |
 | Lainakortti | `kilpailijat.laina = X` |
