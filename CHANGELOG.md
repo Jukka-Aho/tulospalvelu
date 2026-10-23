@@ -4,6 +4,7 @@ Muutoshistoria pääkehityshaaraan (main) tehdyistä committeista, uusin ensin.
 
 | Pvm | # | Muutos |
 |---|---|---|
+| 2026-10-24 | — | JAHOnline iltarastit: osanottajia voi muokata ja merkitä pois maastosta |
 | 2026-10-23 | — | JAHOnline iltarastit: leimantarkastuksessa nimi, tulos ja Hyväksytty/Esitys |
 | 2026-10-23 | — | JAHOnline iltarastit: Yhdistä lukija ilman logoa |
 | 2026-10-23 | — | JAHOnline iltarastit: osanottajasivulla vain nimilista |

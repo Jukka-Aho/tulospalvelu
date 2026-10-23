@@ -119,7 +119,8 @@ kannassa.
 
 ## Osanottajat
 
-Hamburger → **Osanottajat**: vain nimilista. Lisäys on tulospalvelun
+Hamburger → **Osanottajat**: nimilista. Nimeä voi muokata. Maastossa
+olevan voi merkitä pois ilman leimauskorttia. Lisäys on tulospalvelun
 sisäänluvussa.
 
 ## `keskhyl` iltarastissa
