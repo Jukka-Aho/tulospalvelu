@@ -118,8 +118,8 @@ kannassa.
 
 ## Osanottajat
 
-Hamburger → **Osanottajat**: haku nimellä tai emitillä, lisäys, muokkaus,
-maastoon/pois ilman aikaa, poisto.
+Hamburger → **Osanottajat**: vain nimilista. Lisäys on tulospalvelun
+sisäänluvussa.
 
 ## `keskhyl` iltarastissa
 
