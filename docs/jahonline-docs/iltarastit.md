@@ -15,11 +15,11 @@ Yläpalkin valitsimessa on **Iltarastit** GPS-seurannan ja tulospalvelun rinnall
   kenttätunnukset ovat vain heille.
 - Kenttäkäyttäjä (`users.role = iltarasti`, `seura_jasenet.palvelut =
   iltarastit`) kirjautuu suoraan hubiin. Hän valitsee illan, lukee emitin
-  ja hallitsee henkilöitä — ei Rastilippu-avainta eikä uuden illan luontia.
+  ja hallitsee osanottajia — ei Rastilippu-avainta eikä uuden illan luontia.
 - Ajanottaja, jolla on vain tulospalvelu, ei näe Iltarasteja.
 
-Hub: `/admin/iltarastit.php`. Yläpalkin logo ja *Radat* / *Henkilöt*
-pysyvät Iltarasteissa, kun valittu tapahtuma on iltarasti.
+Hub: `/admin/iltarastit.php`. **Avaa** avaa illan koko ikkunaan
+(hamburger + tapahtuman nimi, ei JAHOnline-brändiä).
 
 ## Rastilippu-avain
 
@@ -41,7 +41,8 @@ hae Rastilippua joka sivulatauksella. Päivitys: *Päivitä lista Rastilipusta*.
 ## Tapahtuman luonti
 
 Yksi valikko paikallisista illoista. Admin luo illan Rastilippu-listasta
-tai **ilman Rastilippua** (nimi, päivä, paikka).
+tai **ilman Rastilippua** (nimi, päivä, alkamis- ja päättymisajankohta,
+paikka). Luonti ja *Avaa* vievät tulospalveluun.
 
 | Kenttä | Arvo |
 |---|---|
@@ -49,6 +50,7 @@ tai **ilman Rastilippua** (nimi, päivä, paikka).
 | `pirila_synkka` | 0 |
 | `kisa_tyyppi` | `normaali` |
 | `nimi`, `paiva`, `paikka` | Rastilipusta tai lomakkeelta |
+| `alku_at`, `loppu_at` | DATETIME; oletus päivän 16:00–21:00 |
 | `tila` | tuleva `tulossa`, tänä päivänä `kaynnissa`, mennyt `valmis` |
 | `rastilippu_event_id` / `_uuid` / `_series_id` | Rastilipun tunnisteet (jos listasta) |
 
@@ -57,9 +59,22 @@ Sama Rastilippu-tapahtuma luodaan seuralle vain kerran
 
 Tulosten lähetystä Rastilippuun ei ole tässä vaiheessa.
 
+## Avattu tapahtuma
+
+Koko ikkuna (`iltarastiKuori`). Ylhäällä hamburger ja tapahtuman nimi.
+
+Hamburger:
+
+- Tapahtuman asetukset (nimi, paikka, alku, loppu, radat)
+- Osanottajat
+- Tulospalvelu (oletusavaus)
+- Tulokset (seuranta upotettuna)
+
+Vaihda tapahtuma palauttaa hubiin.
+
 ## Radat
 
-Hallinta → **Radat**. Iltarastissa lomake on yksinkertainen:
+Tapahtuman asetukset → **Radat**. Iltarastissa lomake on yksinkertainen:
 
 - radan nimi (tuloksissa **rata**, ei sarja)
 - matka (m)
@@ -68,32 +83,38 @@ Hallinta → **Radat**. Iltarastissa lomake on yksinkertainen:
 Lähtö on aina nollaleimasimelta (`ennakko = 0`, `maalilaji = 4`). Jokainen
 rata luo samannimisen sarjan (1:1). Henkilöt kirjataan tälle radalle.
 
-## Emit: lähtö, maali ja nimellä kirjaus
+## Tulospalvelu
 
-Yksi sivu `/public/emit_lukija.php` (sisäänluku / leimantarkastus).
-Iltarastin valikossa ei ole erillistä Leimantarkastus-linkkiä.
+`/public/emit_lukija.php` sisäänluku / leimantarkastus, ilman ohjetekstejä.
+
+Kentät: etunimi, sukunimi, seura, rata, kilpailukortti, lainakortti,
+ei aikaa. Kortti tulee lukijalta; kirjaus onnistuu myös ilman korttia.
+
+Molemmissa tiloissa **Yhdistä lukija**. Yhdistettynä näkyy vain
+lukijakuvake (klikkaus katkaisee).
 
 | Tilanne | Toiminta |
 |---|---|
-| Uusi kortti | Kysytään: lähteväksi vai maaliin |
-| Lähtevä | Vähintään sukunimi, seura, rata. Lähtö nollaleimauksesta |
-| Jo lähtenyt + rastit kortilla | Leimantarkastus |
+| Kortti sisäänluvussa | Täyttää kilpailukortin ja nimen, jos tunnettu |
+| Kortti leimantarkastuksessa | Tunnettu: rastitarkistus. Tuntematon: lomake |
+| Kirjaa kortilla | Lähtö nollaleimauksesta / leimantarkastus |
+| Ei aikaa tai ei korttia | Maastoon (sisäänluku) tai pois (leimantarkastus) |
+| Lainakortti | `kilpailijat.laina = X` |
 | Kaikki rastit oikein | Hyväksytty (`keskhyl = T`), aika nollauksesta maaliin |
-| Puuttuva tai väärä rasti | Punainen näyttö. Tila **Esitys** (`keskhyl = E`, `status = ESITYS`) |
-| Esitys | Hyväksytty / hylätty / keskeyttänyt. Radan vaihto tarkistaa uudelleen; jos rastit täsmäävät, hyväksytään heti |
-| Nimellä, ilman aikaa | Rata + sukunimi (emit valinnainen). *Maastoon* tai *Pois maastosta* |
+| Puuttuva tai väärä rasti | Punainen näyttö. Tila **Esitys** (`keskhyl = E`) |
+| Esitys | Hyväksytty / hylätty / keskeyttänyt. Radan vaihto tarkistaa uudelleen |
 
 API-moodit (`api/api_emit_luku.php`): `lue`, `lisaa`/`tallenna`, `maali`,
 `paatos` (`T`/`H`/`K`), `vaihda_rata`, `maastoon`, `pois_maastosta`.
+Iltarastissa nolla-emit on sallittu tallennuksessa.
 
 Hyväksyntä (`T`) tallentaa ajan nollaleimauksesta maaliin, jos leimat ovat
 kannassa.
 
-## Henkilöt
+## Osanottajat
 
-Hallinta → **Henkilöt**: haku nimellä tai emitillä, lisäys, muokkaus,
-maastoon/pois ilman aikaa, poisto. *Muokkaa henkilöä* hakee samoin nimellä
-tai emitillä (ei numerolla).
+Hamburger → **Osanottajat**: haku nimellä tai emitillä, lisäys, muokkaus,
+maastoon/pois ilman aikaa, poisto.
 
 ## `keskhyl` iltarastissa
 
@@ -110,8 +131,11 @@ tai emitillä (ei numerolla).
 | Tiedosto | Tehtävä |
 |---|---|
 | `includes/rastilippu.php` | API-asiakas, salaus, tapahtumalistan välimuisti |
-| `includes/iltarasti.php` | Tapahtuma, rata↔sarja, päätös, nimellä kirjaus |
-| `includes/iltarasti_henkilot_sivu.php` | Kevyt henkilösivu |
+| `includes/iltarasti.php` | Tapahtuma, alku/loppu, rata↔sarja, päätös, nimellä kirjaus |
+| `includes/iltarasti_henkilot_sivu.php` | Osanottajat |
 | `admin/iltarastit.php` | Hub: avain, illan valinta, paikallinen luonti, tunnukset |
+| `admin/iltarasti_asetukset.php` | Nimi, paikka, alku, loppu, radat |
+| `admin/iltarasti_tulokset.php` | Tulokset upotettuna |
+| `includes/layout.php` / `admin_nav.php` | Kokoikkuna-kuori ja hamburger |
 | `includes/kisa_luonne.php` | luonne `iltarasti` |
 | `includes/tili.php` / `auth.php` | palvelu `iltarastit`, rooli `iltarasti` |
