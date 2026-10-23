@@ -71,8 +71,8 @@ Hamburger:
 - Tapahtuman asetukset (nimi, paikka, alku, loppu, radat)
 - Osanottajat
 - Tulospalvelu (oletusavaus)
-- Väliajat (rastiväliajat kuten Pirilä-kisoissa)
-- Tulokset (seuranta upotettuna)
+- Tulokset (seuranta upotettuna: rata ylhäällä, välilehdet
+  **Tulokset** / **Rastiväliajat** kuten Pirilän julkisissa tuloksissa)
 
 Vaihda tapahtuma palauttaa hubiin.
 
@@ -81,8 +81,8 @@ Vaihda tapahtuma palauttaa hubiin.
 Tapahtuman asetukset → **Radat**. Iltarastissa lomake on yksinkertainen:
 
 - radan nimi (tuloksissa **rata**, ei sarja)
-- matka (m)
-- rastikoodit järjestyksessä (välilyönti tai pilkku)
+- matka (km)
+- rastikoodit järjestyksessä (välilyönti tai pilkku); sama koodi saa toistua
 
 Lähtö on aina nollaleimasimelta (`ennakko = 0`, `maalilaji = 4`). Jokainen
 rata luo samannimisen sarjan (1:1). Henkilöt kirjataan tälle radalle.
@@ -123,9 +123,9 @@ kannassa.
 
 ## Osanottajat
 
-Hamburger → **Osanottajat**: nimilista. Nimeä voi muokata. Maastossa
-olevan voi merkitä pois ilman leimauskorttia. Lisäys on tulospalvelun
-sisäänluvussa.
+Hamburger → **Osanottajat**: radat välilehdillä. Sarjan alussa näkyy
+montako on vielä maastossa. Nimeä voi muokata. Maastossa olevan voi
+merkitä pois ilman leimauskorttia. Lisäys on tulospalvelun sisäänluvussa.
 
 ## `keskhyl` iltarastissa
 
@@ -146,8 +146,8 @@ sisäänluvussa.
 | `includes/iltarasti_henkilot_sivu.php` | Osanottajat |
 | `admin/iltarastit.php` | Hub: avain, illan valinta, paikallinen luonti, tunnukset |
 | `admin/iltarasti_asetukset.php` | Nimi, paikka, alku, loppu, radat |
-| `admin/iltarasti_tulokset.php` | Tulokset upotettuna |
-| `admin/iltarasti_valiajat.php` | Rastiväliajat upotettuna |
+| `admin/iltarasti_tulokset.php` | Tulokset ja rastiväliajat upotettuna |
+| `admin/iltarasti_valiajat.php` | Ohjaa tulossivun Rastiväliajat-välilehteen |
 | `includes/layout.php` / `admin_nav.php` | Kokoikkuna-kuori ja hamburger |
 | `includes/kisa_luonne.php` | luonne `iltarasti` |
 | `includes/tili.php` / `auth.php` | palvelu `iltarastit`, rooli `iltarasti` |
