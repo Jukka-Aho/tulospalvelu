@@ -89,6 +89,7 @@ Iltarastissa lomake on yksinkertainen:
 - rastikoodit järjestyksessä (välilyönti tai pilkku); sama koodi saa toistua
   (silmukka esim. 12–13–12), mutta ei peräkkäin (12–12 kielletty).
   Väliaikasarakkeet tulevat tästä järjestyksestä, ei yksilöllisistä koodeista.
+  Jos radan rastilista muuttuu, väliajat käyttävät radan listaa (eivät vanhaa kopiota).
 
 Radan tallennus kesken illan tarkistaa sen radan kilpailijat uudelleen:
 väliajat kirjoitetaan uusiksi leimoista, ja hyväksytty/esitys (`T`/`E`)
