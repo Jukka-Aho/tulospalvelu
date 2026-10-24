@@ -110,8 +110,9 @@ Rataa ei voi poistaa, jos sillä on osanottajia.
 ei aikaa. Lomake on tiivis, jotta se mahtuu kännykän näytölle kerralla.
 Kortti tulee lukijalta; kirjaus onnistuu myös ilman korttia.
 
-**Leimantarkastus:** ruutu, johon lukuhetkellä tulevat henkilön nimi,
-tulosaika, tila (Hyväksytty tai Esitys) ja leimat. Hyväksytty soittaa
+**Leimantarkastus:** lukuhetkellä ruutuun tulevat henkilön nimi,
+tulosaika, tila (Hyväksytty tai Esitys) ja leimat. Tyhjä ruutu ei jää
+odottamaan korttia. Hyväksytty soittaa
 lyhyen äänen, Esitys toisen. Esitys vaihdetaan Hyväksytty / Hyl / Kesk.
 Jos leimat täsmäävät tasan yhteen toiseen rataan, näytetään arvaus ja
 yksi nappi radan vaihtoon. Uuden kortin voi kirjata nimellä myös tässä.

@@ -4,6 +4,7 @@ Muutoshistoria pääkehityshaaraan (main) tehdyistä committeista, uusin ensin.
 
 | Pvm | # | Muutos |
 |---|---|---|
+| 2026-10-24 | — | JAHOnline iltarastit: leimantarkastuksesta pois tyhjä varattu ruutu nappien yläpuolelta / odottava täysi näyttö |
 | 2026-10-24 | — | JAHOnline iltarastit: leimantarkastukseen hyväksytty/esitys-äänet, esityksessä radan arvaus yhdellä napilla, offline-jono luennoille |
 | 2026-10-24 | — | JAHOnline iltarastit: B-radan väliaikasarakkeet seuraavat asetusten rastilistaa, vaikka sarja_rastit olisi vanha |
 | 2026-10-24 | — | JAHOnline iltarastit: illan päivä ja tila Europe/Helsinki; lainaemit kelpaa seuraavalle maastosta palattua; rataa ei poisteta jos sillä on osanottajia |
