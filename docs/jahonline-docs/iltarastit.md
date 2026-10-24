@@ -89,6 +89,8 @@ Iltarastissa lomake on yksinkertainen:
 - matka (km); listassa sama yksikkö, ei metrejä
 - rastikoodit järjestyksessä, **yksi rasti per rivi**; sama koodi saa toistua
   (silmukka esim. 12–13–12), mutta ei peräkkäin (12–12 kielletty).
+  Rastin perässä on valintaruutu *Sammunut* (emitin patteri vähissä):
+  sitä rastia ei vaadita leimoissa, ja rata hyväksytään vaikka leima puuttuu.
   Väliaikasarakkeet tulevat tästä järjestyksestä, ei yksilöllisistä koodeista.
   Jos radan rastilista muuttuu, väliajat käyttävät radan listaa (eivät vanhaa kopiota).
 
@@ -117,7 +119,8 @@ Kortti tulee lukijalta; kirjaus onnistuu myös ilman korttia.
 tulosaika, tila (Hyväksytty tai Esitys) ja **kortin leimat** heti.
 Leimat verrataan rataan (Pirilän järjestys): oikea vihreänä, rastikoodi
 joka ei ole radalla punaisena (*väärä*), radan rasti väärässä kohdassa
-katkoviivalla (*väärässä paikassa*), puuttuvat alle. Rastinro näkyy
+katkoviivalla (*väärässä paikassa*), puuttuvat alle. Sammuneeksi merkittyä
+rastia ei vaadita (patteri vähissä). Rastinro näkyy
 vain rataan täsmäävissä leimoissa. Vanhat leimat näkyvät silti. Tyhjä ruutu ei jää odottamaan
 korttia. Hyväksytty soittaa lyhyen äänen, Esitys toisen. Esitys
 vaihdetaan Hyväksytty / Hyl / Kesk. Jos leimat täsmäävät tasan yhteen
@@ -147,7 +150,7 @@ uudelle kortille.
 | Kirjaa kortilla | Lähtö nollaleimauksesta / leimantarkastus |
 | Ei aikaa tai ei korttia | Maastoon (sisäänluku) tai pois (leimantarkastus) |
 | Lainakortti | `kilpailijat.laina = X`. Sama emit-numero kelpaa seuraavalle, kun edellinen ei ole enää maastossa (`T`/`E`/`H`/`K`). Edellisen leimat pysyvät hänellä. |
-| Kaikki rastit oikein | Hyväksytty (`keskhyl = T`), aika nollauksesta maaliin |
+| Kaikki rastit oikein (tai puuttuva merkitty sammuneeksi) | Hyväksytty (`keskhyl = T`), aika nollauksesta maaliin |
 | Puuttuva tai väärä rasti | Punainen näyttö. Tila **Esitys** (`keskhyl = E`), eri ääni kuin hyväksytyssä |
 | Esitys | Hyväksytty / hylätty / keskeyttänyt. Jos leimat sopivat yhdelle muulle radalle, nappi *Vaihda tälle radalle*. Radan vaihto tarkistaa uudelleen |
 | Ei verkkoa | Luku jää jonoon ja lähtee, kun verkko palaa |
