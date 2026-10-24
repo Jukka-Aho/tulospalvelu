@@ -111,7 +111,7 @@ ei aikaa. Lomake on tiivis, jotta se mahtuu kännykän näytölle kerralla.
 Kortti tulee lukijalta; kirjaus onnistuu myös ilman korttia.
 
 **Leimantarkastus:** lukuhetkellä ruutuun tulevat henkilön nimi,
-tulosaika, tila (Hyväksytty tai Esitys) ja leimat. Tyhjä ruutu ei jää
+tulosaika, tila (Hyväksytty tai Esitys) ja kortin leimat. Tyhjä ruutu ei jää
 odottamaan korttia. Hyväksytty soittaa
 lyhyen äänen, Esitys toisen. Esitys vaihdetaan Hyväksytty / Hyl / Kesk.
 Jos leimat täsmäävät tasan yhteen toiseen rataan, näytetään arvaus ja
