@@ -124,7 +124,9 @@ Kortin luku vaihtaa välilehden automaattisesti: tunnettu kortti menee
 leimantarkastukseen, tuntematon kysyy *Lähteväksi* vai *Maaliin*.
 
 Molemmissa tiloissa vihreä **Yhdistä lukija** omalla rivillään. Yhdistettynä
-näkyy vain lukijakuvake (klikkaus katkaisee). Valittu välilehti on täytetty.
+nappi vaihtuu tekstiksi *Lukija yhdistetty* (klikkaus katkaisee). Valittu
+välilehti on täytetty. Kortin leimat näytetään heti luvun jälkeen, myös
+uudelle kortille.
 *Kirjaa* on AJAX eikä avaa sivulatausikonia.
 
 | Tilanne | Toiminta |

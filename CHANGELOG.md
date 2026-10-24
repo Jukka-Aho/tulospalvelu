@@ -4,6 +4,7 @@ Muutoshistoria pääkehityshaaraan (main) tehdyistä committeista, uusin ensin.
 
 | Pvm | # | Muutos |
 |---|---|---|
+| 2026-10-24 | — | JAHOnline iltarastit: kortin leimat eivät enää jää tyhjän kehyksen alle; yhdistettynä teksti Lukija yhdistetty, ei kuvaketta |
 | 2026-10-24 | — | JAHOnline iltarastit: leimantarkastuksen nimi, aika ja leimat tummalla teemalla vaalealle pohjalle (musta teksti näkyy) |
 | 2026-10-24 | — | JAHOnline iltarastit: leimantarkastus näyttää taas kortin leimat (tyhjä ruutu ei enää piilota listaa) |
 | 2026-10-24 | — | JAHOnline iltarastit: leimantarkastuksesta pois tyhjä varattu ruutu nappien yläpuolelta / odottava täysi näyttö |
