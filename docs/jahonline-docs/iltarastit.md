@@ -120,8 +120,9 @@ korttia. Hyväksytty soittaa lyhyen äänen, Esitys toisen. Esitys
 vaihdetaan Hyväksytty / Hyl / Kesk. Jos leimat täsmäävät tasan yhteen
 toiseen rataan, näytetään arvaus ja yksi nappi radan vaihtoon. Uuden
 kortin voi kirjata nimellä myös tässä. Maaliin kirjaus asettaa `T` tai
-`E`, joten henkilö ei jää *Maastossa*. Esitys tallennetaan `keskhyl=E`
-(status-sarake pysyy `OK`, koska ENUM ei tunne ESITYS-arvoa).
+`E`, joten henkilö ei jää *Maastossa*. Jos rata puuttuu tai tarkistus
+kaatuu, leimat silti merkitsevät Esityksen. Esitys tallennetaan
+`keskhyl=E` (status-sarake pysyy `OK`, koska ENUM ei tunne ESITYS-arvoa).
 
 Jos verkko katkeaa, kortin luku jää puhelimen jonoon (`localStorage`)
 ja lähtee automaattisesti, kun yhteys palaa. Banneri kertoo jonon pituuden.
@@ -163,6 +164,8 @@ montako on vielä maastossa. Maastossa olevan tila on *Maastossa* (ei
 näkyy tulos ja **Näytä leimat** (kortin leimat, vaikka rata ei täsmää).
 Radan vaihto tai **Tarkista leimat uudelleen** laskee leimat ja väliajat
 uudestaan ja merkitsee `T`/`E` myös maastossa olevalle, jolla on leimoja.
+Osanottajasivun avaus tarkistaa samalla kaikki maastossa olevat, joilla
+on jo `emit_leimat`, joten vanha luku ei jää *Maastossa*.
 Maastossa olevan voi merkitä pois ilman leimauskorttia. Lisäys on
 tulospalvelun sisäänluvussa.
 
