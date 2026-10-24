@@ -93,10 +93,11 @@ Iltarastissa lomake on yksinkertainen:
 
 Radan tallennus kesken illan tarkistaa sen radan kilpailijat uudelleen:
 väliajat kirjoitetaan uusiksi leimoista, ja hyväksytty/esitys (`T`/`E`)
-lasketaan uudestaan. Maastossa (`-`) tai käsin merkitty `H`/`K` eivät vaihdu
-automaattisesti. Osanottajissa on myös **Tarkista leimat uudelleen**.
-Kilpailukortin numeron muutos ei siirrä jo tallennettuja leimoja; ne on
-avainnettu henkilöön. Seuraava kortin luku käyttää uutta numeroa.
+lasketaan uudestaan myös maastossa olevalle, jolla on leimoja. Käsin
+merkitty `H`/`K` ei vaihdu. Osanottajissa on myös **Tarkista leimat
+uudelleen**. Kilpailukortin numeron muutos ei siirrä jo tallennettuja
+leimoja; ne on avainnettu henkilöön. Seuraava kortin luku käyttää uutta
+numeroa.
 
 Lähtö on aina nollaleimasimelta (`ennakko = 0`, `maalilaji = 4`). Jokainen
 rata luo samannimisen sarjan (1:1). Henkilöt kirjataan tälle radalle.
@@ -111,11 +112,13 @@ ei aikaa. Lomake on tiivis, jotta se mahtuu kännykän näytölle kerralla.
 Kortti tulee lukijalta; kirjaus onnistuu myös ilman korttia.
 
 **Leimantarkastus:** lukuhetkellä ruutuun tulevat henkilön nimi,
-tulosaika, tila (Hyväksytty tai Esitys) ja kortin leimat. Tyhjä ruutu ei jää
-odottamaan korttia. Hyväksytty soittaa
-lyhyen äänen, Esitys toisen. Esitys vaihdetaan Hyväksytty / Hyl / Kesk.
-Jos leimat täsmäävät tasan yhteen toiseen rataan, näytetään arvaus ja
-yksi nappi radan vaihtoon. Uuden kortin voi kirjata nimellä myös tässä.
+tulosaika, tila (Hyväksytty tai Esitys) ja **kortin leimat** heti, myös
+kun rata ei täsmää tai kehyksen tarkiste pettää. Vanhat ylimääräiset
+leimat näkyvät silti. Tyhjä ruutu ei jää odottamaan korttia. Hyväksytty
+soittaa lyhyen äänen, Esitys toisen. Esitys vaihdetaan Hyväksytty / Hyl /
+Kesk. Jos leimat täsmäävät tasan yhteen toiseen rataan, näytetään arvaus
+ja yksi nappi radan vaihtoon. Uuden kortin voi kirjata nimellä myös tässä.
+Maaliin kirjaus asettaa `T` tai `E`, joten henkilö ei jää *Maastossa*.
 
 Jos verkko katkeaa, kortin luku jää puhelimen jonoon (`localStorage`)
 ja lähtee automaattisesti, kun yhteys palaa. Banneri kertoo jonon pituuden.
@@ -153,8 +156,10 @@ kannassa.
 
 Hamburger → **Osanottajat**: radat välilehdillä. Sarjan alussa näkyy
 montako on vielä maastossa. Maastossa olevan tila on *Maastossa* (ei
-*Lähtenyt*). Nimeä, rataa ja kortin numeroa voi muokata. Radan vaihto
-tai **Tarkista leimat uudelleen** laskee leimat ja väliajat uudestaan.
+*Lähtenyt*). Nimeä, rataa ja kortin numeroa voi muokata. Muokkauksessa
+näkyy tulos ja **Näytä leimat** (kortin leimat, vaikka rata ei täsmää).
+Radan vaihto tai **Tarkista leimat uudelleen** laskee leimat ja väliajat
+uudestaan ja merkitsee `T`/`E` myös maastossa olevalle, jolla on leimoja.
 Maastossa olevan voi merkitä pois ilman leimauskorttia. Lisäys on
 tulospalvelun sisäänluvussa.
 
