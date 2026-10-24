@@ -72,7 +72,8 @@ Hamburger:
 - Osanottajat
 - Tulospalvelu (oletusavaus)
 - Tulokset (seuranta upotettuna: rata ylhäällä, välilehdet
-  **Tulokset** / **Rastiväliajat** kuten Pirilän julkisissa tuloksissa)
+  **Tulokset** / **Rastiväliajat** kuten Pirilän julkisissa tuloksissa).
+  Kilpailunumeroita ei näytetä (iltarastissa tunnistetaan nimellä).
 
 Vaihda tapahtuma palauttaa hubiin.
 
