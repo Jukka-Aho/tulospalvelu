@@ -113,10 +113,10 @@ Kortti tulee lukijalta; kirjaus onnistuu myös ilman korttia.
 
 **Leimantarkastus:** lukuhetkellä ruutuun tulevat henkilön nimi,
 tulosaika, tila (Hyväksytty tai Esitys) ja **kortin leimat** heti.
-Leimat verrataan rataan (Pirilän järjestys): oikea vihreänä, väärä
-punaisena, ylimääräinen katkoviivalla, puuttuvat alle. Rastinro
-näkyy vain rataan täsmäävissä leimoissa. Vanhat ylimääräiset leimat
-näkyvät silti. Tyhjä ruutu ei jää odottamaan
+Leimat verrataan rataan (Pirilän järjestys): oikea vihreänä, rastikoodi
+joka ei ole radalla punaisena (*väärä*), radan rasti väärässä kohdassa
+katkoviivalla (*väärässä paikassa*), puuttuvat alle. Rastinro näkyy
+vain rataan täsmäävissä leimoissa. Vanhat leimat näkyvät silti. Tyhjä ruutu ei jää odottamaan
 korttia. Hyväksytty soittaa lyhyen äänen, Esitys toisen. Esitys
 vaihdetaan Hyväksytty / Hyl / Kesk. Jos leimat täsmäävät tasan yhteen
 toiseen rataan, näytetään arvaus ja yksi nappi radan vaihtoon. Uuden
@@ -162,11 +162,14 @@ kannassa.
 Hamburger → **Osanottajat**: radat välilehdillä. Sarjan alussa näkyy
 montako on vielä maastossa. Listassa näkyy tarkistuksen tulos
 (Maastossa / Hyväksytty / Esitys / Hylätty / Keskeyttänyt) ja kilpailijan
-aika. Molemmat voi muuttaa muokkauksessa. Maastossa olevan tila on
+aika. Molemmat voi muuttaa muokkauksessa. Hyväksytty tai Esitys ilman
+käsin syötettyä aikaa laskee ajan nollauksesta radan viimeiseen
+maalirastiin (vaikka väliin jäisi puuttuvia). Maastossa olevan tila on
 *Maastossa* (ei *Lähtenyt*). Nimeä, rataa ja kortin numeroa voi muokata.
 Muokkauksessa näkyy tulos, aika ja **Näytä leimat**. Rastinro näytetään
-vain rataan täsmäävissä leimoissa (Pirilän `tulkinta`); väärillä ja
-ylimääräisillä ei ole järjestysnumeroa. **Tarkista leimat uudelleen**
+vain rataan täsmäävissä leimoissa (Pirilän `tulkinta`). Radan rasti
+väärässä kohdassa merkitään *väärässä paikassa* (ei rastinroa);
+radalle kuulumaton koodi on *väärä*. **Tarkista leimat uudelleen**
 laskee leimat ja väliajat uudestaan ja merkitsee `T`/`E`.
 Osanottajasivun avaus tarkistaa samalla kaikki maastossa olevat, joilla
 on jo `emit_leimat`, joten vanha luku ei jää *Maastossa*.
