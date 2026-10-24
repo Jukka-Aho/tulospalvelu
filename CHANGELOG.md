@@ -4,6 +4,7 @@ Muutoshistoria pääkehityshaaraan (main) tehdyistä committeista, uusin ensin.
 
 | Pvm | # | Muutos |
 |---|---|---|
+| 2026-10-24 | — | JAHOnline iltarastit: osanottajissa tulos ja aika (muokattavat); rastinro vain rataan täsmäävissä leimoissa |
 | 2026-10-24 | — | JAHOnline iltarastit: leimat luettu → pois Maastosta (T/E); puuttuva rata tai kaatunut tarkistus merkitsee Esityksen |
 | 2026-10-24 | — | JAHOnline iltarastit: leimat verrataan rataan (oikea/väärä/puuttuu); esitys ei kaada tallennusta; tulosruudun teksti luettavaksi |
 | 2026-10-24 | — | JAHOnline iltarastit: kortin leimat näkyvät heti (myös tarkistevirheessä ja kun rata ei täsmää); maaliin kirjaus pois Maastosta; osanottajien muokkauksessa tulos ja Näytä leimat |
