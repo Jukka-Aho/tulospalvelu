@@ -111,8 +111,13 @@ ei aikaa. Lomake on tiivis, jotta se mahtuu kännykän näytölle kerralla.
 Kortti tulee lukijalta; kirjaus onnistuu myös ilman korttia.
 
 **Leimantarkastus:** ruutu, johon lukuhetkellä tulevat henkilön nimi,
-tulosaika, tila (Hyväksytty tai Esitys) ja leimat. Esitys vaihdetaan
-Hyväksytty / Hyl / Kesk. Uuden kortin voi kirjata nimellä myös tässä.
+tulosaika, tila (Hyväksytty tai Esitys) ja leimat. Hyväksytty soittaa
+lyhyen äänen, Esitys toisen. Esitys vaihdetaan Hyväksytty / Hyl / Kesk.
+Jos leimat täsmäävät tasan yhteen toiseen rataan, näytetään arvaus ja
+yksi nappi radan vaihtoon. Uuden kortin voi kirjata nimellä myös tässä.
+
+Jos verkko katkeaa, kortin luku jää puhelimen jonoon (`localStorage`)
+ja lähtee automaattisesti, kun yhteys palaa. Banneri kertoo jonon pituuden.
 
 Kortin luku vaihtaa välilehden automaattisesti: tunnettu kortti menee
 leimantarkastukseen, tuntematon kysyy *Lähteväksi* vai *Maaliin*.
@@ -130,8 +135,9 @@ näkyy vain lukijakuvake (klikkaus katkaisee). Valittu välilehti on täytetty.
 | Ei aikaa tai ei korttia | Maastoon (sisäänluku) tai pois (leimantarkastus) |
 | Lainakortti | `kilpailijat.laina = X`. Sama emit-numero kelpaa seuraavalle, kun edellinen ei ole enää maastossa (`T`/`E`/`H`/`K`). Edellisen leimat pysyvät hänellä. |
 | Kaikki rastit oikein | Hyväksytty (`keskhyl = T`), aika nollauksesta maaliin |
-| Puuttuva tai väärä rasti | Punainen näyttö. Tila **Esitys** (`keskhyl = E`) |
-| Esitys | Hyväksytty / hylätty / keskeyttänyt. Radan vaihto tarkistaa uudelleen |
+| Puuttuva tai väärä rasti | Punainen näyttö. Tila **Esitys** (`keskhyl = E`), eri ääni kuin hyväksytyssä |
+| Esitys | Hyväksytty / hylätty / keskeyttänyt. Jos leimat sopivat yhdelle muulle radalle, nappi *Vaihda tälle radalle*. Radan vaihto tarkistaa uudelleen |
+| Ei verkkoa | Luku jää jonoon ja lähtee, kun verkko palaa |
 
 API-moodit (`api/api_emit_luku.php`): `lue`, `lisaa`/`tallenna`, `maali`,
 `paatos` (`T`/`H`/`K`), `vaihda_rata`, `maastoon`, `pois_maastosta`.
