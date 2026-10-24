@@ -87,14 +87,15 @@ Iltarastissa lomake on yksinkertainen:
 
 - radan nimi (tuloksissa **rata**, ei sarja)
 - matka (km); listassa sama yksikkö, ei metrejä
-- rastikoodit järjestyksessä (välilyönti tai pilkku); sama koodi saa toistua
+- rastikoodit järjestyksessä, **yksi rasti per rivi**; sama koodi saa toistua
   (silmukka esim. 12–13–12), mutta ei peräkkäin (12–12 kielletty).
   Väliaikasarakkeet tulevat tästä järjestyksestä, ei yksilöllisistä koodeista.
   Jos radan rastilista muuttuu, väliajat käyttävät radan listaa (eivät vanhaa kopiota).
 
 Radan tallennus kesken illan tarkistaa sen radan kilpailijat uudelleen:
 väliajat kirjoitetaan uusiksi leimoista, ja hyväksytty/esitys (`T`/`E`)
-lasketaan uudestaan myös maastossa olevalle, jolla on leimoja. Käsin
+lasketaan uudestaan myös maastossa olevalle, jolla on leimoja. Hyväksytyn
+aika tallennetaan nollauksesta radan viimeiseen rastikoodiin. Käsin
 merkitty `H`/`K` ei vaihdu. Osanottajissa on myös **Tarkista leimat
 uudelleen**. Kilpailukortin numeron muutos ei siirrä jo tallennettuja
 leimoja; ne on avainnettu henkilöön. Seuraava kortin luku käyttää uutta
