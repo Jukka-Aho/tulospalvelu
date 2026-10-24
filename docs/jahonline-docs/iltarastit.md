@@ -51,7 +51,7 @@ paikka). Luonti ja *Avaa* vievät tulospalveluun.
 | `kisa_tyyppi` | `normaali` |
 | `nimi`, `paiva`, `paikka` | Rastilipusta tai lomakkeelta |
 | `alku_at`, `loppu_at` | DATETIME; oletus päivän 16:00–21:00 |
-| `tila` | tuleva `tulossa`, tänä päivänä `kaynnissa`, mennyt `valmis` |
+| `tila` | tuleva `tulossa`, tänä päivänä `kaynnissa`, mennyt `valmis` (päivä Europe/Helsinki) |
 | `rastilippu_event_id` / `_uuid` / `_series_id` | Rastilipun tunnisteet (jos listasta) |
 
 Sama Rastilippu-tapahtuma luodaan seuralle vain kerran
@@ -99,6 +99,7 @@ avainnettu henkilöön. Seuraava kortin luku käyttää uutta numeroa.
 
 Lähtö on aina nollaleimasimelta (`ennakko = 0`, `maalilaji = 4`). Jokainen
 rata luo samannimisen sarjan (1:1). Henkilöt kirjataan tälle radalle.
+Rataa ei voi poistaa, jos sillä on osanottajia.
 
 ## Tulospalvelu
 
@@ -126,7 +127,7 @@ näkyy vain lukijakuvake (klikkaus katkaisee). Valittu välilehti on täytetty.
 | Kortti leimantarkastuksessa | Leimat ja tulos ruutuun. Uudelle kortille myös nimi |
 | Kirjaa kortilla | Lähtö nollaleimauksesta / leimantarkastus |
 | Ei aikaa tai ei korttia | Maastoon (sisäänluku) tai pois (leimantarkastus) |
-| Lainakortti | `kilpailijat.laina = X` |
+| Lainakortti | `kilpailijat.laina = X`. Sama emit-numero kelpaa seuraavalle, kun edellinen ei ole enää maastossa (`T`/`E`/`H`/`K`). Edellisen leimat pysyvät hänellä. |
 | Kaikki rastit oikein | Hyväksytty (`keskhyl = T`), aika nollauksesta maaliin |
 | Puuttuva tai väärä rasti | Punainen näyttö. Tila **Esitys** (`keskhyl = E`) |
 | Esitys | Hyväksytty / hylätty / keskeyttänyt. Radan vaihto tarkistaa uudelleen |
