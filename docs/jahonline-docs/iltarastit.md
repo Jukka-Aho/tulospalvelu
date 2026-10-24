@@ -112,13 +112,16 @@ ei aikaa. Lomake on tiivis, jotta se mahtuu kännykän näytölle kerralla.
 Kortti tulee lukijalta; kirjaus onnistuu myös ilman korttia.
 
 **Leimantarkastus:** lukuhetkellä ruutuun tulevat henkilön nimi,
-tulosaika, tila (Hyväksytty tai Esitys) ja **kortin leimat** heti, myös
-kun rata ei täsmää tai kehyksen tarkiste pettää. Vanhat ylimääräiset
-leimat näkyvät silti. Tyhjä ruutu ei jää odottamaan korttia. Hyväksytty
-soittaa lyhyen äänen, Esitys toisen. Esitys vaihdetaan Hyväksytty / Hyl /
-Kesk. Jos leimat täsmäävät tasan yhteen toiseen rataan, näytetään arvaus
-ja yksi nappi radan vaihtoon. Uuden kortin voi kirjata nimellä myös tässä.
-Maaliin kirjaus asettaa `T` tai `E`, joten henkilö ei jää *Maastossa*.
+tulosaika, tila (Hyväksytty tai Esitys) ja **kortin leimat** heti.
+Leimat verrataan rataan (Pirilän järjestys): oikea vihreänä, väärä
+punaisena, ylimääräinen katkoviivalla, puuttuvat alle. Vanhat
+ylimääräiset leimat näkyvät silti. Tyhjä ruutu ei jää odottamaan
+korttia. Hyväksytty soittaa lyhyen äänen, Esitys toisen. Esitys
+vaihdetaan Hyväksytty / Hyl / Kesk. Jos leimat täsmäävät tasan yhteen
+toiseen rataan, näytetään arvaus ja yksi nappi radan vaihtoon. Uuden
+kortin voi kirjata nimellä myös tässä. Maaliin kirjaus asettaa `T` tai
+`E`, joten henkilö ei jää *Maastossa*. Esitys tallennetaan `keskhyl=E`
+(status-sarake pysyy `OK`, koska ENUM ei tunne ESITYS-arvoa).
 
 Jos verkko katkeaa, kortin luku jää puhelimen jonoon (`localStorage`)
 ja lähtee automaattisesti, kun yhteys palaa. Banneri kertoo jonon pituuden.
