@@ -7,11 +7,12 @@ Radat tehdään JAHOnessa ja henkilöt luetaan Emit-USB-lukijalla tai kirjataan 
 JAHOnline-sivuston koodi ei ole tässä repossa; tämä kuvaa palvelimelle
 tehdyn toteutuksen.
 
-Julkisella etusivulla (`/public/index.php`) kilpailut ja iltarastit ovat
-erilliset osiot. Kilpailuilla on sarakkeet **Käynnissä**, **Ilmoittautuminen**
-ja **Valmiit**. Iltarastit ovat yhtenä sarakkeena, uusin ylimpänä. Haku
-kattaa molemmat. Kirjautuneen *Seura · omat kisat* erottaa samoin, jos
-listassa on molempia.
+Julkisella etusivulla (`/public/index.php`) kirjautunut näkee linkit
+**Iltarasteihin**, **Kilpailuihin** ja **GPS-seurantaan** sen mukaan,
+mihin seuralla ja tunnuksella on oikeus. Hallintavalikko pysyy mukana.
+Julkiset kilpailut ja iltarastit ovat erilliset osiot. Kilpailuilla on
+sarakkeet **Käynnissä**, **Ilmoittautuminen** ja **Valmiit**. Iltarastit
+ovat yhtenä sarakkeena, uusin ylimpänä. Haku kattaa molemmat.
 
 Ohjesivu (`/public/ohjeet.php`) näyttää vain ne osiot, joihin tunnuksella
 on oikeus. Kirjautumaton ja iltarastiseura näkevät iltarastien ohjeet
@@ -31,9 +32,11 @@ etusivulle** ja **Kirjaudu ulos** ovat erillään muista. Asetuksista **Siirry t
 sisäänluvun.
 
 Kun iltarastit on avattu kerran verkossa, hub, osanottajat, radat ja
-tulospalvelu (sisäänluku ja leimantarkastus) toimivat ilman nettiä.
-Kirjaukset jäävät jonoon ja lähtevät, kun yhteys palaa. Valikot eivät
-ylitä näytön leveyttä; pitkän radan leimantarkastus vierittyy.
+tulospalvelu (sisäänluku ja leimantarkastus) jäävät puhelimen muistiin:
+ohjelman saa sammuttaa ja sivun päivittää. Kirjaukset ovat jonossa
+kunnes yhteys palaa. Ilman yhteyttä ei voi siirtyä muille sivuille
+(esim. julkiselle etusivulle). Valikot eivät ylitä näytön leveyttä;
+pitkän radan leimantarkastus vierittyy.
 
 ## Palvelu ja tunnukset
 
@@ -57,8 +60,9 @@ admin näkee vuosikohtaisen laskutuslistan seurojen hallinnassa
 (seura, laskutussähköposti, tapahtumamäärä, summa). Seura, jolla
 iltarastit eivät ole päällä, ei näe Iltarastit-valitsinta.
 
-Yläpalkin valitsimessa on **Iltarastit**. GPS-seuranta näkyy vain, jos
-GPS-palvelu on seuralla päällä.
+Yläpalkin valitsimessa ja hamburger-valikossa on **Iltarastit**,
+**Kilpailut** ja **GPS-seuranta** sen mukaan, mitkä palvelut ovat
+seuralla ja tunnuksella päällä. Linkit vievät kunkin palvelun etusivulle.
 
 Iltarasteissa on kaksi tasoa (`seura_jasenet.rooli`, `users.role = iltarasti`):
 
