@@ -81,10 +81,21 @@ päivä säilyvät). Sama Rastilippu-tapahtuma voi olla vain yhdellä illalla.
 Sama Rastilippu-tapahtuma luodaan tai yhdistetään seuralle vain kerran
 (`UNIQUE (seura_id, rastilippu_event_id)`).
 
-Tulosten ja rastiväliaikojen lähetys Rastilippuun liitetään myöhemmin.
-Aineisto kootaan jo (`rastilippuVieaineisto`): nimet, radat, ajat, tilat
-ja emit-väliajat. `rastilippuLahetaTulokset` palauttaa toistaiseksi
-että vienti ei ole vielä käytössä.
+Tulokset, radat ja emit-väliajat lähtevät Rastilippuun automaattisesti
+taustalla, kun yhdistetty ilta muuttuu (leimantarkastus, päätös, rata,
+osanottaja, yhdistäminen). Pyyntö merkitään jonoon ja lähetetään
+sivun palattua (`fastcgi_finish_request`) tai cronista
+(`cron/rastilippu_lahetys.php`, minuutittain). USB-luku ei odota
+Rastilippua. Sama sisältö lähetetään vain kerran (`rastilippu_lahetys_hash`).
+
+Lähetys noudattaa EResults Liten rajapintaa:
+
+- `POST /event/{uuid}/courses` — radat (`id`, `name`, `length`, `controls`, `order`)
+- `POST /event/{uuid}/results` — tulokset (`name`, `club`, `courseId`,
+  `emitNumber`, `status`, `startTime`, `controlTimes`)
+- Tila: hyväksytty/esitys `0`, hylätty `1`, keskeyttänyt `2`. Maastossa
+  olevia ei lähetetä.
+- Jos Rastilipussa on jo samanniminen rata, sen UUID säilytetään.
 
 ## Avattu tapahtuma
 
@@ -223,7 +234,8 @@ tulospalvelun sisäänluvussa.
 
 | Tiedosto | Tehtävä |
 |---|---|
-| `includes/rastilippu.php` | API-asiakas, salaus, tapahtumalistan välimuisti |
+| `includes/rastilippu.php` | API-asiakas, salaus, tapahtumalistan välimuisti, tulosten taustalähetys |
+| `cron/rastilippu_lahetys.php` | Jonon purku minuutittain (epäonnistuneen taustalähetyksen uusinta) |
 | `includes/iltarasti.php` | Tapahtuma, Rastilippu-yhdistäminen, rata↔sarja, päätös, nimellä kirjaus |
 | `includes/iltarasti_henkilot_sivu.php` | Osanottajat |
 | `admin/iltarastit.php` | Hub: avain (pääkäyttäjä), Rastilippu-valinta, paikallinen luonti, tunnukset |
