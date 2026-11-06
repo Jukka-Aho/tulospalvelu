@@ -21,10 +21,12 @@ näkyy vain seuran pääkäyttäjälle.
 
 Puhelin- ja tablettisovellus (`/sovellus/`) on asennettava PWA.
 Kirjautuminen samalla tunnuksella; oletusnäkymä on seurat, joihin
-tunnuksella on iltarastioikeus. Illan tiedot tallennetaan laitteelle
-(IndexedDB). Kirjaukset jonoutuvat ja lähtevät palvelimelle, kun
-yhteys palaa (`/api/sovellus.php`). Ensimmäinen kirjautuminen
-tarvitsee verkon.
+tunnuksella on iltarastioikeus. Illan tiedot (radat rastikoodeineen, osanottajat, tunnetut emit-nimet)
+tallennetaan laitteelle (IndexedDB). Kun tapahtuma on ladattu, illan
+voi hoitaa ilman nettiä: osanottajat, kirjaus ja leimantarkastus
+(USB-lukija Chromessa). Kirjaukset jonoutuvat ja lähtevät
+palvelimelle, kun yhteys palaa (`/api/sovellus.php`). Ensimmäinen
+kirjautuminen ja tapahtuman avaus tarvitsevat verkon.
 
 ## Palvelu ja tunnukset
 
