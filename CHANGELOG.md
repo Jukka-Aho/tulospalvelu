@@ -4,6 +4,7 @@ Muutoshistoria pääkehityshaaraan (main) tehdyistä committeista, uusin ensin.
 
 | Pvm | # | Muutos |
 |---|---|---|
+| 2026-11-06 | — | JAHOnline etusivu: kilpailut ja iltarastit omina osioinaan (Käynnissä / Ilmoittautuminen / Valmiit) |
 | 2026-10-24 | — | JAHOnline iltarastit: rastin voi merkitä sammuneeksi (patteri vähissä), jolloin sitä ei vaadita leimoissa |
 | 2026-10-24 | — | JAHOnline iltarastit: radan tallennus tallentaa hyväksytyn ajan; rastikoodit allekkain riveittäin |
 | 2026-10-24 | — | JAHOnline iltarastit: tuloksissa ei näytetä kilpailunumeroita |

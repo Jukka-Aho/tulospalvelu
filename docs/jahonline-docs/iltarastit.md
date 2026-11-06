@@ -6,6 +6,11 @@ JAHOnessa ja henkilöt luetaan Emit-USB-lukijalla tai kirjataan nimellä.
 JAHOnline-sivuston koodi ei ole tässä repossa; tämä kuvaa palvelimelle
 tehdyn toteutuksen.
 
+Julkisella etusivulla (`/public/index.php`) kilpailut ja iltarastit ovat
+erilliset osiot. Kummassakin on sarakkeet **Käynnissä**, **Ilmoittautuminen**
+ja **Valmiit**. Haku kattaa molemmat. Kirjautuneen *Seura · omat kisat*
+erottaa samoin, jos listassa on molempia.
+
 ## Palvelu ja tunnukset
 
 Yläpalkin valitsimessa on **Iltarastit** GPS-seurannan ja tulospalvelun rinnalla.
