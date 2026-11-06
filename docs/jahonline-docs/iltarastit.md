@@ -32,12 +32,12 @@ etusivulle** ja **Kirjaudu ulos** ovat erillään muista. **Kirjaudu ulos**
 vie aina julkiselle etusivulle. Asetuksista **Siirry tulospalveluun** avaa
 sisäänluvun.
 
-Kun iltarastit on avattu kerran verkossa, hub, osanottajat, radat ja
-tulospalvelu (sisäänluku ja leimantarkastus) jäävät puhelimen muistiin:
-ohjelman saa sammuttaa ja sivun päivittää. Kirjaukset ovat jonossa
-kunnes yhteys palaa. Ilman yhteyttä ei voi siirtyä muille sivuille
-(esim. julkiselle etusivulle). Valikot eivät ylitä näytön leveyttä;
-pitkän radan leimantarkastus vierittyy.
+Kun tapahtuma avataan verkossa, PWA lataa hamburgerin sivut puhelimeen
+(osanottajat, asetukset, tulokset, tulospalvelu). Offline-tilassa niihin
+pääsee hamburgerista, vaikka olisi leimantarkastuksessa. Ohjelman saa
+sammuttaa. Kirjaukset ovat jonossa kunnes yhteys palaa. Ilman yhteyttä
+ei voi siirtyä muille sivuille (esim. julkiselle etusivulle). Valikot
+eivät ylitä näytön leveyttä; pitkän radan leimantarkastus vierittyy.
 
 ## Palvelu ja tunnukset
 

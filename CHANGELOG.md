@@ -4,6 +4,7 @@ Muutoshistoria pääkehityshaaraan (main) tehdyistä committeista, uusin ensin.
 
 | Pvm | # | Muutos |
 |---|---|---|
+| 2026-11-07 | — | JAHOnline iltarastit: PWA lataa avatun illan sivut (osanottajat, asetukset, tulokset, tulospalvelu) puhelimeen, jotta hamburger toimii offline. |
 | 2026-11-06 | — | JAHOnline: uloskirjautuminen vie aina julkiselle etusivulle. |
 | 2026-11-06 | — | JAHOnline etusivu: kirjautuneelle Iltarastit/Kilpailut/GPS-linkit oikeuksien mukaan, ei omaa kisalistaa. Iltarastit offline: tiedot puhelimessa, muille sivuille ei. |
 | 2026-11-06 | — | JAHOnline ohjeet: sivulla näkyvät vain ne palvelut, joihin tunnuksella on oikeus (nykyisin iltarastit). Iltarastiohjeet vastaavat nykyistä toimintaa (emit, Sammunut, Rastilippu 5 €/yhdistetty tapahtuma). |
