@@ -22,9 +22,10 @@ näkyy vain seuran pääkäyttäjälle.
 Iltarastit on sama sivusto puhelimessa: hamburger-valikko ja koko näyttö,
 kuten sisäänluku ja leimantarkastus. Etusivulta voi asentaa JAHOnlinen
 kotinäytölle (Chrome → Asenna sovellus). USB-lukija Chromessa (Android).
-Kun tulospalvelu on avattu kerran verkossa, leimat voi tarkistaa ilman
-nettiä; kirjaukset jäävät jonoon. Valikot eivät ylitä näytön leveyttä;
-pitkän radan leimantarkastus vierittyy.
+Kun iltarastit on avattu kerran verkossa, hub, osanottajat, radat ja
+tulospalvelu (sisäänluku ja leimantarkastus) toimivat ilman nettiä.
+Kirjaukset jäävät jonoon ja lähtevät, kun yhteys palaa. Valikot eivät
+ylitä näytön leveyttä; pitkän radan leimantarkastus vierittyy.
 
 ## Palvelu ja tunnukset
 
