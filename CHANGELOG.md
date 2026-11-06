@@ -4,6 +4,7 @@ Muutoshistoria pääkehityshaaraan (main) tehdyistä committeista, uusin ensin.
 
 | Pvm | # | Muutos |
 |---|---|---|
+| 2026-11-06 | — | JAHOnline iltarastit: kaksi tasoa (iltarastikäyttäjä / pääkäyttäjä). Pääkäyttäjä hallitsee seuran Rastilippu-avaimen ja tunnukset (vaatii seuran nimen), nollaa salasanat. Iltarastikäyttäjä valitsee Rastilippu-tapahtuman. Unohtuneen salasanan vaihtolinkki sähköpostiin. |
 | 2026-11-06 | — | JAHOnline iltarastit: paikallisen illan voi yhdistää Rastilippu-tapahtumaan myöhemmin asetuksista; kellonajat pois, pelkkä päivämäärä riittää |
 | 2026-11-06 | — | JAHOnline etusivu: kilpailut ja iltarastit erikseen; iltarastit yhtenä sarakkeena uusin ylimpänä. Iltarastin päivä on pakollinen asetuksissa. |
 | 2026-10-24 | — | JAHOnline iltarastit: rastin voi merkitä sammuneeksi (patteri vähissä), jolloin sitä ei vaadita leimoissa |

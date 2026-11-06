@@ -16,23 +16,32 @@ listassa on molempia.
 
 Yläpalkin valitsimessa on **Iltarastit** GPS-seurannan ja tulospalvelun rinnalla.
 
-- Seuran admin / pääkäyttäjä näkee iltarastit, jos jäsenyyden palvelu on
-  `tulokset`, `molemmat` tai `iltarastit`. Avain, tapahtuman luonti ja
-  kenttätunnukset ovat vain heille.
-- Kenttäkäyttäjä (`users.role = iltarasti`, `seura_jasenet.palvelut =
-  iltarastit`) kirjautuu suoraan hubiin. Hän valitsee illan, lukee emitin
-  ja hallitsee osanottajia — ei Rastilippu-avainta eikä uuden illan luontia.
+Iltarasteissa on kaksi tasoa (`seura_jasenet.rooli`, `users.role = iltarasti`):
+
+- **Pääkäyttäjä** (`omistaja` / `admin`, tai järjestelmän `paakayttaja`):
+  seuran Rastilippu-avain, seuran iltarastitunnusten luonti ja salasanojen
+  nollaus. Ennen käyttäjien lisäämistä vaaditaan seuran nimi (avain
+  tallennetaan sille seuralle).
+- **Iltarastikäyttäjä** (`jasen`): valitsee seuran Rastilippu-listasta
+  tapahtuman johon ilta yhdistetään, lukee emitin ja hallitsee osanottajia.
+  Ei näe eikä muuta JWT-avainta.
+- Järjestelmän seuran admin / GPS-pääkäyttäjä näkee iltarastit, jos
+  jäsenyyden palvelu on `tulokset`, `molemmat` tai `iltarastit`.
 - Ajanottaja, jolla on vain tulospalvelu, ei näe Iltarasteja.
 
 Hub: `/admin/iltarastit.php`. **Avaa** avaa illan koko ikkunaan
 (hamburger + tapahtuman nimi, ei JAHOnline-brändiä).
 
+Kirjautumissivulla on *Unohditko salasanan?* (`/auth/unohdit.php`).
+Vaihtolinkki lähtee tunnuksen sähköpostiin (voimassa 2 h, kertakäyttöinen).
+Ilman sähköpostia seuran pääkäyttäjä nollaa salasanan hubissa.
+
 ## Rastilippu-avain
 
-Seuran IRMA/Rastilippu-JWT liitetään hubissa (vain admin). Kun avain on
-tallennettu, lomake piilotetaan (*Vaihda avain*). Tyhjä *Tallenna ja
-testaa* ei pyyhi avainta. Epäonnistunut testi näyttää Rastilipun viestin,
-ei pelkkää `1`.
+Seuran IRMA/Rastilippu-JWT liitetään hubissa (vain pääkäyttäjä). Avain on
+**seurakohtainen** (`seurat.rastilippu_token`). Kun avain on tallennettu,
+lomake piilotetaan (*Vaihda avain*). Tyhjä *Tallenna ja testaa* ei pyyhi
+avainta. Epäonnistunut testi näyttää Rastilipun viestin, ei pelkkää `1`.
 
 - API: `https://api.suunnistusliitto.fi/integration`
 - Otsake: `X-Authorization-rs: <JWT>`
@@ -46,11 +55,12 @@ hae Rastilippua joka sivulatauksella. Päivitys: *Päivitä lista Rastilipusta*.
 
 ## Tapahtuman luonti
 
-Yksi valikko paikallisista illoista. Admin luo illan Rastilippu-listasta
-tai **ilman Rastilippua** (nimi, **pakollinen päivä**, paikka). Luonti ja
-*Avaa* vievät tulospalveluun. Paikallisen illan voi yhdistää
-Rastilippu-tapahtumaan myöhemmin tapahtuman asetuksista (nimi ja päivä
-säilyvät). Sama Rastilippu-tapahtuma voi olla vain yhdellä illalla.
+Yksi valikko paikallisista illoista. Iltarastikäyttäjä ja pääkäyttäjä
+valitsevat illan seuran Rastilippu-listasta (seuran avaimella). Pääkäyttäjä
+voi luoda illan myös **ilman Rastilippua** (nimi, **pakollinen päivä**,
+paikka). Luonti ja *Avaa* vievät tulospalveluun. Paikallisen illan voi
+yhdistää Rastilippu-tapahtumaan myöhemmin tapahtuman asetuksista (nimi ja
+päivä säilyvät). Sama Rastilippu-tapahtuma voi olla vain yhdellä illalla.
 
 | Kenttä | Arvo |
 |---|---|
@@ -205,8 +215,10 @@ tulospalvelun sisäänluvussa.
 | `includes/rastilippu.php` | API-asiakas, salaus, tapahtumalistan välimuisti |
 | `includes/iltarasti.php` | Tapahtuma, Rastilippu-yhdistäminen, rata↔sarja, päätös, nimellä kirjaus |
 | `includes/iltarasti_henkilot_sivu.php` | Osanottajat |
-| `admin/iltarastit.php` | Hub: avain, illan valinta, paikallinen luonti, tunnukset |
+| `admin/iltarastit.php` | Hub: avain (pääkäyttäjä), Rastilippu-valinta, paikallinen luonti, tunnukset |
 | `admin/iltarasti_asetukset.php` | Nimi, paikka, päivä, Rastilippu-yhdistäminen, radat |
+| `includes/salasana_reset.php` | Unohtuneen salasanan token ja sähköposti |
+| `auth/unohdit.php` / `uusi_salasana.php` | Unohtuneen salasanan vaihtolinkki sähköpostiin |
 | `admin/iltarasti_tulokset.php` | Tulokset ja rastiväliajat upotettuna |
 | `admin/iltarasti_valiajat.php` | Ohjaa tulossivun Rastiväliajat-välilehteen |
 | `includes/layout.php` / `admin_nav.php` | Kokoikkuna-kuori ja hamburger |
