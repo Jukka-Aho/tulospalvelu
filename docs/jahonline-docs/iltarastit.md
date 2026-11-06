@@ -26,8 +26,8 @@ kotinäytölle (Chrome → Asenna sovellus). USB-lukija Chromessa (Android).
 Tapahtuman osanottajat, asetukset, tulokset ja tulospalvelu avautuvat
 kioskina (koko näyttö, ilman selaimen sulje-X:ää). Yläpalkissa näkyy
 yhteyden tila (Yhteydessä / Paikallisesti toimiva). Hamburger-valikon
-**Sulje tapahtuma** palauttaa tapahtuman valintaan; **Kirjaudu ulos**
-on erillään muista. Asetuksista **Siirry tulospalveluun** avaa
+**Sulje tapahtuma** palauttaa tapahtuman valintaan; **Siirry julkiselle
+etusivulle** ja **Kirjaudu ulos** ovat erillään muista. Asetuksista **Siirry tulospalveluun** avaa
 sisäänluvun.
 
 Kun iltarastit on avattu kerran verkossa, hub, osanottajat, radat ja
