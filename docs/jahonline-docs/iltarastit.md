@@ -7,9 +7,10 @@ JAHOnline-sivuston koodi ei ole tässä repossa; tämä kuvaa palvelimelle
 tehdyn toteutuksen.
 
 Julkisella etusivulla (`/public/index.php`) kilpailut ja iltarastit ovat
-erilliset osiot. Kummassakin on sarakkeet **Käynnissä**, **Ilmoittautuminen**
-ja **Valmiit**. Haku kattaa molemmat. Kirjautuneen *Seura · omat kisat*
-erottaa samoin, jos listassa on molempia.
+erilliset osiot. Kilpailuilla on sarakkeet **Käynnissä**, **Ilmoittautuminen**
+ja **Valmiit**. Iltarastit ovat yhtenä sarakkeena, uusin ylimpänä. Haku
+kattaa molemmat. Kirjautuneen *Seura · omat kisat* erottaa samoin, jos
+listassa on molempia.
 
 ## Palvelu ja tunnukset
 
@@ -46,8 +47,8 @@ hae Rastilippua joka sivulatauksella. Päivitys: *Päivitä lista Rastilipusta*.
 ## Tapahtuman luonti
 
 Yksi valikko paikallisista illoista. Admin luo illan Rastilippu-listasta
-tai **ilman Rastilippua** (nimi, päivä, alkamis- ja päättymisajankohta,
-paikka). Luonti ja *Avaa* vievät tulospalveluun.
+tai **ilman Rastilippua** (nimi, **pakollinen päivä**, alkamis- ja
+päättymisajankohta, paikka). Luonti ja *Avaa* vievät tulospalveluun.
 
 | Kenttä | Arvo |
 |---|---|
@@ -73,7 +74,7 @@ Koko ikkuna (`iltarastiKuori`). Ylhäällä hamburger ja tapahtuman nimi.
 
 Hamburger:
 
-- Tapahtuman asetukset (nimi, paikka, alku, loppu, radat)
+- Tapahtuman asetukset (nimi, paikka, **pakollinen päivä**, alku, loppu, radat)
 - Osanottajat
 - Tulospalvelu (oletusavaus)
 - Tulokset (seuranta upotettuna: rata ylhäällä, välilehdet
