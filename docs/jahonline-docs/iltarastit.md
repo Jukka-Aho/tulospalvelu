@@ -14,6 +14,14 @@ listassa on molempia.
 
 ## Palvelu ja tunnukset
 
+Järjestelmän admin avaa seuralle palvelut erikseen (`/admin/seurat.php`):
+**GPS**, **Kilpailut** ja **Iltarastit**. GPS-paketti (ilmainen / pro /
+analyysi) rajoittaa vain GPS:n ominaisuuksia ja kuukausikiintiötä.
+Rastilippu-liitäntä on maksullinen, **1 € / yhdistetty tapahtuma**
+(lasku näkyy seuran hallinnassa). Paikallinen ilta ilman Rastilippua
+ei kasvata summaa. Seura, jolla iltarastit eivät ole päällä, ei näe
+Iltarastit-valitsinta.
+
 Yläpalkin valitsimessa on **Iltarastit** GPS-seurannan ja tulospalvelun rinnalla.
 
 Iltarasteissa on kaksi tasoa (`seura_jasenet.rooli`, `users.role = iltarasti`):
@@ -26,7 +34,8 @@ Iltarasteissa on kaksi tasoa (`seura_jasenet.rooli`, `users.role = iltarasti`):
   tapahtuman johon ilta yhdistetään, lukee emitin ja hallitsee osanottajia.
   Ei näe eikä muuta JWT-avainta.
 - Järjestelmän seuran admin / GPS-pääkäyttäjä näkee iltarastit, jos
-  jäsenyyden palvelu on `tulokset`, `molemmat` tai `iltarastit`.
+  seuralla on iltarastit päällä **ja** jäsenyyden palvelu on `tulokset`,
+  `molemmat` tai `iltarastit`.
 - Ajanottaja, jolla on vain tulospalvelu, ei näe Iltarasteja.
 
 Hub: `/admin/iltarastit.php`. **Avaa** avaa illan koko ikkunaan
@@ -247,4 +256,5 @@ tulospalvelun sisäänluvussa.
 | `admin/iltarasti_valiajat.php` | Ohjaa tulossivun Rastiväliajat-välilehteen |
 | `includes/layout.php` / `admin_nav.php` | Kokoikkuna-kuori ja hamburger |
 | `includes/kisa_luonne.php` | luonne `iltarasti` |
-| `includes/tili.php` / `auth.php` | palvelu `iltarastit`, rooli `iltarasti` |
+| `includes/tili.php` / `auth.php` | seuran palvelut (GPS / kilpailut / iltarastit), rooli `iltarasti` |
+| `admin/seurat.php` | Seurojen hallinta: palvelut ja Rastilippu-lasku (1 €/tapahtuma) |

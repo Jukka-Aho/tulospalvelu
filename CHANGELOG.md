@@ -4,6 +4,7 @@ Muutoshistoria pääkehityshaaraan (main) tehdyistä committeista, uusin ensin.
 
 | Pvm | # | Muutos |
 |---|---|---|
+| 2026-11-06 | — | JAHOnline seurojen hallinta: GPS, kilpailut ja iltarastit erillisinä palveluina. Rastilippu-liitäntä 1 €/tapahtuma. |
 | 2026-11-06 | — | JAHOnline iltarastit: ajat, radat ja emit-väliajat lähtevät Rastilippuun automaattisesti taustalla, kun yhdistetty tapahtuma muuttuu (EResults Liten courses/results). |
 | 2026-11-06 | — | JAHOnline: sähköposti pakollinen kirjautuessa (puuttuva osoite kysytään ennen jatkamista). Salasana vähintään 8 merkkiä ja kolme luokkaa (iso, pieni, numero, erikoismerkki). Iltarastien leimantarkastus kirjoittaa rastiväliajat heti, ilman uudelleenlaskentaa. |
 | 2026-11-06 | — | JAHOnline iltarastit: kaksi tasoa (iltarastikäyttäjä / pääkäyttäjä). Pääkäyttäjä hallitsee seuran Rastilippu-avaimen ja tunnukset (vaatii seuran nimen), nollaa salasanat. Iltarastikäyttäjä valitsee Rastilippu-tapahtuman. Unohtuneen salasanan vaihtolinkki sähköpostiin. |
