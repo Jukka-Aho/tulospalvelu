@@ -4,7 +4,7 @@ Muutoshistoria pääkehityshaaraan (main) tehdyistä committeista, uusin ensin.
 
 | Pvm | # | Muutos |
 |---|---|---|
-| 2026-11-06 | — | JAHOnline iltarastit: hubista pois tupla-Avaa; Luo rastilipputapahtuma; kehys ilman Rastilippu-liitäntää; Päivitä lista koko levyiseksi. |
+| 2026-11-06 | — | JAHOnline iltarastit: hubissa Seurasi tapahtuma; Rastilipusta Luo Rastilippu-tapahtuma (ei Yhdistä). |
 | 2026-11-06 | — | JAHOnline ohjeet: sivulla näkyvät vain ne palvelut, joihin tunnuksella on oikeus (nykyisin iltarastit). Iltarastiohjeet vastaavat nykyistä toimintaa (emit, Sammunut, Rastilippu 5 €/yhdistetty tapahtuma). |
 | 2026-11-06 | — | JAHOnline iltarastit: luetut emit-kortit tallennetaan nimi- ja seuratietoineen. Seuraavalla luvulla ehdotetaan tallennettua henkilöä lähtijäksi; uuden nimen voi lisätä kortille. |
 | 2026-11-06 | — | JAHOnline: GPS piiloon oman seuran sivulta jos ei ole päällä. Seurakirjautuminen ja käyttäjien lisäys iltarastiksi. IRMA/Rastilippu valinnainen lisäosa 5 €/tapahtuma, vuosittainen laskutus erilliseen laskutussähköpostiin (näkyy adminille). |
