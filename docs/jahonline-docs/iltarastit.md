@@ -19,14 +19,19 @@ tulevat näkyviin, kun kyseinen palvelu on seuralla ja tunnuksella päällä.
 Järjestelmän admin näkee kaikki. Rastilippu-avaimen ja laskutuksen ohje
 näkyy vain seuran pääkäyttäjälle.
 
-Puhelin- ja tablettisovellus (`/sovellus/`) on asennettava PWA.
-Kirjautuminen samalla tunnuksella; oletusnäkymä on seurat, joihin
-tunnuksella on iltarastioikeus. Illan tiedot (radat rastikoodeineen, osanottajat, tunnetut emit-nimet)
-tallennetaan laitteelle (IndexedDB). Kun tapahtuma on ladattu, illan
-voi hoitaa ilman nettiä: osanottajat, kirjaus ja leimantarkastus
-(USB-lukija Chromessa). Kirjaukset jonoutuvat ja lähtevät
-palvelimelle, kun yhteys palaa (`/api/sovellus.php`). Ensimmäinen
-kirjautuminen ja tapahtuman avaus tarvitsevat verkon.
+Puhelin- ja tablettisovellus on asennettava PWA (JAHOnline etusivulta
+tai `/sovellus/`). Kirjautuminen samalla tunnuksella. Illan tiedot
+(radat rastikoodeineen, osanottajat, tunnetut emit-nimet) tallennetaan
+laitteelle (IndexedDB, `navigator.storage.persist`). Kun tulospalvelu
+tai tapahtuma on avattu kerran verkossa, illan voi hoitaa ilman nettiä
+koko illan (esim. 6 h): osanottajat, kirjaus ja leimantarkastus
+paikallisesti. Muutokset jäävät puhelimeen ja lähtevät jonosta
+palvelimelle, kun yhteys palaa. USB-lukija Chromessa (Android).
+Ensimmäinen kirjautuminen ja sivun avaus tarvitsevat verkon. Älä
+tyhjennä sivuston tietoja kesken illan.
+
+Sivut on sovitettu kännykän leveyteen; valikot eivät ylitä näyttöä.
+Pitkän radan leimantarkastus vierittyy.
 
 ## Palvelu ja tunnukset
 
