@@ -172,6 +172,12 @@ Rataa ei voi poistaa, jos sillä on osanottajia.
 ei aikaa. Lomake on tiivis, jotta se mahtuu kännykän näytölle kerralla.
 Kortti tulee lukijalta; kirjaus onnistuu myös ilman korttia.
 
+Luettu kortti tallennetaan nimi- ja seuratietoineen (`emit_henkilot`).
+Kun sama kortti luetaan myöhemmin eikä henkilö ole vielä tässä illassa,
+lomake täyttyy tallennetusta nimestä. Jos kortilla on useita nimiä
+(laina), ne näytetään listana. **Uusi henkilö tälle kortille** tyhjentää
+kentät uutta nimeä varten.
+
 **Leimantarkastus:** lukuhetkellä ruutuun tulevat henkilön nimi,
 tulosaika, tila (Hyväksytty tai Esitys) ja **kortin leimat** heti.
 Leimat verrataan rataan (Pirilän järjestys): oikea vihreänä, rastikoodi
@@ -259,6 +265,7 @@ tulospalvelun sisäänluvussa.
 | `includes/rastilippu.php` | API-asiakas, salaus, tapahtumalistan välimuisti, tulosten taustalähetys |
 | `cron/rastilippu_lahetys.php` | Jonon purku minuutittain (epäonnistuneen taustalähetyksen uusinta) |
 | `includes/iltarasti.php` | Tapahtuma, Rastilippu-yhdistäminen, rata↔sarja, päätös, nimellä kirjaus |
+| `includes/emit_henkilot.php` | Emit-kortin pysyvät nimet ja seurat; ehdotus lähtijäksi |
 | `includes/iltarasti_henkilot_sivu.php` | Osanottajat |
 | `admin/iltarastit.php` | Hub: avain (pääkäyttäjä), Rastilippu-valinta, paikallinen luonti, tunnukset |
 | `admin/iltarasti_asetukset.php` | Nimi, paikka, päivä, Rastilippu-yhdistäminen, radat |
