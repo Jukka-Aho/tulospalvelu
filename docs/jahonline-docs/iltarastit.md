@@ -47,20 +47,21 @@ hae Rastilippua joka sivulatauksella. Päivitys: *Päivitä lista Rastilipusta*.
 ## Tapahtuman luonti
 
 Yksi valikko paikallisista illoista. Admin luo illan Rastilippu-listasta
-tai **ilman Rastilippua** (nimi, **pakollinen päivä**, alkamis- ja
-päättymisajankohta, paikka). Luonti ja *Avaa* vievät tulospalveluun.
+tai **ilman Rastilippua** (nimi, **pakollinen päivä**, paikka). Luonti ja
+*Avaa* vievät tulospalveluun. Paikallisen illan voi yhdistää
+Rastilippu-tapahtumaan myöhemmin tapahtuman asetuksista (nimi ja päivä
+säilyvät). Sama Rastilippu-tapahtuma voi olla vain yhdellä illalla.
 
 | Kenttä | Arvo |
 |---|---|
 | `luonne` | `iltarasti` |
 | `pirila_synkka` | 0 |
 | `kisa_tyyppi` | `normaali` |
-| `nimi`, `paiva`, `paikka` | Rastilipusta tai lomakkeelta |
-| `alku_at`, `loppu_at` | DATETIME; oletus päivän 16:00–21:00 |
+| `nimi`, `paiva`, `paikka` | Rastilipusta tai lomakkeelta; päivä pakollinen |
 | `tila` | tuleva `tulossa`, tänä päivänä `kaynnissa`, mennyt `valmis` (päivä Europe/Helsinki) |
-| `rastilippu_event_id` / `_uuid` / `_series_id` | Rastilipun tunnisteet (jos listasta) |
+| `rastilippu_event_id` / `_uuid` / `_series_id` | Rastilipun tunnisteet (luonnissa tai asetuksista myöhemmin) |
 
-Sama Rastilippu-tapahtuma luodaan seuralle vain kerran
+Sama Rastilippu-tapahtuma luodaan tai yhdistetään seuralle vain kerran
 (`UNIQUE (seura_id, rastilippu_event_id)`).
 
 Tulosten ja rastiväliaikojen lähetys Rastilippuun liitetään myöhemmin.
@@ -74,7 +75,7 @@ Koko ikkuna (`iltarastiKuori`). Ylhäällä hamburger ja tapahtuman nimi.
 
 Hamburger:
 
-- Tapahtuman asetukset (nimi, paikka, **pakollinen päivä**, alku, loppu, radat)
+- Tapahtuman asetukset (nimi, paikka, **pakollinen päivä**, Rastilippu-yhdistäminen, radat)
 - Osanottajat
 - Tulospalvelu (oletusavaus)
 - Tulokset (seuranta upotettuna: rata ylhäällä, välilehdet
@@ -202,10 +203,10 @@ tulospalvelun sisäänluvussa.
 | Tiedosto | Tehtävä |
 |---|---|
 | `includes/rastilippu.php` | API-asiakas, salaus, tapahtumalistan välimuisti |
-| `includes/iltarasti.php` | Tapahtuma, alku/loppu, rata↔sarja, päätös, nimellä kirjaus |
+| `includes/iltarasti.php` | Tapahtuma, Rastilippu-yhdistäminen, rata↔sarja, päätös, nimellä kirjaus |
 | `includes/iltarasti_henkilot_sivu.php` | Osanottajat |
 | `admin/iltarastit.php` | Hub: avain, illan valinta, paikallinen luonti, tunnukset |
-| `admin/iltarasti_asetukset.php` | Nimi, paikka, alku, loppu, radat |
+| `admin/iltarasti_asetukset.php` | Nimi, paikka, päivä, Rastilippu-yhdistäminen, radat |
 | `admin/iltarasti_tulokset.php` | Tulokset ja rastiväliajat upotettuna |
 | `admin/iltarasti_valiajat.php` | Ohjaa tulossivun Rastiväliajat-välilehteen |
 | `includes/layout.php` / `admin_nav.php` | Kokoikkuna-kuori ja hamburger |
