@@ -17,12 +17,25 @@ listassa on molempia.
 Järjestelmän admin avaa seuralle palvelut erikseen (`/admin/seurat.php`):
 **GPS**, **Kilpailut** ja **Iltarastit**. GPS-paketti (ilmainen / pro /
 analyysi) rajoittaa vain GPS:n ominaisuuksia ja kuukausikiintiötä.
-Rastilippu-liitäntä on maksullinen, **1 € / yhdistetty tapahtuma**
-(lasku näkyy seuran hallinnassa). Paikallinen ilta ilman Rastilippua
-ei kasvata summaa. Seura, jolla iltarastit eivät ole päällä, ei näe
-Iltarastit-valitsinta.
+Oman seuran sivu (`/admin/oma_seura.php`) ei näytä GPS-tietoja, jos GPS
+ei ole seuralla päällä.
 
-Yläpalkin valitsimessa on **Iltarastit** GPS-seurannan ja tulospalvelun rinnalla.
+Uusi seura rekisteröityy tällä hetkellä **iltarastikäyttäjäksi** (rooli
+`iltarasti`, seuran omistaja). Kirjautuminen vie iltarastihubiin, kun
+GPS ja kilpailut eivät ole päällä. Oman seuran sivulla voi lisätä vain
+iltarastikäyttäjiä (iltarastikäyttäjä / pääkäyttäjä).
+
+**IRMA/Rastilippu-liitäntä** on seuran itse valitsema lisäominaisuus
+(`seurat.rastilippu_liitanta`). Hinta on **5 € / yhdistetty tapahtuma**,
+laskutus **vuosittain** seuran `laskutus_email`-osoitteeseen. Paikallinen
+ilta ilman Rastilippua ei kasvata summaa. JWT-avain ja tapahtuman
+yhdistäminen ovat käytössä vasta kun liitäntä on päällä. Järjestelmän
+admin näkee vuosikohtaisen laskutuslistan seurojen hallinnassa
+(seura, laskutussähköposti, tapahtumamäärä, summa). Seura, jolla
+iltarastit eivät ole päällä, ei näe Iltarastit-valitsinta.
+
+Yläpalkin valitsimessa on **Iltarastit**. GPS-seuranta näkyy vain, jos
+GPS-palvelu on seuralla päällä.
 
 Iltarasteissa on kaksi tasoa (`seura_jasenet.rooli`, `users.role = iltarasti`):
 
@@ -256,5 +269,6 @@ tulospalvelun sisäänluvussa.
 | `admin/iltarasti_valiajat.php` | Ohjaa tulossivun Rastiväliajat-välilehteen |
 | `includes/layout.php` / `admin_nav.php` | Kokoikkuna-kuori ja hamburger |
 | `includes/kisa_luonne.php` | luonne `iltarasti` |
-| `includes/tili.php` / `auth.php` | seuran palvelut (GPS / kilpailut / iltarastit), rooli `iltarasti` |
-| `admin/seurat.php` | Seurojen hallinta: palvelut ja Rastilippu-lasku (1 €/tapahtuma) |
+| `includes/tili.php` / `auth.php` | seuran palvelut, Rastilippu-lisäosa 5 €/tapahtuma, vuosilaskutus, rooli `iltarasti` |
+| `admin/seurat.php` | Seurojen hallinta: palvelut ja vuosittainen Rastilippu-laskutus |
+| `admin/oma_seura.php` | Oma seura: GPS piilossa jos ei päällä, Rastilippu-lisäosa ja laskutussähköposti |
