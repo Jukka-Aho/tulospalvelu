@@ -34,7 +34,14 @@ Hub: `/admin/iltarastit.php`. **Avaa** avaa illan koko ikkunaan
 
 Kirjautumissivulla on *Unohditko salasanan?* (`/auth/unohdit.php`).
 Vaihtolinkki lähtee tunnuksen sähköpostiin (voimassa 2 h, kertakäyttöinen).
-Ilman sähköpostia seuran pääkäyttäjä nollaa salasanan hubissa.
+Sähköposti on pakollinen: uusi tunnus ei synny ilman sitä, ja vanha tunnus
+ilman osoitetta joutuu antamaan sen kirjautumisen yhteydessä
+(`/auth/sahkoposti.php`) ennen kuin pääsee eteenpäin.
+
+Salasanan on oltava vähintään 8 merkkiä ja sisällettävä kolme seuraavista:
+iso kirjain, pieni kirjain, numero, erikoismerkki. Sama vaatimus on
+rekisteröinnissä, hubin tunnuksissa, oman salasanan vaihdossa ja
+vaihtolinkissä.
 
 ## Rastilippu-avain
 
@@ -177,7 +184,11 @@ API-moodit (`api/api_emit_luku.php`): `lue`, `lisaa`/`tallenna`, `maali`,
 Iltarastissa nolla-emit on sallittu tallennuksessa.
 
 Hyväksyntä (`T`) tallentaa ajan nollaleimauksesta maaliin, jos leimat ovat
-kannassa.
+kannassa. Leimantarkastus kirjoittaa emit-väliajat (`valiajat`, `laji=emit`)
+heti: nollaleima (koodi 0) säilytetään, juoksuajat lasketaan siitä, ja
+rastiväliajat-välilehti päivittyy ilman sarjan tai kilpailijan
+uudelleenlaskentaa. Uudelleenlaskenta tekee saman kirjoituksen uudestaan
+jos rata tai leimat muuttuvat.
 
 ## Osanottajat
 
@@ -219,6 +230,7 @@ tulospalvelun sisäänluvussa.
 | `admin/iltarasti_asetukset.php` | Nimi, paikka, päivä, Rastilippu-yhdistäminen, radat |
 | `includes/salasana_reset.php` | Unohtuneen salasanan token ja sähköposti |
 | `auth/unohdit.php` / `uusi_salasana.php` | Unohtuneen salasanan vaihtolinkki sähköpostiin |
+| `auth/sahkoposti.php` | Pakollinen sähköposti kirjautumisen yhteydessä |
 | `admin/iltarasti_tulokset.php` | Tulokset ja rastiväliajat upotettuna |
 | `admin/iltarasti_valiajat.php` | Ohjaa tulossivun Rastiväliajat-välilehteen |
 | `includes/layout.php` / `admin_nav.php` | Kokoikkuna-kuori ja hamburger |

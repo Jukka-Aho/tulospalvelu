@@ -4,6 +4,7 @@ Muutoshistoria pääkehityshaaraan (main) tehdyistä committeista, uusin ensin.
 
 | Pvm | # | Muutos |
 |---|---|---|
+| 2026-11-06 | — | JAHOnline: sähköposti pakollinen kirjautuessa (puuttuva osoite kysytään ennen jatkamista). Salasana vähintään 8 merkkiä ja kolme luokkaa (iso, pieni, numero, erikoismerkki). Iltarastien leimantarkastus kirjoittaa rastiväliajat heti, ilman uudelleenlaskentaa. |
 | 2026-11-06 | — | JAHOnline iltarastit: kaksi tasoa (iltarastikäyttäjä / pääkäyttäjä). Pääkäyttäjä hallitsee seuran Rastilippu-avaimen ja tunnukset (vaatii seuran nimen), nollaa salasanat. Iltarastikäyttäjä valitsee Rastilippu-tapahtuman. Unohtuneen salasanan vaihtolinkki sähköpostiin. |
 | 2026-11-06 | — | JAHOnline iltarastit: paikallisen illan voi yhdistää Rastilippu-tapahtumaan myöhemmin asetuksista; kellonajat pois, pelkkä päivämäärä riittää |
 | 2026-11-06 | — | JAHOnline etusivu: kilpailut ja iltarastit erikseen; iltarastit yhtenä sarakkeena uusin ylimpänä. Iltarastin päivä on pakollinen asetuksissa. |
