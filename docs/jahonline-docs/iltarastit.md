@@ -28,7 +28,8 @@ Tapahtuman osanottajat, asetukset, tulokset ja tulospalvelu avautuvat
 kioskina (koko näyttö, ilman selaimen sulje-X:ää). Yläpalkissa näkyy
 yhteyden tila (Yhteydessä / Paikallisesti toimiva). Hamburger-valikon
 **Sulje tapahtuma** palauttaa tapahtuman valintaan; **Siirry julkiselle
-etusivulle** ja **Kirjaudu ulos** ovat erillään muista. Asetuksista **Siirry tulospalveluun** avaa
+etusivulle** ja **Kirjaudu ulos** ovat erillään muista. **Kirjaudu ulos**
+vie aina julkiselle etusivulle. Asetuksista **Siirry tulospalveluun** avaa
 sisäänluvun.
 
 Kun iltarastit on avattu kerran verkossa, hub, osanottajat, radat ja
