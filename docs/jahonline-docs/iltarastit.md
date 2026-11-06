@@ -19,6 +19,13 @@ tulevat näkyviin, kun kyseinen palvelu on seuralla ja tunnuksella päällä.
 Järjestelmän admin näkee kaikki. Rastilippu-avaimen ja laskutuksen ohje
 näkyy vain seuran pääkäyttäjälle.
 
+Puhelin- ja tablettisovellus (`/sovellus/`) on asennettava PWA.
+Kirjautuminen samalla tunnuksella; oletusnäkymä on seurat, joihin
+tunnuksella on iltarastioikeus. Illan tiedot tallennetaan laitteelle
+(IndexedDB). Kirjaukset jonoutuvat ja lähtevät palvelimelle, kun
+yhteys palaa (`/api/sovellus.php`). Ensimmäinen kirjautuminen
+tarvitsee verkon.
+
 ## Palvelu ja tunnukset
 
 Järjestelmän admin avaa seuralle palvelut erikseen (`/admin/seurat.php`):
@@ -282,6 +289,8 @@ tulospalvelun sisäänluvussa.
 | `admin/iltarasti_tulokset.php` | Tulokset ja rastiväliajat upotettuna |
 | `admin/iltarasti_valiajat.php` | Ohjaa tulossivun Rastiväliajat-välilehteen |
 | `public/ohjeet.php` | Ohjeet: osiot palveluoikeuksien mukaan; iltarastiohjeet vastaavat nykyistä toimintaa |
+| `sovellus/` | Iltarastien PWA: kirjautuminen, omat seurat, offline-jono |
+| `api/sovellus.php` / `includes/sovellus.php` | Sovelluksen JSON-synkka ja istuntotoken |
 | `includes/layout.php` / `admin_nav.php` | Kokoikkuna-kuori ja hamburger |
 | `includes/kisa_luonne.php` | luonne `iltarasti` |
 | `includes/tili.php` / `auth.php` | seuran palvelut, Rastilippu-lisäosa 5 €/tapahtuma, vuosilaskutus, rooli `iltarasti` |
