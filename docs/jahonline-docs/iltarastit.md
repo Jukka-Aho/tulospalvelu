@@ -1,8 +1,9 @@
 # Iltarastit ja Rastilippu (JAHOnline-palvelin)
 
-Iltarastit ovat kisojen rinnalla oleva palvelu. Tapahtuma valitaan
-Rastilipun kuntotapahtumista tai luodaan paikallisesti. Radat tehdään
-JAHOnessa ja henkilöt luetaan Emit-USB-lukijalla tai kirjataan nimellä.
+Iltarastit ovat kisojen rinnalla oleva palvelu. Hubissa tapahtuma
+avataan listasta (**Avaa**). Rastilipusta luodaan **Luo rastilipputapahtuma**;
+ilman liitäntää on erillinen kehys **Luo tapahtuma ilman Rastilippu-liitäntää**.
+Radat tehdään JAHOnessa ja henkilöt luetaan Emit-USB-lukijalla tai kirjataan nimellä.
 JAHOnline-sivuston koodi ei ole tässä repossa; tämä kuvaa palvelimelle
 tehdyn toteutuksen.
 
