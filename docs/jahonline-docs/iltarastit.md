@@ -19,19 +19,12 @@ tulevat näkyviin, kun kyseinen palvelu on seuralla ja tunnuksella päällä.
 Järjestelmän admin näkee kaikki. Rastilippu-avaimen ja laskutuksen ohje
 näkyy vain seuran pääkäyttäjälle.
 
-Puhelin- ja tablettisovellus on asennettava PWA (JAHOnline etusivulta
-tai `/sovellus/`). Kirjautuminen samalla tunnuksella. Illan tiedot
-(radat rastikoodeineen, osanottajat, tunnetut emit-nimet) tallennetaan
-laitteelle (IndexedDB, `navigator.storage.persist`). Kun tulospalvelu
-tai tapahtuma on avattu kerran verkossa, illan voi hoitaa ilman nettiä
-koko illan (esim. 6 h): osanottajat, kirjaus ja leimantarkastus
-paikallisesti. Muutokset jäävät puhelimeen ja lähtevät jonosta
-palvelimelle, kun yhteys palaa. USB-lukija Chromessa (Android).
-Ensimmäinen kirjautuminen ja sivun avaus tarvitsevat verkon. Älä
-tyhjennä sivuston tietoja kesken illan.
-
-Sivut on sovitettu kännykän leveyteen; valikot eivät ylitä näyttöä.
-Pitkän radan leimantarkastus vierittyy.
+Iltarastit on sama sivusto puhelimessa: hamburger-valikko ja koko näyttö,
+kuten sisäänluku ja leimantarkastus. Etusivulta voi asentaa JAHOnlinen
+kotinäytölle (Chrome → Asenna sovellus). USB-lukija Chromessa (Android).
+Kun tulospalvelu on avattu kerran verkossa, leimat voi tarkistaa ilman
+nettiä; kirjaukset jäävät jonoon. Valikot eivät ylitä näytön leveyttä;
+pitkän radan leimantarkastus vierittyy.
 
 ## Palvelu ja tunnukset
 
@@ -296,9 +289,7 @@ tulospalvelun sisäänluvussa.
 | `admin/iltarasti_tulokset.php` | Tulokset ja rastiväliajat upotettuna |
 | `admin/iltarasti_valiajat.php` | Ohjaa tulossivun Rastiväliajat-välilehteen |
 | `public/ohjeet.php` | Ohjeet: osiot palveluoikeuksien mukaan; iltarastiohjeet vastaavat nykyistä toimintaa |
-| `sovellus/` | Iltarastien PWA: kirjautuminen, omat seurat, offline-jono |
-| `api/sovellus.php` / `includes/sovellus.php` | Sovelluksen JSON-synkka ja istuntotoken |
-| `includes/layout.php` / `admin_nav.php` | Kokoikkuna-kuori ja hamburger |
+| `includes/layout.php` / `admin_nav.php` | Kokoikkuna-kuori (kuten sisäänluku) kaikilla iltarastisivuilla |
 | `includes/kisa_luonne.php` | luonne `iltarasti` |
 | `includes/tili.php` / `auth.php` | seuran palvelut, Rastilippu-lisäosa 5 €/tapahtuma, vuosilaskutus, rooli `iltarasti` |
 | `admin/seurat.php` | Seurojen hallinta: palvelut ja vuosittainen Rastilippu-laskutus |
