@@ -12,6 +12,13 @@ ja **Valmiit**. Iltarastit ovat yhtenä sarakkeena, uusin ylimpänä. Haku
 kattaa molemmat. Kirjautuneen *Seura · omat kisat* erottaa samoin, jos
 listassa on molempia.
 
+Ohjesivu (`/public/ohjeet.php`) näyttää vain ne osiot, joihin tunnuksella
+on oikeus. Kirjautumaton ja iltarastiseura näkevät iltarastien ohjeet
+(ei juoksukisan, TV:n tai GPS:n ohjeita). Kilpailut- ja GPS-ohjeet
+tulevat näkyviin, kun kyseinen palvelu on seuralla ja tunnuksella päällä.
+Järjestelmän admin näkee kaikki. Rastilippu-avaimen ja laskutuksen ohje
+näkyy vain seuran pääkäyttäjälle.
+
 ## Palvelu ja tunnukset
 
 Järjestelmän admin avaa seuralle palvelut erikseen (`/admin/seurat.php`):
@@ -274,6 +281,7 @@ tulospalvelun sisäänluvussa.
 | `auth/sahkoposti.php` | Pakollinen sähköposti kirjautumisen yhteydessä |
 | `admin/iltarasti_tulokset.php` | Tulokset ja rastiväliajat upotettuna |
 | `admin/iltarasti_valiajat.php` | Ohjaa tulossivun Rastiväliajat-välilehteen |
+| `public/ohjeet.php` | Ohjeet: osiot palveluoikeuksien mukaan; iltarastiohjeet vastaavat nykyistä toimintaa |
 | `includes/layout.php` / `admin_nav.php` | Kokoikkuna-kuori ja hamburger |
 | `includes/kisa_luonne.php` | luonne `iltarasti` |
 | `includes/tili.php` / `auth.php` | seuran palvelut, Rastilippu-lisäosa 5 €/tapahtuma, vuosilaskutus, rooli `iltarasti` |
