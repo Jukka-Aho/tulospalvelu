@@ -4,6 +4,7 @@ Muutoshistoria pääkehityshaaraan (main) tehdyistä committeista, uusin ensin.
 
 | Pvm | # | Muutos |
 |---|---|---|
+| 2026-11-07 | — | JAHOnline: iltarastitapahtuman hamburgerista pois Palvelut-osio. |
 | 2026-11-07 | — | JAHOnline iltarastit: ratoja voi muokata offline; leimantarkastus käyttää puhelimen ratoja, synkka lähtee kun yhteys palaa. |
 | 2026-11-07 | — | JAHOnline iltarastit: PWA lataa avatun illan sivut (osanottajat, asetukset, tulokset, tulospalvelu) puhelimeen, jotta hamburger toimii offline. |
 | 2026-11-06 | — | JAHOnline: uloskirjautuminen vie aina julkiselle etusivulle. |

@@ -63,9 +63,10 @@ admin näkee vuosikohtaisen laskutuslistan seurojen hallinnassa
 (seura, laskutussähköposti, tapahtumamäärä, summa). Seura, jolla
 iltarastit eivät ole päällä, ei näe Iltarastit-valitsinta.
 
-Yläpalkin valitsimessa ja hamburger-valikossa on **Iltarastit**,
-**Kilpailut** ja **GPS-seuranta** sen mukaan, mitkä palvelut ovat
-seuralla ja tunnuksella päällä. Linkit vievät kunkin palvelun etusivulle.
+Yläpalkin valitsimessa on **Iltarastit**, **Kilpailut** ja **GPS-seuranta**
+sen mukaan, mitkä palvelut ovat seuralla ja tunnuksella päällä. Linkit
+vievät kunkin palvelun etusivulle. Avatun iltarastitapahtuman
+hamburgerissa ei ole Palvelut-osiota.
 
 Iltarasteissa on kaksi tasoa (`seura_jasenet.rooli`, `users.role = iltarasti`):
 
