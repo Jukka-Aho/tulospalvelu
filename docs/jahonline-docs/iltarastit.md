@@ -146,6 +146,10 @@ Lähetys noudattaa EResults Liten rajapintaa:
 - `POST /event/{uuid}/courses` — radat (`id`, `name`, `length`, `controls`, `order`)
 - `POST /event/{uuid}/results` — tulokset (`name`, `club`, `courseId`,
   `emitNumber`, `status`, `startTime`, `controlTimes`)
+- `GET /events/{uuid}/registrations` — ilmoittautuneet (nimi, seura,
+  emit, lainakortti, maksu). Haetaan yhdistetyn illan avauksessa ja
+  osanottajien **Päivitä Rastilipusta** -napilla (välimuisti 3 min,
+  taulu `rastilippu_ilmoittautuneet`).
 - Tila: hyväksytty/esitys `0`, hylätty `1`, keskeyttänyt `2`. Maastossa
   olevia ei lähetetä.
 - Jos Rastilipussa on jo samanniminen rata, sen UUID säilytetään.
@@ -207,7 +211,8 @@ Luettu kortti tallennetaan nimi- ja seuratietoineen (`emit_henkilot`).
 Kun sama kortti luetaan myöhemmin eikä henkilö ole vielä tässä illassa,
 lomake täyttyy tallennetusta nimestä. Jos kortilla on useita nimiä
 (laina), ne näytetään listana. **Uusi henkilö tälle kortille** tyhjentää
-kentät uutta nimeä varten.
+kentät uutta nimeä varten. Rastilippuun ilmoittautunut täyttyy kortin
+luvussa ennen paikallista nimeä (nimi, seura, lainakortti, maksu).
 
 **Leimantarkastus:** lukuhetkellä ruutuun tulevat henkilön nimi,
 tulosaika, tila (Hyväksytty tai Esitys) ja **kortin leimat** heti.
@@ -277,7 +282,9 @@ laskee leimat ja väliajat uudestaan ja merkitsee `T`/`E`.
 Osanottajasivun avaus tarkistaa samalla kaikki maastossa olevat, joilla
 on jo `emit_leimat`, joten vanha luku ei jää *Maastossa*.
 Maastossa olevan voi merkitä pois ilman leimauskorttia. Lisäys on
-tulospalvelun sisäänluvussa.
+tulospalvelun sisäänluvussa. Yhdistetyssä illassa sivun yläosassa on
+**Rastilipun ilmoittautuneet** (nimi, seura, kortti, maksu, kirjattu /
+ei vielä kirjattu). **Päivitä Rastilipusta** hakee listan uudelleen.
 
 ## `keskhyl` iltarastissa
 
@@ -293,7 +300,7 @@ tulospalvelun sisäänluvussa.
 
 | Tiedosto | Tehtävä |
 |---|---|
-| `includes/rastilippu.php` | API-asiakas, salaus, tapahtumalistan välimuisti, tulosten taustalähetys |
+| `includes/rastilippu.php` | API-asiakas, salaus, tapahtumalistan välimuisti, tulosten taustalähetys, ilmoittautuneiden haku |
 | `cron/rastilippu_lahetys.php` | Jonon purku minuutittain (epäonnistuneen taustalähetyksen uusinta) |
 | `includes/iltarasti.php` | Tapahtuma, Rastilippu-yhdistäminen, rata↔sarja, päätös, nimellä kirjaus |
 | `includes/emit_henkilot.php` | Emit-kortin pysyvät nimet ja seurat; ehdotus lähtijäksi |
