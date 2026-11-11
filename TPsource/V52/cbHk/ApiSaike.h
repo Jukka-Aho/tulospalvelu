@@ -38,7 +38,6 @@ void ApiIlmoitaLasna(int kilpno);
 
 // Osanottajat-ruudukko, kun synkka muutti rivejä
 void ApiPaivitaOsanottajaNakyma(void);
-UnicodeString ApiPaikallinenKello(void);
 
 // Online-rasti / väliaika (piste 0 = maali, 1+ = online)
 void ApiIlmoitaTapahtuma(int kilpno, int piste, int aikaSec);

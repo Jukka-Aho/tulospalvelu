@@ -4,6 +4,54 @@ Muutoshistoria pääkehityshaaraan (main) tehdyistä committeista, uusin ensin.
 
 | Pvm | # | Muutos |
 |---|---|---|
+| 2026-10-24 | — | JAHOnline iltarastit: rastin voi merkitä sammuneeksi (patteri vähissä), jolloin sitä ei vaadita leimoissa |
+| 2026-10-24 | — | JAHOnline iltarastit: radan tallennus tallentaa hyväksytyn ajan; rastikoodit allekkain riveittäin |
+| 2026-10-24 | — | JAHOnline iltarastit: tuloksissa ei näytetä kilpailunumeroita |
+| 2026-10-24 | — | JAHOnline iltarastit: hyväksytty laskee ajan nollauksesta radan viimeiseen maalirastiin; väärässä paikassa ei ole *ylimääräinen* |
+| 2026-10-24 | — | JAHOnline iltarastit: osanottajissa tulos ja aika (muokattavat); rastinro vain rataan täsmäävissä leimoissa |
+| 2026-10-24 | — | JAHOnline iltarastit: leimat luettu → pois Maastosta (T/E); puuttuva rata tai kaatunut tarkistus merkitsee Esityksen |
+| 2026-10-24 | — | JAHOnline iltarastit: leimat verrataan rataan (oikea/väärä/puuttuu); esitys ei kaada tallennusta; tulosruudun teksti luettavaksi |
+| 2026-10-24 | — | JAHOnline iltarastit: kortin leimat näkyvät heti (myös tarkistevirheessä ja kun rata ei täsmää); maaliin kirjaus pois Maastosta; osanottajien muokkauksessa tulos ja Näytä leimat |
+| 2026-10-24 | — | JAHOnline iltarastit: kortin leimat eivät enää jää tyhjän kehyksen alle; yhdistettynä teksti Lukija yhdistetty, ei kuvaketta |
+| 2026-10-24 | — | JAHOnline iltarastit: leimantarkastuksen nimi, aika ja leimat tummalla teemalla vaalealle pohjalle (musta teksti näkyy) |
+| 2026-10-24 | — | JAHOnline iltarastit: leimantarkastus näyttää taas kortin leimat (tyhjä ruutu ei enää piilota listaa) |
+| 2026-10-24 | — | JAHOnline iltarastit: leimantarkastuksesta pois tyhjä varattu ruutu nappien yläpuolelta / odottava täysi näyttö |
+| 2026-10-24 | — | JAHOnline iltarastit: leimantarkastukseen hyväksytty/esitys-äänet, esityksessä radan arvaus yhdellä napilla, offline-jono luennoille |
+| 2026-10-24 | — | JAHOnline iltarastit: B-radan väliaikasarakkeet seuraavat asetusten rastilistaa, vaikka sarja_rastit olisi vanha |
+| 2026-10-24 | — | JAHOnline iltarastit: illan päivä ja tila Europe/Helsinki; lainaemit kelpaa seuraavalle maastosta palattua; rataa ei poisteta jos sillä on osanottajia |
+| 2026-10-24 | — | JAHOnline iltarastit: sama rastikoodi saa toistua mutta ei peräkkäin; radan tallennus ja osanottajien tarkistus laskevat leimat ja väliajat uudelleen |
+| 2026-10-24 | — | JAHOnline iltarastit: asetuksissa rastikoodit ja poisto; radan tallennus palaa asetuksiin; osanottajissa Maastossa; hamburgerissa tila suomeksi |
+| 2026-10-24 | — | JAHOnline iltarastit: matkat näytetään kilometreinä (lista ja lomake); metreiksi jäänyt 5 korjataan 5 km:ksi |
+| 2026-10-24 | — | JAHOnline iltarastit: B-radan (silmukka 12–13–12) väliaikasarakkeet näkyvät; toistuva rastikoodi ei enää tyhjennä sarjan rasteja |
+| 2026-10-24 | — | JAHOnline iltarastit: tunnettu kortti siirtyy leimantarkastukseen, tuntematon kysyy lähteväksi vai maaliin; nimen voi lisätä myös leimantarkastuksessa |
+| 2026-10-24 | — | JAHOnline iltarastit: tulokset ja rastiväliajat samalla sivulla (Pirilän välilehdet, rata yläpuolella); osanottajat sarjoittain; matka kilometreinä; toistuva rastikoodi ei enää estä radan tallennusta |
+| 2026-10-24 | — | JAHOnline iltarastit: turha käsinkirjaus pois sisäänluvusta |
+| 2026-10-24 | — | JAHOnline iltarastit: hamburgerissa Väliajat; Rastilippu-vientiaineisto valmiina |
+| 2026-10-24 | — | JAHOnline iltarastit: osanottajia voi muokata ja merkitä pois maastosta |
+| 2026-10-23 | — | JAHOnline iltarastit: leimantarkastuksessa nimi, tulos ja Hyväksytty/Esitys |
+| 2026-10-23 | — | JAHOnline iltarastit: Yhdistä lukija ilman logoa |
+| 2026-10-23 | — | JAHOnline iltarastit: osanottajasivulla vain nimilista |
+| 2026-10-23 | — | JAHOnline iltarastit: Yhdistä lukija omalle riville |
+| 2026-10-23 | — | JAHOnline iltarastit: leimantarkastuksessa vain leima- ja tulosruutu |
+| 2026-10-23 | — | JAHOnline iltarastit: Yhdistä-painike ja valittu välilehti selkeämmin; lainakortti ja ei aikaa isommat |
+| 2026-10-23 | — | JAHOnline iltarastit: kilpailijan lisäys mahtuu kännykän näytölle (tiivis lomake) |
+| 2026-10-23 | — | JAHOnline iltarastit: uuden henkilön Kirjaa ei enää jätä latausikonia päälle (AJAX-lomake) |
+| 2026-10-23 | — | JAHOnline iltarastit: alkamis- ja päättymisajankohta; avattu ilta koko ikkunaan (nimi + hamburger: asetukset, osanottajat, tulospalvelu, tulokset); tulospalvelussa tiivis sisäänluku/leimantarkastus, lainakortti, ei aikaa, lukijakuvake |
+| 2026-10-23 | — | JAHOnline iltarastit: paikallisen illan luonti ei enää kaada hubia (puuttuva `acl.php` / `voiHallitaKilpailua`) |
+| 2026-10-23 | — | JAHOnline iltarastit: 18 korjausta (avain ei pyyhity, välimuisti, paikallinen ilta, Esitys ei OK, T tallentaa ajan, rata-sanat, kevyt henkilösivu, tunnusten hallinta, kenttäoikeudet, illan tila päivästä) plus kirjaus nimellä maastoon/pois ilman aikaa (emit valinnainen). Dokumentti `docs/jahonline-docs/iltarastit.md` |
+| 2026-10-23 | — | JAHOnline: iltarastit kisojen rinnalla. Seuran Rastilippu-JWT, tapahtuma alasvetovalikosta, radat (nimi/matka/koodit), Emit-sisäänluku ja leimantarkastus, esitys + rata-vaihto. Dokumentti `docs/jahonline-docs/iltarastit.md` |
+| 2026-10-19 | — | Väliaikasivut: 1. sijan ajat (sija 1 ja ero 0) vihreänä, muu brändiväri pysyy kultaisena |
+| 2026-10-19 | — | Etusivun yläpalkkiin lisää tilaa yläreunaan, jotta iso logo ei ole kiinni näytön laidassa |
+| 2026-10-19 | — | JAHOnline-sivujen vihreä brändiväri vaihdettu logon kultaan (`#c49a22` / tumma `#e4c35a`); painikkeet, linkit, GPS ja live-taulut |
+| 2026-10-19 | — | Sivulatauksen logo pienennetty (6rem), jotta rasteritunnus ei pikselöidy |
+| 2026-10-19 | — | JAHOnline-logo musta-kultainen (PWA-ikonit, sivulataus, yläpalkki); painikkeet säilyvät vihreinä |
+| 2026-10-19 | — | AhoAuto (`/ahoauto/`) asennettavissa omaksi PWA:ksi: JAHOnlinen sovellusalue rajattu `/public/`-polkuun, AhoAutolla oma manifest ja service worker. Osoite `/AhoAuto/` ohjaa `/ahoauto/`-kansioon |
+| 2026-10-19 | — | JAHOnline PWA: kotinäytön logo rajattu täyttämään ikoni (192/512/180, maskable). Sivulatauksessa animoitu JAH-logo |
+| 2026-10-18 | — | JAHOnline-palvelin: Kompassi 26 siirretty kokonaan `jahonline`-kantaan (kolme puuttunutta D14-kilpailijaa palautettu); `pirila_sync` poistettu. Korjattu kaatuvat `tulokset.php` (ohjaus online-tuloksiin) ja `live_tulokset.php` (puuttuva `live_tapahtumat`). Pirilä: Tulokset-valintaruutu rajaa JSON-kentät, ViestiWin ei lähetä online-rasteja kahdesti, Hk-hakuun `tyyppi=yksilo`, tilanäyttö TAPAHTUMALOKI |
+| 2026-10-18 | — | JAHOnline-palvelin: vain JAHOnline API jää siirtotavaksi. Poistettu *Synkka-tila*-sivu ja vanha siirto (MySQL-välikanta `pirila_sync` + daemon, CSV/XML-tuonti, `pirila_live.php`, `pirila_bridge.php`, KILP.DAT-silta, Sync Manager); tarpeelliset tiedot (yhdistetyt Pirilä-asemat, viimeisin synkka, luonne) siirretty *Pirilä-asetukset*-sivulle; lähtöluenta hakee kilpailijan emit-koodilla JAHOnlinen kilpailijoista. HkKisaWin: Yhdistä-varapolun tilaviesti ilman ping-sanaa |
+| 2026-10-16 | — | JAHOnline-palvelin: uuden kilpailun luonti omalla sivullaan (`admin/kilpailut.php?uusi=1`), kilpailulistassa painike *Lisää uusi kilpailu*; lista ei enää näytä luontilomaketta alla |
+| 2026-10-16 | — | JAHOnline-palvelin: `luo_kilpailu` ja `yhdista` toteutettu; kisalla on luonne (hallinnan valinta *Kisan luonne*), joka valitsee näkyvät valikot: suunnistuksessa radat ja Emit-sivut, juoksussa ja hiihdossa ajanotto, ampumalajeissa ampumapaikka (dokumentti `docs/jahonline-docs/kisan-luonne.md`) |
+| 2026-10-16 | — | JAHOnline API: *Testaa (ping)* on nyt *Yhdistä* (`action=yhdista`, vanhalle palvelimelle ping); yhdistetyt kisat ja API-avain muistetaan (`jahonline_yhdistetyt.ini`); uusi painike *Luo uusi JAHOnline-kisa* (näkyy, kun yhteys on luotu) luo netin kisan avatusta kilpailusta luonteella, joka tulee Pirilän kilpailulajista (suunnistus, hiihto, juoksu, …); ViestiWin: `ApiPaikallinenKello` siirretty yhteiseen `ApiYhteydet.cpp`:hen (puuttui ViestiWinistä) |
 | 2026-10-12 | — | HkKisaWin: emit-väliaikatuloste: Rata-sarake näytetään vain, jos sarjan kilpailijat kiertävät eri ratoja (aiemmin aina, kun sarjan nimi ei ollut radan nimi). Muutos koskee myös vanhaa (ei-responsiivista) html- ja tekstitulostetta |
 | 2026-10-02 | — | HkKisaWin: lähtöluettelo myös mobiili-HTML:nä (responsiivinen: sarakeluokat ja -leveydet, seura nimen alle kapealla näytöllä, ei sarjalinkkejä); Näytä heti ei enää avaa vanhaa tiedostoa, jos tulostus estettiin virheilmoituksella |
 | 2026-09-29 | — | HkKisaWin: responsiivinen html-tulostetila (css-muotoilu *Responsiivinen*, mobiilitulosteen oletus): viewport, utf-8, sarakekohtaiset css-luokat, kapealla näytöllä toissijaiset sarakkeet piiloon ja seura nimen alle, vieritettävät väliaikataulukot, ei sarjalinkkejä eikä riviraidoitusta, pääsivu framesetin tilalle, html-merkkien koodaus |

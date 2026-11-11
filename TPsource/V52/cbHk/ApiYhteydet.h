@@ -12,24 +12,26 @@
 #include <ComCtrls.hpp>
 #include <ExtCtrls.hpp>
 #include <Buttons.hpp>
+#include <vector>
 
 //---------------------------------------------------------------------------
-// API configuration â€” JAHOnline /public/api/pirila_bridge.php (tai kilpailijat_bridge.php)
+// API configuration â€” JAHOnline /public/api/kilpailijat_bridge.php
 typedef struct {
 	wchar_t apiUrl[512];           // Full bridge URL (preferred) or host base
 	int apiPort;                   // 0 = use URL scheme default; else override
 	wchar_t apiKey[256];           // Bearer = user api_token (not per-competition)
 	int kilpailuId;                // selected JAHOnline kilpailu_id
 	wchar_t kilpailuNimi[160];     // display name of selected competition
+	wchar_t kilpailuLuonne[24];    // JAHOnline luonne of selected competition (suunnistus, hiihto, ...)
 	int lahetaKilpailijat;         // Push full roster + times (action=synkkaa)
 	int vastaanottaKilpailijat;    // Pull roster from server (action=kilpailijat)
 	int lahetaValiajat;            // Push live punches / splits (action=tapahtuma)
 	int vastaanottaValiajat;       // Pull splits from JAHOnline (kilpailijat.valiajat)
-	int lahetaTulokset;            // Alias: also push results with synkkaa
+	int lahetaTulokset;            // Include aika_sec / sija / valiajat in synkkaa
 	int vastaanottaEiLahteneet;    // Apply DNS/DNF from pull
 	int lahetysvali;               // Interval seconds
 	int kaynnissa;                 // Sync thread active intent
-	int siirtotapa;                // 0 = suora koneelta koneelle, 1 = JAHOnline-loki
+	int siirtotapa;                // 0 = ei tapahtumalokia, 1 = tama kone lukee lokia
 	int numerotSelaimesta;         // Maaliaika ilman numeroa, numero selaimessa
 	wchar_t asema[64];             // Lähettäjän nimi lokissa
 	int tapahtumaCursor;           // Viimeksi sovellettu lokirivi
@@ -53,6 +55,8 @@ __published:
 	TLabel *LabelKilpailuLista;
 	TComboBox *ComboKilpailu;
 	TButton *BtnHaeKilpailut;
+	TButton *BtnLuoKilpailu;
+	TLabel *LabelLuonne;
 	TLabel *LabelKilpailuId;
 	TEdit *EditKilpailuId;
 	TButton *BtnYhteysTesti;
@@ -101,17 +105,26 @@ __published:
 	void __fastcall EditUrlChange(TObject *Sender);
 	void __fastcall BtnHaeKilpailutClick(TObject *Sender);
 	void __fastcall ComboKilpailuChange(TObject *Sender);
+	void __fastcall BtnLuoKilpailuClick(TObject *Sender);
 
 private:
 	void __fastcall LueTiedot(void);
 	void __fastcall KirjoitaTiedot(void);
 	void __fastcall PaivitaTila(UnicodeString viesti);
 	void __fastcall NaytaYhteysTila(void);
-	void __fastcall TestaaYhteys(void);
+	void __fastcall Yhdista(void);
 	void __fastcall LopetaSynkka(void);
 	void __fastcall HaeKilpailuLista(void);
 	void __fastcall NaytaValittuKilpailu(void);
 	int __fastcall ComboKilpailuId(void);
+	void __fastcall LisaaComboon(int id, const UnicodeString& nimi, const UnicodeString& pvm,
+		const UnicodeString& luonne);
+	void __fastcall NaytaLuonne(void);
+	void __fastcall NaytaLuoNappi(void);
+	void __fastcall LuoKilpailu(void);
+
+	bool yhteysOk;                          // JAHOnline vastasi API-avaimella
+	std::vector<UnicodeString> comboLuonne; // ComboKilpailu-rivien luonne
 
 public:
 	__fastcall TFormApiYhteydet(TComponent* Owner);
@@ -130,6 +143,23 @@ UnicodeString ApiBridgeUrl(void);
 bool ApiHttpPostJson(const UnicodeString& url, const UnicodeString& jsonBody, UnicodeString& vastaus);
 bool ApiHttpGetAuth(const UnicodeString& url, UnicodeString& vastaus);
 UnicodeString ApiKilpailutPyynto(void);
+UnicodeString ApiPaikallinenKello(void);
+
+// Paikallisen kilpailun tiedot JAHOnlineen (ApiSaike.cpp, Hk ja viesti erikseen).
+wchar_t ApiPirilaLaji(void);
+wchar_t ApiPirilaAlalaji(void);
+UnicodeString ApiPirilaKilpailuNimi(void);
+UnicodeString ApiPirilaPvm(void);
+int ApiPirilaVaiheet(void);
+
+// Pirilän kilpailulaji (kilpparam.kilplaji) -> JAHOnline-kisan luonne.
+UnicodeString ApiLuonneLajista(wchar_t laji);
+UnicodeString ApiLuonneNimi(const UnicodeString& luonne);
+
+// Yhdistetyt kilpailut muistetaan exe-kansion jahonline_yhdistetyt.ini-tiedostossa.
+UnicodeString ApiMuistiPolku(void);
+void ApiMuistaYhdistetty(int id, const UnicodeString& nimi, const UnicodeString& pvm,
+	const UnicodeString& luonne);
 
 // 0 = suora yhteys, 1 = JAHOnline-tapahtumaloki työasemien välillä.
 bool ApiSiirtoOnJahonline(void);
