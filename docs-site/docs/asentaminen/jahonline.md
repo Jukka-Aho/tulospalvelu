@@ -81,9 +81,16 @@ asemaliikenne suoraan koneelta koneelle vai JAHOnlinen kautta.
 **Lopeta synkka** pysäyttää täyssynkan. Jos siirto on JAHOnline, asemien välinen
 loki jää päälle.
 
-Puhelimella samaa kisaa voi kirjata sivulta **Hallinta → Ajanotto →
-Mobiili: kilpailija** (nimi, status, ampumasakot). Emit-leimat näkyvät
-sivulla; puhelin ei lue USB-lukijaa.
+Puhelimella samaa kisaa voi kirjata sivulta **Hallinta → Kilpailutoiminnat**.
+Lähtöluenta, nimenhuuto ja lähtökello ovat kehyksessä **Lähtö**
+(käyttöoikeus *lähtötoiminnat*). Ampumapaikka näkyy, kun kisaan on merkitty
+ampumapaikat (käyttöoikeus *ampumapaikat*).
+
+Kisan asetuksissa ruksi **Pirilä-synkka** merkitsee kisan Pirilä-kilpailuksi.
+Tällöin hallinnan **Sarjat** ja **Radat** ovat **Sarjat (Pirila)** ja
+**Radat (Pirila)**: nimet, matkat, radat ja rastikoodit tulevat synkasta,
+muokkaus vain Pirilässä. Jos ruksia ei ole, kisa tehdään JAHOnessa ja
+**kisan luonne** valitsee valikot; sarjat ja radat määritetään hallinnassa.
 
 Kun netissä on ruksi *Jaettu ajanottolista* ja Pirilässä *Maaliajat ilman numeroa*,
 maaliaika kirjataan Pirilässä ja numero selaimen Numerot-sivulla. Juoksun oma

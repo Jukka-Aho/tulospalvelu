@@ -79,7 +79,8 @@ säikeen. Synkkaa ei käynnistetä, jos kilpailua ei ole avattu.
 Synkka ei katkaise lähiverkkoa. Yksi kone voi puhua nettiin, ja muut koneet
 ovat sen kanssa samassa lähiverkossa. Tapahtumaloki tällä koneella on lisä:
 se tuo puhelimen rivit ja välittää ne lähiverkkoon.
-Puhelin: Hallinta → Ajanotto → **Mobiili: kilpailija**.
+Puhelin: Hallinta → **Kilpailutoiminnat**. Lähtöluenta, nimenhuuto ja
+lähtökello ovat kehyksessä **Lähtö** (käyttöoikeus *lähtötoiminnat*).
 
 Kun netissä on ruksi *Jaettu ajanottolista* ja Pirilässä *Maaliajat ilman numeroa*,
 maaliaika kirjataan Pirilässä ja kilpailijan numero selaimen Numerot-sivulla.
@@ -121,6 +122,52 @@ siirto-ohjelmaa.
 - Tulokset: **online-va + maaliaika + ero kärkeen**
 - Rastiväliajat: Emit-/API-väliajat (synkan `valiajat[]` + `rasti_koodi`)
 - Maastossa: kulunut aika suluissa; ei Emit-rastilistaa
+
+## Pirilä-synkka
+
+Kisan asetuksissa ruksi **Pirilä-synkka** (ent. kilpailutyyppi *Pirila-kisa*).
+Kun se on päällä, hallinta näyttää Pirilä-kilpailun: *Sarjat (Pirila)*,
+*Radat (Pirila)*, synkka ja muokkaus vain Pirilässä.
+
+Kun ruksi on pois, kisa tehdään JAHOnessa. **Kisan luonne** valitsee valikot
+(suunnistuksessa radat ja Emit, juoksussa ja hiihdossa ajanotto).
+
+## Sarjat
+
+Pirilä-kisassa hallinnan valikko on **Sarjat (Pirila)**. Nimi, matka, lähtö ja
+järjestys tulevat HkKisaWinin / ViestiWinin synkasta. Niitä ei lisätä, muokata
+eikä poisteta JAHOnessa.
+
+Jos Pirilä-synkka ei ole päällä, samalla sivulla voi määritellä sarjat
+sovelluksessa.
+
+**Online-va** (netin väliaikasarakkeiden määrä) on JAHOnlinen asetus: synkka
+ei ylikirjoita sitä. Pirilä-kisassa sen voi asettaa sarjalistasta.
+
+## Radat
+
+Pirilä-kisassa hallinnan valikko on **Radat (Pirila)**. Radat, rastikoodit,
+pituudet ja sarjojen rataliitokset tulevat HkKisaWinin / ViestiWinin
+synkasta. Niitä ei muokata JAHOnessa.
+
+Jos Pirilä-synkka ei ole päällä, samalla sivulla voi määritellä radat
+sovelluksessa: tunnus, matkat, rastikoodit, sarjat ja se, käynnistyykö
+ajanotto nollaleimauksesta vai lähtöajasta. Leimantarkastus laskee tuloksen
+tämän valinnan mukaan. Nollaleimauksesta merkitään myös kilpailijan
+lähtöaika (nollaushetki). Lähtöajasta-mallissa käytetään kilpailijan kelloa
+ja sen puuttuessa sarjan lähtöä.
+
+## Emit-lukija (sovelluskisa)
+
+Sama USB-lukija hoitaa **sisäänluvun** ja **leimantarkastuksen**. Painike
+vaihtaa tilaa. Kortin luku:
+
+- jo lähtölistalla oleva (luettu lähteväksi) menee automaattisesti
+  leimantarkastukseen, jos kortilla on rastit
+- uusi kortti kysyy, luetaanko lähteväksi vai maaliin; maaliin kysytään
+  sarja ja nimi ja leimat tallennetaan
+- sisäänluvussa merkitään läsnä ja lähtöaika (nollaleimaus / lukuhetki)
+- leimantarkastus näyttää radan rastit: puuttuva rasti punaisella tekstillä *puuttuu*, kortilla oleva väärä koodi tekstillä *väärä* (viivoitus ja musta reuna, ei pelkkä väri)
 
 ## Kisan luonne
 
