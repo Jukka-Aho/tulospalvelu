@@ -1,6 +1,6 @@
 (function () {
     'use strict';
-    window.JAH_EMIT_VERSIO = 'automaatti1';
+    window.JAH_EMIT_VERSIO = 'automaatti2';
 
     var proto = window.JahEmitProto;
     var cfg = window.JAH_EMIT || { kilpailuId: 0, sarjoja: 0 };
@@ -1610,40 +1610,84 @@
         /* Automaatti on oma kioskisivu, ei tulospalvelun välilehti. */
     }
 
+    function paivitaAutomaattiPuheNappi(btn) {
+        if (!btn) {
+            return;
+        }
+        btn.setAttribute('aria-pressed', automaattiPuhu ? 'true' : 'false');
+        btn.setAttribute('title', automaattiPuhu ? 'Puhe päällä' : 'Puhe mykistetty');
+        btn.setAttribute('aria-label', automaattiPuhu ? 'Mykistä puhe' : 'Avaa puhe');
+        btn.textContent = automaattiPuhu ? '🔊' : '🔇';
+    }
+
+    function luoAutomaattiPuheNappi() {
+        var puheBtn = document.getElementById('emit-automaatti-puhe');
+        if (puheBtn) {
+            return puheBtn;
+        }
+        puheBtn = document.createElement('button');
+        puheBtn.type = 'button';
+        puheBtn.id = 'emit-automaatti-puhe';
+        puheBtn.className = 'emit-automaatti-puhe';
+        paivitaAutomaattiPuheNappi(puheBtn);
+        puheBtn.addEventListener('click', function (ev) {
+            ev.preventDefault();
+            ev.stopPropagation();
+            automaattiPuhu = !automaattiPuhu;
+            try {
+                localStorage.setItem('jah-emit-puhe', automaattiPuhu ? '1' : '0');
+            } catch (e2) { /* */ }
+            paivitaAutomaattiPuheNappi(puheBtn);
+            if (!automaattiPuhu && window.speechSynthesis) {
+                window.speechSynthesis.cancel();
+            }
+        });
+        return puheBtn;
+    }
+
+    function siirraAutomaattiYlapalkkiin() {
+        if (!cfg.automaattiSivu) {
+            return;
+        }
+        var toimet = document.querySelector('.site-topbar-actions')
+            || document.querySelector('.site-topbar');
+        if (!toimet) {
+            return;
+        }
+        var puhe = luoAutomaattiPuheNappi();
+        if (puhe.parentNode !== toimet) {
+            toimet.insertBefore(puhe, toimet.firstChild);
+        }
+        var yhd = document.getElementById('yhdista');
+        if (yhd && yhd.parentNode !== toimet) {
+            yhd.classList.add('emit-automaatti-ylapalkki-yhdista');
+            yhd.textContent = 'Yhdistä';
+            toimet.insertBefore(yhd, puhe.nextSibling);
+        }
+        var ikoni = document.getElementById('lukija-yhteys');
+        if (ikoni && ikoni.parentNode !== toimet) {
+            ikoni.classList.add('emit-automaatti-ylapalkki-tila');
+            toimet.insertBefore(ikoni, yhd && yhd.nextSibling ? yhd.nextSibling : puhe.nextSibling);
+        }
+    }
+
     function varmistaAutomaattiNaytto() {
         var el = document.getElementById('emit-automaatti');
         if (el) {
             return el;
         }
+        siirraAutomaattiYlapalkkiin();
         el = document.createElement('div');
         el.id = 'emit-automaatti';
         el.className = 'emit-automaatti is-odottaa';
         el.hidden = true;
-        el.innerHTML = '<button type="button" class="emit-automaatti-puhe" id="emit-automaatti-puhe"'
-            + ' aria-pressed="' + (automaattiPuhu ? 'true' : 'false') + '"'
-            + ' title="Puhe">' + (automaattiPuhu ? '🔊' : '🔇') + '</button>'
-            + '<div class="emit-automaatti-odota" id="emit-automaatti-odota">'
+        el.innerHTML = '<div class="emit-automaatti-odota" id="emit-automaatti-odota">'
             + '<div class="emit-automaatti-ots" id="emit-automaatti-ots">Yhdistä lukija</div>'
             + '<div class="emit-automaatti-ala" id="emit-automaatti-yhteys"></div>'
             + '<div class="emit-automaatti-virhe" id="emit-automaatti-virhe" hidden></div>'
             + '</div>'
             + '<div class="emit-automaatti-tulos" id="emit-automaatti-tulos" hidden></div>';
         document.body.appendChild(el);
-        var puheBtn = document.getElementById('emit-automaatti-puhe');
-        if (puheBtn) {
-            puheBtn.addEventListener('click', function (ev) {
-                ev.stopPropagation();
-                automaattiPuhu = !automaattiPuhu;
-                try {
-                    localStorage.setItem('jah-emit-puhe', automaattiPuhu ? '1' : '0');
-                } catch (e2) { /* */ }
-                puheBtn.setAttribute('aria-pressed', automaattiPuhu ? 'true' : 'false');
-                puheBtn.textContent = automaattiPuhu ? '🔊' : '🔇';
-                if (!automaattiPuhu && window.speechSynthesis) {
-                    window.speechSynthesis.cancel();
-                }
-            });
-        }
         el.addEventListener('click', function (ev) {
             var nappi = ev.target && ev.target.closest
                 ? ev.target.closest('#emit-automaatti-yhdista, #emit-automaatti-katkaise')
@@ -1657,7 +1701,7 @@
         });
         el.addEventListener('dblclick', function (ev) {
             if (ev.target && ev.target.closest
-                    && ev.target.closest('#emit-automaatti-yhdista, #emit-automaatti-katkaise, #emit-automaatti-puhe')) {
+                    && ev.target.closest('#emit-automaatti-yhdista, #emit-automaatti-katkaise')) {
                 return;
             }
             tyhjennaAutomaatti();
@@ -1693,14 +1737,13 @@
                 + 'Katkaise yhteys</button>';
             return;
         }
-        if (!usbLukijaSaatavilla()) {
-            el.innerHTML = '<div class="emit-automaatti-yhteys-ohje">'
-                + 'USB-lukija vaatii Chromen tai Edgen.</div>';
-            return;
-        }
         el.innerHTML = '<button type="button" class="emit-automaatti-yhdista" id="emit-automaatti-yhdista">'
             + 'Yhdistä Emit-lukija</button>'
-            + '<div class="emit-automaatti-yhteys-ohje">Valitse listasta USB Serial</div>';
+            + '<div class="emit-automaatti-yhteys-ohje">'
+            + (usbLukijaSaatavilla()
+                ? 'Valitse listasta USB Serial'
+                : 'Paina Yhdistä. Jos lista ei aukea, avaa sivu Chromessa.')
+            + '</div>';
     }
 
     function naytaAutomaattiVirhe(html) {
@@ -3034,13 +3077,35 @@
         return 'USB-yhteys ei auennut. ' + viesti;
     }
 
+    function odotaJahUsbSerial() {
+        if (window.JahUsbSerial) {
+            return Promise.resolve(window.JahUsbSerial);
+        }
+        return new Promise(function (ok, ei) {
+            var n = 0;
+            var t = setInterval(function () {
+                n += 1;
+                if (window.JahUsbSerial) {
+                    clearInterval(t);
+                    ok(window.JahUsbSerial);
+                    return;
+                }
+                if (n >= 40) {
+                    clearInterval(t);
+                    ei(new Error('USB-sarjamoduuli ei latautunut. Avaa Automaatti uudelleen Chromessa.'));
+                }
+            }, 50);
+        });
+    }
+
     async function valitsePortti() {
         // Puhelimen Chrome listaa Emit-lukijan USB-laitteena (USB Serial), ei sarjaporttina.
         if (onPuhelin()) {
-            if (!navigator.usb || !window.JahUsbSerial) {
+            if (!navigator.usb) {
                 throw new Error('Puhelimessa lukija avataan Chromella.');
             }
-            return window.JahUsbSerial.requestPort();
+            var serial = window.JahUsbSerial || await odotaJahUsbSerial();
+            return serial.requestPort();
         }
         if (navigator.serial) {
             return navigator.serial.requestPort();
@@ -3122,6 +3187,7 @@
 
     if (cfg.automaattiSivu) {
         document.body.classList.add('emit-automaatti-sivu', 'is-automaatti-moodi');
+        siirraAutomaattiYlapalkkiin();
     }
     lisaaAutomaattiNappi();
     document.querySelectorAll('.emit-moodit .emit-moodi').forEach(function (btn) {
@@ -3392,6 +3458,13 @@
     });
     paivitaNapit();
     paivitaJonoBanneri();
+    window.addEventListener('load', function () {
+        if (cfg.automaattiSivu) {
+            siirraAutomaattiYlapalkkiin();
+            paivitaAutomaattiYhteys();
+            paivitaNapit();
+        }
+    });
     setInterval(paivitaUsb, 400);
     if (typeof window.jahWakeLockRefresh === 'function') {
         window.jahWakeLockRefresh();

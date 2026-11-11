@@ -53,6 +53,10 @@ def test_automaatti_lahde():
         "Yhdistä Emit-lukija",
         "function usbLukijaSaatavilla",
         "function naytaAutomaattiVirhe",
+        "function siirraAutomaattiYlapalkkiin",
+        "function luoAutomaattiPuheNappi",
+        "function odotaJahUsbSerial",
+        "automaatti2",
     ):
         assert pala in js, pala
     assert "emit-automaatti-nimi" in css
@@ -64,8 +68,8 @@ def test_automaatti_lahde():
     pwa = read(PWA)
     assert "automaatti.php" in pwa
     sw = read(SW)
-    assert "jahonline-app-v15" in sw
-    assert "20261111yhdista" in sw
+    assert "jahonline-app-v16" in sw
+    assert "20261111pwa" in sw
     print("ok automaatti lahde")
 
 

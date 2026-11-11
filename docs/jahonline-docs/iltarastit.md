@@ -234,9 +234,10 @@ kaatuu, leimat silti merkitsevät Esityksen. Esitys tallennetaan
 
 **Automaatti** (Navisport-tyylinen maalinäyttö) avautuu hamburgerista
 omaksi kioskisivuksi (`/public/automaatti.php`), koko näytölle ilman
-sisäänluvun ja leimantarkastuksen välilehtiä. Ensimmäisellä avauksella
-ruudussa on **Yhdistä Emit-lukija**; Chromen USB-valikosta valitaan
-USB Serial. Yhdistämisen jälkeen odotusnäyttö pyytää lukemaan kortin.
+sisäänluvun ja leimantarkastuksen välilehtiä. Yläpalkissa on kaiutin ja **Yhdistä**-nappi (sama USB-yhteys kuin
+sisäänluvussa). Ruudussa on lisäksi iso **Yhdistä Emit-lukija**; Chromen
+USB-valikosta valitaan USB Serial. Yhdistämisen jälkeen odotusnäyttö
+pyytää lukemaan kortin.
 Kortin luku käsitellään maalina. Ruutuun tulee isoina henkilön nimi,
 tulosaika ja sijoitus (1.–3. mitalivärein) tai vaihtoehtoisesti
 **Hylkäysesitys** puuttuvine rasteineen. Tuntematon kortti näyttää

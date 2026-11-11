@@ -813,6 +813,47 @@ body.emit-automaatti-sivu .emit-yla {
     display: none !important;
 }
 
+body.emit-automaatti-sivu .site-topbar-actions {
+    gap: 0.35rem;
+}
+
+body.emit-automaatti-sivu .site-topbar .emit-automaatti-puhe {
+    position: static;
+    width: 2.5rem;
+    height: 2.5rem;
+    flex: 0 0 auto;
+    background: color-mix(in srgb, var(--text) 10%, var(--card));
+    color: var(--text);
+    font-size: 1.2rem;
+}
+
+body.emit-automaatti-sivu .site-topbar-actions #yhdista.emit-yhdista--kutsu:not([hidden]),
+body.emit-automaatti-sivu .site-topbar-actions #yhdista:not([hidden]) {
+    display: inline-flex !important;
+    width: auto !important;
+    min-width: 0;
+    min-height: 2.5rem;
+    padding: 0.35rem 0.75rem;
+    margin: 0;
+    font-size: 0.92rem;
+    white-space: nowrap;
+    background: #0f7a3b;
+    color: #fff;
+    border: 2px solid #0a5c2c;
+    box-shadow: none;
+}
+
+body.emit-automaatti-sivu .site-topbar-actions #lukija-yhteys:not([hidden]) {
+    display: inline-flex !important;
+    width: auto;
+    min-height: 2.5rem;
+    padding: 0.3rem 0.65rem;
+    margin: 0;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    color: #c49a22;
+}
+
 body.emit-automaatti-sivu #emit-jono:not([hidden]) {
     position: fixed;
     top: max(3.7rem, calc(env(safe-area-inset-top, 0px) + 3.2rem));
@@ -824,12 +865,6 @@ body.emit-automaatti-sivu #emit-jono:not([hidden]) {
 
 body.emit-automaatti-sivu .emit-automaatti {
     padding-top: max(4.2rem, calc(env(safe-area-inset-top, 0px) + 3.4rem));
-}
-
-body.emit-automaatti-sivu .emit-automaatti-puhe {
-    top: max(3.7rem, calc(env(safe-area-inset-top, 0px) + 3.3rem));
-    right: 0.7rem;
-    z-index: 2;
 }
 
 .emit-automaatti {
