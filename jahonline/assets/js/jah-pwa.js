@@ -67,6 +67,7 @@
                 || p.indexOf('/public/iltarasti_') === 0
                 || p.indexOf('/public/radat.php') === 0
                 || p.indexOf('/public/emit_lukija.php') === 0
+                || p.indexOf('/public/automaatti.php') === 0
                 || p.indexOf('/admin/iltarastit.php') === 0
                 || p.indexOf('/admin/kilpailijat.php') === 0
                 || p.indexOf('/admin/iltarasti_') === 0
@@ -127,8 +128,8 @@
     }
 
     var AUTO = /\/(ahoauto|autot|ohjaus|scenic)(\/|$)/;
-    var SW = '/sw-jahonline.js?v=20261111auto';
-    var CACHE = 'jahonline-app-v13';
+    var SW = '/sw-jahonline.js?v=20261111kioski';
+    var CACHE = 'jahonline-app-v14';
 
     function iltarastiPrefetchUrlit() {
         var urls = {};
@@ -163,7 +164,7 @@
             lisaa('/public/emit_lukija.php?kilpailu_id=' + kid);
             lisaa('/public/emit_lukija.php?kilpailu_id=' + kid + '&moodi=lahto');
             lisaa('/public/emit_lukija.php?kilpailu_id=' + kid + '&moodi=maali');
-            lisaa('/public/emit_lukija.php?kilpailu_id=' + kid + '&moodi=automaatti');
+            lisaa('/public/automaatti.php?kilpailu_id=' + kid);
         }
         document.querySelectorAll('.admin-sidebar a[href], a.iltarasti-kioski-sulje[href]').forEach(function (a) {
             lisaa(a.getAttribute('href'));

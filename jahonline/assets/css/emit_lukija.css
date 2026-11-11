@@ -792,6 +792,48 @@ body.is-automaatti-moodi .emit-yla {
     z-index: 40;
 }
 
+body.emit-automaatti-sivu .emit-moodit,
+body.emit-automaatti-sivu #moodi-ohje,
+body.emit-automaatti-sivu .emit-ohje,
+body.emit-automaatti-sivu .emit-ilmo-tila,
+body.emit-automaatti-sivu #emit-tarkistus,
+body.emit-automaatti-sivu #tulos,
+body.emit-automaatti-sivu #leima-lista,
+body.emit-automaatti-sivu #emit-paatos,
+body.emit-automaatti-sivu #emit-kysy,
+body.emit-automaatti-sivu #emit-ehdotukset,
+body.emit-automaatti-sivu #lisaa-kentat,
+body.emit-automaatti-sivu #kasin-form,
+body.emit-automaatti-sivu #viimeiset,
+body.emit-automaatti-sivu #maali-huom {
+    display: none !important;
+}
+
+body.emit-automaatti-sivu .emit-yla {
+    position: fixed;
+    top: max(0.45rem, env(safe-area-inset-top, 0px));
+    right: 3.4rem;
+    left: auto;
+    width: auto;
+    z-index: 45;
+    background: transparent;
+    box-shadow: none;
+    padding: 0;
+}
+
+body.emit-automaatti-sivu .emit-yhteys {
+    margin: 0;
+}
+
+body.emit-automaatti-sivu .emit-automaatti {
+    padding-top: max(4.2rem, calc(env(safe-area-inset-top, 0px) + 3.4rem));
+}
+
+body.emit-automaatti-sivu .emit-automaatti-puhe {
+    top: max(0.55rem, calc(env(safe-area-inset-top, 0px) + 0.4rem));
+    right: 0.7rem;
+}
+
 .emit-automaatti {
     position: fixed;
     inset: 0;

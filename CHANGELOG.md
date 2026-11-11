@@ -4,6 +4,7 @@ Muutoshistoria pääkehityshaaraan (main) tehdyistä committeista, uusin ensin.
 
 | Pvm | # | Muutos |
 |---|---|---|
+| 2026-11-11 | — | JAHOnline: Automaatti omaksi koko näytön kioskisivuksi. Rastiväliaikakaavion skaala valittujen mukaan, kilpailijavalinta (kärki 5 / kaikki). |
 | 2026-11-11 | — | JAHOnline iltarastit: Automaatti näyttää maalissa nimen, ajan ja sijoituksen tai hylkäysesityksen (Navisport). Rastiväliajoissa rastitilanne-grafiikka. |
 | 2026-11-07 | — | JAHOnline iltarastit: Rastilippuun ilmoittautuneet haetaan yhdistettyyn iltaan (nimi, kortti, laina, maksu). Kortin luku täyttää tiedot, lista näkyy osanottajissa. |
 | 2026-11-07 | — | JAHOnline: iltarastitapahtuman hamburgerista pois Palvelut-osio. |

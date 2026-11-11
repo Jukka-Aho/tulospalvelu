@@ -166,7 +166,8 @@ Hamburger:
 - Tulokset (seuranta upotettuna: rata ylhäällä, välilehdet
   **Tulokset** / **Rastiväliajat** kuten Pirilän julkisissa tuloksissa).
   Kilpailunumeroita ei näytetä (iltarastissa tunnistetaan nimellä).
-  Rastiväliajoissa on rastitilanne-grafiikka (kärki rastilla ja ero kärkeen).
+  Rastiväliajoissa on rastitilanne-grafiikka: skaala valittujen kilpailijoiden
+  mukaan (oletus kärki 5), valinta *Kilpailijat kaaviossa*.
 
 Vaihda tapahtuma palauttaa hubiin.
 
@@ -202,7 +203,8 @@ Rataa ei voi poistaa, jos sillä on osanottajia.
 
 ## Tulospalvelu
 
-`/public/emit_lukija.php` sisäänluku / leimantarkastus / automaatti, ilman ohjetekstejä.
+`/public/emit_lukija.php` sisäänluku ja leimantarkastus, ilman ohjetekstejä.
+Automaatti on erillinen koko näytön kioskisivu `/public/automaatti.php`.
 
 **Sisäänluku:** etunimi, sukunimi, seura, rata, kilpailukortti, lainakortti,
 ei aikaa. Lomake on tiivis, jotta se mahtuu kännykän näytölle kerralla.
@@ -230,8 +232,9 @@ kortin voi kirjata nimellä myös tässä. Maaliin kirjaus asettaa `T` tai
 kaatuu, leimat silti merkitsevät Esityksen. Esitys tallennetaan
 `keskhyl=E` (status-sarake pysyy `OK`, koska ENUM ei tunne ESITYS-arvoa).
 
-**Automaatti** (Navisport-tyylinen maalinäyttö): kolmas välilehti
-tulospalvelussa, tai suoraan `?moodi=automaatti`. Kortin luku käsitellään
+**Automaatti** (Navisport-tyylinen maalinäyttö) avautuu hamburgerista
+omaksi kioskisivuksi (`/public/automaatti.php`), koko näytölle ilman
+sisäänluvun ja leimantarkastuksen välilehtiä. Kortin luku käsitellään
 maalina. Ruutuun tulee isoina henkilön nimi, tulosaika ja sijoitus
 (1.–3. mitalivärein) tai vaihtoehtoisesti **Hylkäysesitys** puuttuvine
 rasteineen. Tuntematon kortti näyttää *Tuntematon kortti* ilman
@@ -329,6 +332,7 @@ ei vielä kirjattu). **Päivitä Rastilipusta** hakee listan uudelleen.
 | `auth/sahkoposti.php` | Pakollinen sähköposti kirjautumisen yhteydessä |
 | `admin/iltarasti_tulokset.php` | Tulokset ja rastiväliajat upotettuna |
 | `admin/iltarasti_valiajat.php` | Ohjaa tulossivun Rastiväliajat-välilehteen |
+| `public/automaatti.php` | Koko näytön Automaatti-kioski |
 | `assets/js/emit_lukija.js` | Sisäänluku, leimantarkastus, Automaatti-näyttö |
 | `assets/js/seuranta.js` | Live-ajat ja rastiväliaikojen rastitilanne-grafiikka |
 | `assets/css/emit_lukija.css` | Tulospalvelun ja Automaatti-näytön tyyli |

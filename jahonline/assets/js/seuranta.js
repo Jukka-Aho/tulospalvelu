@@ -157,6 +157,28 @@
         return '+' + formatAikaSec(sec).replace(/^00:/, '');
     }
 
+    function mukavaMaxEro(sec) {
+        sec = Math.max(1, Math.ceil(Number(sec) || 1));
+        var portaat = [10, 15, 20, 30, 45, 60, 90, 120, 180, 240, 300, 360, 480, 600, 900, 1200, 1800];
+        var i;
+        for (i = 0; i < portaat.length; i++) {
+            if (sec <= portaat[i]) {
+                return portaat[i];
+            }
+        }
+        return Math.ceil(sec / 300) * 300;
+    }
+
+    function yViivat(maxEro) {
+        if (maxEro <= 15) {
+            return [0, maxEro];
+        }
+        if (maxEro <= 60) {
+            return [0, Math.round(maxEro / 2), maxEro];
+        }
+        return [0, Math.round(maxEro / 3), Math.round((2 * maxEro) / 3), maxEro];
+    }
+
     function lyhennaNimi(nimi) {
         var t = String(nimi || '').trim();
         if (!t) {
@@ -168,6 +190,30 @@
         }
         return osat[0];
     }
+
+    function henkiloAvain(h) {
+        return String(h && h.sija != null ? h.sija : '') + '\t' + String((h && h.nimi) || '');
+    }
+
+    function paneeliAvain(paneeli) {
+        var ots = paneeli.querySelector('.lb-otsikko');
+        return ((ots && ots.textContent) || 'va').replace(/\s+/g, ' ').trim();
+    }
+
+    function oletusValitut(henkilot) {
+        var jarj = (henkilot || []).slice().sort(function (a, b) {
+            var as = a.sija == null ? 9999 : a.sija;
+            var bs = b.sija == null ? 9999 : b.sija;
+            return as - bs;
+        });
+        var out = {};
+        jarj.slice(0, 5).forEach(function (h) {
+            out[henkiloAvain(h)] = true;
+        });
+        return out;
+    }
+
+    var vaValinnat = {};
 
     function lueVaPaneeli(paneeli) {
         var head = paneeli.querySelector('.lb-rivi.has-va.lb-head');
@@ -268,17 +314,139 @@
         }).join(' ');
     }
 
+    function suodataViivat(data, valitut) {
+        var nayta = (data.viivat || []).filter(function (v) {
+            return valitut[henkiloAvain(v.henkilo)];
+        });
+        nayta.sort(function (a, b) {
+            var as = a.henkilo.sija == null ? 9999 : a.henkilo.sija;
+            var bs = b.henkilo.sija == null ? 9999 : b.henkilo.sija;
+            return as - bs;
+        });
+        var maxEro = 1;
+        nayta.forEach(function (v) {
+            v.pisteet.forEach(function (p) {
+                if (p.y > maxEro) {
+                    maxEro = p.y;
+                }
+            });
+        });
+        return { nayta: nayta, maxEro: mukavaMaxEro(maxEro) };
+    }
+
+    function rakennaValinta(data, valitut, avain, paneeli) {
+        var wrap = document.createElement('div');
+        wrap.className = 'lb-va-valinta';
+        var n = 0;
+        Object.keys(valitut).forEach(function (k) {
+            if (valitut[k]) {
+                n += 1;
+            }
+        });
+        var auki = document.createElement('button');
+        auki.type = 'button';
+        auki.className = 'lb-va-valinta-auki';
+        auki.textContent = 'Kilpailijat kaaviossa (' + n + ')';
+        var lista = document.createElement('div');
+        lista.className = 'lb-va-valinta-lista';
+        lista.hidden = true;
+        auki.addEventListener('click', function () {
+            lista.hidden = !lista.hidden;
+            auki.classList.toggle('is-auki', !lista.hidden);
+        });
+        var toiminnot = document.createElement('div');
+        toiminnot.className = 'lb-va-valinta-toiminnot';
+        function nappi(txt, fn) {
+            var b = document.createElement('button');
+            b.type = 'button';
+            b.className = 'lb-va-valinta-nappi';
+            b.textContent = txt;
+            b.addEventListener('click', function (ev) {
+                ev.preventDefault();
+                fn();
+                vaValinnat[avain] = valitut;
+                piirraVaGrafiikka(paneeli, data);
+            });
+            return b;
+        }
+        toiminnot.appendChild(nappi('Kärki 5', function () {
+            valitut = oletusValitut(data.henkilot);
+        }));
+        toiminnot.appendChild(nappi('Kaikki', function () {
+            valitut = {};
+            (data.henkilot || []).forEach(function (h) {
+                valitut[henkiloAvain(h)] = true;
+            });
+        }));
+        lista.appendChild(toiminnot);
+        (data.henkilot || []).forEach(function (h) {
+            var key = henkiloAvain(h);
+            var lab = document.createElement('label');
+            lab.className = 'lb-va-valinta-rivi';
+            var cb = document.createElement('input');
+            cb.type = 'checkbox';
+            cb.checked = !!valitut[key];
+            if (cb.checked) {
+                cb.setAttribute('checked', '');
+            }
+            cb.addEventListener('change', function () {
+                if (cb.checked) {
+                    valitut[key] = true;
+                } else {
+                    delete valitut[key];
+                }
+                var jaa = Object.keys(valitut).some(function (k) { return valitut[k]; });
+                if (!jaa) {
+                    valitut = oletusValitut(data.henkilot);
+                }
+                vaValinnat[avain] = valitut;
+                piirraVaGrafiikka(paneeli, data);
+            });
+            lab.appendChild(cb);
+            lab.appendChild(document.createTextNode(
+                (h.sija ? h.sija + '. ' : '') + (h.nimi || '')
+            ));
+            lista.appendChild(lab);
+        });
+        wrap.appendChild(auki);
+        wrap.appendChild(lista);
+        return wrap;
+    }
+
     function piirraVaGrafiikka(paneeli, data) {
         var vanha = paneeli.querySelector('.lb-va-grafiikka');
+        var listaOliAuki = !!(vanha && vanha.querySelector('.lb-va-valinta-lista') && !vanha.querySelector('.lb-va-valinta-lista').hidden);
         if (vanha) {
             vanha.remove();
         }
         if (!data || !data.rastit.length) {
             return;
         }
+        var avain = paneeliAvain(paneeli);
+        if (!vaValinnat[avain]) {
+            vaValinnat[avain] = oletusValitut(data.henkilot);
+        }
+        var valitut = vaValinnat[avain];
+        var suod = suodataViivat(data, valitut);
+        if (!suod.nayta.length) {
+            valitut = oletusValitut(data.henkilot);
+            vaValinnat[avain] = valitut;
+            suod = suodataViivat(data, valitut);
+        }
         var wrap = document.createElement('div');
         wrap.className = 'lb-va-grafiikka';
         wrap.setAttribute('aria-label', 'Tilanne rasteilla');
+        wrap.appendChild(rakennaValinta(data, valitut, avain, paneeli));
+        if (listaOliAuki) {
+            var lista = wrap.querySelector('.lb-va-valinta-lista');
+            var aukiBtn = wrap.querySelector('.lb-va-valinta-auki');
+            if (lista) {
+                lista.hidden = false;
+            }
+            if (aukiBtn) {
+                aukiBtn.classList.add('is-auki');
+            }
+        }
 
         var asemat = document.createElement('div');
         asemat.className = 'lb-va-asemat';
@@ -289,7 +457,7 @@
             var karki = t.karki ? escapeAttr(t.karki.lyh || t.karki.nimi) : '–';
             var karkiAika = t.karki ? formatAikaSec(t.karki.aika).replace(/^00:/, '') : '';
             el.innerHTML = '<div class="lb-va-asema-nro">' + escapeAttr(r.piste) + '</div>'
-                + '<div class="lb-va-asema-koodi">' + escapeAttr(r.koodi) + '</div>'
+                + (r.koodi ? '<div class="lb-va-asema-koodi">' + escapeAttr(r.koodi) + '</div>' : '')
                 + '<div class="lb-va-asema-karki" title="' + escapeAttr(t.karki ? t.karki.nimi : '') + '">'
                 + escapeAttr(karki) + '</div>'
                 + '<div class="lb-va-asema-aika">' + escapeAttr(karkiAika) + '</div>'
@@ -299,14 +467,14 @@
         wrap.appendChild(asemat);
 
         var nR = data.rastit.length;
-        var W = Math.max(520, 72 + nR * 72);
-        var H = 168;
-        var padL = 36;
-        var padR = 12;
-        var padT = 14;
+        var W = Math.max(560, 88 + nR * 76);
+        var H = 240;
+        var padL = 48;
+        var padR = 64;
+        var padT = 12;
         var padB = 28;
         var xAskel = (W - padL - padR) / nR;
-        var ySkaala = (H - padT - padB) / Math.max(data.maxEro, 1);
+        var ySkaala = (H - padT - padB) / Math.max(suod.maxEro, 1);
         var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
         svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
         svg.setAttribute('class', 'lb-va-kaavio');
@@ -322,39 +490,25 @@
             grid += '<text x="' + x + '" y="' + (H - 8) + '" class="lb-va-grid-txt">'
                 + escapeAttr(data.rastit[g].piste) + '</text>';
         }
-        grid += '<line x1="' + padL + '" y1="' + padT + '" x2="' + (W - padR) + '" y2="' + padT
-            + '" class="lb-va-grid"/>';
-        grid += '<text x="8" y="' + (padT + 4) + '" class="lb-va-grid-txt">0</text>';
-        var puoli = Math.round(data.maxEro / 2);
-        if (puoli > 0) {
-            var yPuoli = padT + puoli * ySkaala;
-            grid += '<line x1="' + padL + '" y1="' + yPuoli.toFixed(1) + '" x2="' + (W - padR)
-                + '" y2="' + yPuoli.toFixed(1) + '" class="lb-va-grid"/>';
-            grid += '<text x="8" y="' + (yPuoli + 4).toFixed(1) + '" class="lb-va-grid-txt">+'
-                + formatAikaSec(puoli).replace(/^00:/, '') + '</text>';
-        }
+        yViivat(suod.maxEro).forEach(function (arvo) {
+            var y = padT + arvo * ySkaala;
+            grid += '<line x1="' + padL + '" y1="' + y.toFixed(1) + '" x2="' + (W - padR)
+                + '" y2="' + y.toFixed(1) + '" class="lb-va-grid"/>';
+            grid += '<text x="6" y="' + (y + 4).toFixed(1) + '" class="lb-va-grid-txt">'
+                + (arvo ? formatEro(arvo) : '0') + '</text>';
+        });
         svg.innerHTML = grid;
 
-        var nayta = data.viivat.slice();
-        nayta.sort(function (a, b) {
-            var as = a.henkilo.sija || 99;
-            var bs = b.henkilo.sija || 99;
-            return as - bs;
-        });
-        if (nayta.length > 10) {
-            nayta = nayta.slice(0, 10);
-        }
-        nayta.forEach(function (v, ix) {
+        suod.nayta.forEach(function (v, ix) {
             var vari = VA_VARIT[ix % VA_VARIT.length];
-            var d = svgPolku(v.pisteet, padL, padT, xAskel, ySkaala, H);
+            var d = svgPolku(v.pisteet, padL, padT, xAskel, ySkaala);
             var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
             path.setAttribute('d', d);
             path.setAttribute('fill', 'none');
             path.setAttribute('stroke', vari);
-            path.setAttribute('stroke-width', (v.henkilo.sija && v.henkilo.sija <= 3) ? '2.6' : '1.6');
+            path.setAttribute('stroke-width', (v.henkilo.sija && v.henkilo.sija <= 3) ? '2.6' : '1.8');
             path.setAttribute('stroke-linejoin', 'round');
             path.setAttribute('stroke-linecap', 'round');
-            path.setAttribute('opacity', v.henkilo.sija && v.henkilo.sija <= 3 ? '1' : '0.78');
             svg.appendChild(path);
             var last = v.pisteet[v.pisteet.length - 1];
             var lx = padL + (last.x + 1) * xAskel;
@@ -362,21 +516,19 @@
             var tit = document.createElementNS('http://www.w3.org/2000/svg', 'title');
             tit.textContent = v.henkilo.nimi + (last.y ? ' ' + formatEro(last.y) : ' kärki');
             path.appendChild(tit);
-            if (ix < 5) {
-                var lab = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-                lab.setAttribute('x', String(lx + 4));
-                lab.setAttribute('y', String(ly + 3));
-                lab.setAttribute('class', 'lb-va-viiva-nimi');
-                lab.setAttribute('fill', vari);
-                lab.textContent = v.henkilo.lyh;
-                svg.appendChild(lab);
-            }
+            var lab = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            lab.setAttribute('x', String(lx + 4));
+            lab.setAttribute('y', String(ly + 3));
+            lab.setAttribute('class', 'lb-va-viiva-nimi');
+            lab.setAttribute('fill', vari);
+            lab.textContent = v.henkilo.lyh;
+            svg.appendChild(lab);
         });
         wrap.appendChild(svg);
 
         var selite = document.createElement('div');
         selite.className = 'lb-va-selite';
-        selite.textContent = 'Kärki rastilla ja ero kärkeen. Viivat: sijoitusjärjestyksessä (enintään 10).';
+        selite.textContent = 'Skaala valittujen mukaan. Kärki rastilla = 0.';
         wrap.appendChild(selite);
 
         var ots = paneeli.querySelector('.lb-otsikko');
@@ -410,6 +562,7 @@
     window.JahVaGrafiikka = {
         parseAikaTxt: parseAikaTxt,
         lueVaPaneeli: lueVaPaneeli,
+        mukavaMaxEro: mukavaMaxEro,
         paivita: paivitaVaGrafiikat
     };
 })();

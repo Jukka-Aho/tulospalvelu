@@ -888,11 +888,17 @@
     }
 
     function asetaMoodi(uusi, opts) {
+        if (cfg.automaattiSivu) {
+            uusi = 'automaatti';
+        }
         if (cfg.vainMaali && uusi !== 'automaatti') {
             uusi = 'maali';
         }
         if (uusi === 'lisaa') {
             uusi = 'lahto';
+        }
+        if (uusi === 'automaatti' && !cfg.automaattiSivu) {
+            uusi = 'maali';
         }
         moodi = uusi;
         if (kioski) {
@@ -1368,7 +1374,7 @@
     }
 
     function onkoAutomaatti() {
-        return moodi === 'automaatti';
+        return !!(cfg.automaattiSivu) || moodi === 'automaatti';
     }
 
     function urlMoodi() {
@@ -1597,20 +1603,7 @@
     }
 
     function lisaaAutomaattiNappi() {
-        if (!cfg.iltarasti) {
-            return;
-        }
-        var row = document.querySelector('.emit-moodit');
-        if (!row || row.querySelector('[data-moodi="automaatti"]')) {
-            return;
-        }
-        var btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'emit-moodi';
-        btn.setAttribute('data-moodi', 'automaatti');
-        btn.textContent = 'Automaatti';
-        row.appendChild(btn);
-        row.classList.add('emit-moodit--3');
+        /* Automaatti on oma kioskisivu, ei tulospalvelun välilehti. */
     }
 
     function varmistaAutomaattiNaytto() {
@@ -3042,6 +3035,9 @@
         }
     }
 
+    if (cfg.automaattiSivu) {
+        document.body.classList.add('emit-automaatti-sivu', 'is-automaatti-moodi');
+    }
     lisaaAutomaattiNappi();
     document.querySelectorAll('.emit-moodit .emit-moodi').forEach(function (btn) {
         btn.addEventListener('click', function () {
@@ -3255,11 +3251,19 @@
     });
 
     try {
-        if (cfg.vainMaali) {
+        if (cfg.automaattiSivu) {
+            asetaMoodi('automaatti');
+        } else if (cfg.vainMaali) {
             asetaMoodi('maali');
         } else if (!kioski) {
             var alku = urlMoodi() || cfg.alkuMoodi || '';
+            if (alku === 'automaatti') {
+                alku = '';
+            }
             var tallennettu = localStorage.getItem('jah-emit-moodi');
+            if (tallennettu === 'automaatti') {
+                tallennettu = '';
+            }
             if (alku && OHJE[alku]) {
                 asetaMoodi(alku);
             } else if (tallennettu && OHJE[tallennettu]) {

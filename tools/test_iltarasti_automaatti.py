@@ -43,21 +43,24 @@ def test_automaatti_lahde():
         "function automaattiPuheTeksti",
         "Hylkäysesitys",
         "Tuntematon kortti",
-        "data-moodi=\"automaatti\"",
         "urlMoodi",
         "oletus_moodi",
         "window.JahAutomaatti",
+        "automaattiSivu",
+        "emit-automaatti-sivu",
         "Automaatti",
     ):
         assert pala in js, pala
     assert "emit-automaatti-nimi" in css
     assert "is-automaatti-moodi" in css
+    assert "emit-automaatti-sivu" in css
     assert "Hylkäysesitys" in js
+    assert os.path.isfile(os.path.join(JAH, "public/automaatti.php"))
     pwa = read(PWA)
-    assert "moodi=automaatti" in pwa
+    assert "automaatti.php" in pwa
     sw = read(SW)
-    assert "jahonline-app-v13" in sw
-    assert "20261111auto" in sw
+    assert "jahonline-app-v14" in sw
+    assert "20261111kioski" in sw
     print("ok automaatti lahde")
 
 
@@ -67,6 +70,10 @@ def test_grafiikka_lahde():
     for pala in (
         "function lueVaPaneeli",
         "function piirraVaGrafiikka",
+        "function mukavaMaxEro",
+        "function oletusValitut",
+        "Kilpailijat kaaviossa",
+        "Kärki 5",
         "lb-va-grafiikka",
         "Tilanne rasteilla",
         "window.JahVaGrafiikka",
@@ -75,6 +82,7 @@ def test_grafiikka_lahde():
         assert pala in js, pala
     assert ".lb-va-grafiikka" in css
     assert ".lb-va-asemat" in css
+    assert ".lb-va-valinta" in css
     print("ok grafiikka lahde")
 
 
@@ -118,6 +126,21 @@ console.log('ok parseAikaTxt');
     out = subprocess.check_output(["node", "-e", script], text=True)
     assert "ok parseAikaTxt" in out
     print("ok parseAikaTxt")
+
+
+def test_mukava_max_ero():
+    src = extract_fn(read(SEURANTA_JS), "mukavaMaxEro")
+    script = src + """
+const cases = [[1,10],[10,10],[11,15],[40,45],[61,90],[200,240],[2000,2100]];
+for (const [inn, exp] of cases) {
+  const got = mukavaMaxEro(inn);
+  if (got !== exp) throw new Error(JSON.stringify({inn, exp, got}));
+}
+console.log('ok mukavaMaxEro');
+"""
+    out = subprocess.check_output(["node", "-e", script], text=True)
+    assert "ok mukavaMaxEro" in out
+    print("ok mukavaMaxEro")
 
 
 def test_automaatti_malli_puhe():
@@ -227,6 +250,7 @@ def main():
     test_automaatti_lahde()
     test_grafiikka_lahde()
     test_parse_aika_txt()
+    test_mukava_max_ero()
     test_automaatti_malli_puhe()
     test_valiajat_karki()
     test_docs()
