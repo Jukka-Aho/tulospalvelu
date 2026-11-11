@@ -70,8 +70,8 @@ def test_automaatti_lahde():
     pwa = read(PWA)
     assert "automaatti.php" in pwa
     sw = read(SW)
-    assert "jahonline-app-v17" in sw
-    assert "20261111net" in sw
+    assert "jahonline-app-v18" in sw
+    assert "20261111graf" in sw
     print("ok automaatti lahde")
 
 
@@ -89,11 +89,16 @@ def test_grafiikka_lahde():
         "Tilanne rasteilla",
         "window.JahVaGrafiikka",
         "lb-live-replaced",
+        "function onkoKapea",
+        "lb-va-kaavio-wrap",
+        "lb-va-selite--nimet",
     ):
         assert pala in js, pala
     assert ".lb-va-grafiikka" in css
     assert ".lb-va-asemat" in css
     assert ".lb-va-valinta" in css
+    assert ".lb-va-kaavio-wrap" in css
+    assert ".lb-va-selite--nimet" in css
     print("ok grafiikka lahde")
 
 

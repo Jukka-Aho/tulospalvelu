@@ -286,8 +286,9 @@ jos rata tai leimat muuttuvat.
 
 Rastiväliajat-välilehdellä taulukon yläpuolella on rastitilanne:
 jokaisesta rastista kärki, kärkiaika ja montako on leimannut, sekä
-viivakaavio erosta kärkeen (WinSplits/Navisport). Grafiikka piirtyy
-uudelleen live-päivityksessä.
+viivakaavio erosta kärkeen (WinSplits/Navisport). Puhelimessa kaavio
+vierii vaakaan eikä kutistu, viivat ovat paksumpia, ja nimet näkyvät
+väriselitteessä. Grafiikka piirtyy uudelleen live-päivityksessä.
 
 ## Osanottajat
 
