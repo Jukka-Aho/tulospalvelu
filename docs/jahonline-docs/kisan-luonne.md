@@ -45,9 +45,12 @@ Luonne tulee Pirilän kilpailulajista (*Kilpailun määritykset → Kilpailulaji
 | Sotilas-5-ottelu | `P` | `sotilas5ottelu` |
 | Meri-5-ottelu | `N` | `meri5ottelu` |
 | Muu | `M` (tai muu) | `muu` |
+| Iltarastit (ei Pirilästä) | — | `iltarasti` |
 
 Viesti ja yksilökisa erotetaan edelleen kentällä `tyyppi` (`viesti` /
 `yksilo`). Luonne on siitä riippumaton: viestikin voi olla `hiihto`.
+Iltarastit luodaan Rastilippu-hubista, ei Pirilästä; ks.
+[iltarastit.md](iltarastit.md).
 
 ## Tietokanta
 
