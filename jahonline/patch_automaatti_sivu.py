@@ -93,7 +93,7 @@ def patch_helpers():
     p = DEST / "includes/helpers.php"
     txt = p.read_text(encoding="utf-8")
     orig = txt
-    if "'automaatti'" not in txt.split("function julkinenLinkit", 1)[-1][:800]:
+    if "'automaatti' => $prefix . 'automaatti.php'" not in txt:
         txt, _ = sub(
             txt,
             "        'leimantarkastus' => $prefix . 'leimantarkastus.php' . $q,\n",
