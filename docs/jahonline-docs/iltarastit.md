@@ -166,6 +166,7 @@ Hamburger:
 - Tulokset (seuranta upotettuna: rata ylhäällä, välilehdet
   **Tulokset** / **Rastiväliajat** kuten Pirilän julkisissa tuloksissa).
   Kilpailunumeroita ei näytetä (iltarastissa tunnistetaan nimellä).
+  Rastiväliajoissa on rastitilanne-grafiikka (kärki rastilla ja ero kärkeen).
 
 Vaihda tapahtuma palauttaa hubiin.
 
@@ -201,7 +202,7 @@ Rataa ei voi poistaa, jos sillä on osanottajia.
 
 ## Tulospalvelu
 
-`/public/emit_lukija.php` sisäänluku / leimantarkastus, ilman ohjetekstejä.
+`/public/emit_lukija.php` sisäänluku / leimantarkastus / automaatti, ilman ohjetekstejä.
 
 **Sisäänluku:** etunimi, sukunimi, seura, rata, kilpailukortti, lainakortti,
 ei aikaa. Lomake on tiivis, jotta se mahtuu kännykän näytölle kerralla.
@@ -229,13 +230,23 @@ kortin voi kirjata nimellä myös tässä. Maaliin kirjaus asettaa `T` tai
 kaatuu, leimat silti merkitsevät Esityksen. Esitys tallennetaan
 `keskhyl=E` (status-sarake pysyy `OK`, koska ENUM ei tunne ESITYS-arvoa).
 
+**Automaatti** (Navisport-tyylinen maalinäyttö): kolmas välilehti
+tulospalvelussa, tai suoraan `?moodi=automaatti`. Kortin luku käsitellään
+maalina. Ruutuun tulee isoina henkilön nimi, tulosaika ja sijoitus
+(1.–3. mitalivärein) tai vaihtoehtoisesti **Hylkäysesitys** puuttuvine
+rasteineen. Tuntematon kortti näyttää *Tuntematon kortti* ilman
+nimilomaketta. Näyttö tyhjenee noin 12 sekunnissa (kaksoisklikkaus
+tyhjentää heti). Puhe (fi-FI) on päällä; mykistys jää puhelimeen.
+Sijoitus luetaan tulossivulta, ja jos verkko ei vastaa, se lasketaan
+illan hyväksytyistä ajoista. Esitystä ei muuteta hylkäykseksi.
+
 Jos verkko katkeaa, kortin luku jää puhelimen jonoon (`localStorage`)
 ja lähtee automaattisesti, kun yhteys palaa. Banneri kertoo jonon pituuden.
 
 Kortin luku vaihtaa välilehden automaattisesti: tunnettu kortti menee
 leimantarkastukseen, tuntematon kysyy *Lähteväksi* vai *Maaliin*.
 
-Molemmissa tiloissa vihreä **Yhdistä lukija** omalla rivillään. Yhdistettynä
+Kaikissa tiloissa vihreä **Yhdistä lukija** omalla rivillään. Yhdistettynä
 nappi vaihtuu tekstiksi *Lukija yhdistetty* (klikkaus katkaisee). Valittu
 välilehti on täytetty. Kortin leimat näytetään heti luvun jälkeen, myös
 uudelle kortille.
@@ -244,8 +255,9 @@ uudelle kortille.
 | Tilanne | Toiminta |
 |---|---|
 | Tunnettu kortti | Siirtyy leimantarkastukseen, rastitarkistus |
-| Tuntematon kortti | Kysyy lähteväksi vai maaliin; sitten nimilomake |
+| Tuntematon kortti | Kysyy lähteväksi vai maaliin; sitten nimilomake. Automaatissa vain *Tuntematon kortti* |
 | Kortti leimantarkastuksessa | Leimat ja tulos ruutuun. Uudelle kortille myös nimi |
+| Automaatti | Nimi, aika ja sijoitus tai Hylkäysesitys; tyhjenee itsestään |
 | Kirjaa kortilla | Lähtö nollaleimauksesta / leimantarkastus |
 | Ei aikaa tai ei korttia | Maastoon (sisäänluku) tai pois (leimantarkastus) |
 | Lainakortti | `kilpailijat.laina = X`. Sama emit-numero kelpaa seuraavalle, kun edellinen ei ole enää maastossa (`T`/`E`/`H`/`K`). Edellisen leimat pysyvät hänellä. |
@@ -264,6 +276,11 @@ heti: nollaleima (koodi 0) säilytetään, juoksuajat lasketaan siitä, ja
 rastiväliajat-välilehti päivittyy ilman sarjan tai kilpailijan
 uudelleenlaskentaa. Uudelleenlaskenta tekee saman kirjoituksen uudestaan
 jos rata tai leimat muuttuvat.
+
+Rastiväliajat-välilehdellä taulukon yläpuolella on rastitilanne:
+jokaisesta rastista kärki, kärkiaika ja montako on leimannut, sekä
+viivakaavio erosta kärkeen (WinSplits/Navisport). Grafiikka piirtyy
+uudelleen live-päivityksessä.
 
 ## Osanottajat
 
@@ -312,6 +329,10 @@ ei vielä kirjattu). **Päivitä Rastilipusta** hakee listan uudelleen.
 | `auth/sahkoposti.php` | Pakollinen sähköposti kirjautumisen yhteydessä |
 | `admin/iltarasti_tulokset.php` | Tulokset ja rastiväliajat upotettuna |
 | `admin/iltarasti_valiajat.php` | Ohjaa tulossivun Rastiväliajat-välilehteen |
+| `assets/js/emit_lukija.js` | Sisäänluku, leimantarkastus, Automaatti-näyttö |
+| `assets/js/seuranta.js` | Live-ajat ja rastiväliaikojen rastitilanne-grafiikka |
+| `assets/css/emit_lukija.css` | Tulospalvelun ja Automaatti-näytön tyyli |
+| `assets/css/live_board.css` | Tulostaulun ja rastigrafiikan tyyli |
 | `public/ohjeet.php` | Ohjeet: osiot palveluoikeuksien mukaan; iltarastiohjeet vastaavat nykyistä toimintaa |
 | `includes/layout.php` / `admin_nav.php` | Kokoikkuna-kuori (kuten sisäänluku) kaikilla iltarastisivuilla |
 | `includes/kisa_luonne.php` | luonne `iltarasti` |

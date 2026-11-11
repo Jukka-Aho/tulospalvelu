@@ -1,0 +1,945 @@
+.emit-lukija-page .emit-moodit {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    margin: 0.75rem 0;
+}
+
+.emit-lukija-page .emit-moodi {
+    min-height: 3.2rem;
+    border: 2px solid var(--primary);
+    background: var(--card);
+    color: var(--text);
+    border-radius: 0.6rem;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.emit-lukija-page .emit-moodi.is-valittu {
+    background: var(--primary);
+    color: var(--on-primary);
+}
+
+.emit-lukija-page .emit-ohje {
+    margin-top: 0;
+}
+
+.emit-lukija-page .emit-lisaa label,
+.emit-lukija-page .emit-nolla {
+    display: block;
+    margin: 0.4rem 0;
+    font-weight: 600;
+}
+
+.emit-lukija-page .emit-lisaa select,
+.emit-lukija-page .emit-lisaa input,
+.emit-lukija-page .emit-nolla input,
+.emit-lukija-page .emit-baud select {
+    display: block;
+    width: 100%;
+    min-height: 2.8rem;
+    font-size: 1.05rem;
+    margin-top: 0.2rem;
+    background: var(--input-bg);
+    color: var(--text);
+    border: 1px solid var(--input-border);
+    border-radius: 0.4rem;
+}
+
+.emit-lukija-page .emit-nimet {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+}
+
+.emit-lukija-page .emit-yhteys {
+    margin: 0.8rem 0;
+}
+
+.emit-lukija-page .emit-yhdista,
+.emit-lukija-page .emit-siirra,
+.emit-lukija-page .emit-kasin button,
+.emit-lukija-page .emit-asetusnapit button {
+    min-height: 2.8rem;
+    padding: 0.4rem 0.8rem;
+    font-weight: 700;
+}
+
+.emit-lukija-page .emit-yhdista {
+    background: var(--primary);
+    color: var(--on-primary);
+    border: 0;
+    border-radius: 0.5rem;
+    width: 100%;
+}
+
+.emit-lukija-page .emit-baud {
+    display: block;
+    margin-top: 0.5rem;
+    font-weight: 600;
+}
+
+.emit-lukija-page .emit-leimat-otsikko {
+    margin: 0.15rem 0 0.2rem;
+    font-family: "Barlow", system-ui, sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    word-spacing: 0.1em;
+}
+
+.emit-lukija-page .emit-leimat ol {
+    margin: 0.4rem 0 0.8rem;
+    padding: 0;
+    list-style: none;
+}
+
+.emit-lukija-page .emit-leimat li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.35rem;
+    margin: 0.28rem 0;
+    padding: 0.35rem 0.5rem;
+    border-radius: 0.35rem;
+    font-size: 1.05rem;
+}
+
+.emit-lukija-page .emit-leima-nro {
+    min-width: 1.6rem;
+    font-weight: 700;
+}
+
+.emit-lukija-page .emit-leima-ok {
+    background: #f4f1ea;
+    color: #1c1408;
+    border: 1px solid #cfc6b6;
+}
+
+/* Tumma punainen, musta reuna, viivoitus ja sana: ei pelkkä väri. */
+.emit-lukija-page .emit-leima-virhe {
+    background-color: #5c0000;
+    background-image: repeating-linear-gradient(
+        -45deg,
+        #5c0000 0,
+        #5c0000 8px,
+        #7a1010 8px,
+        #7a1010 16px
+    );
+    color: #fff;
+    font-weight: 800;
+    border: 3px solid #000;
+}
+
+.emit-lukija-page .emit-leima-virhe .emit-leima-tila {
+    text-decoration: underline;
+    text-underline-offset: 0.12em;
+    letter-spacing: 0.02em;
+}
+
+.emit-lukija-page .emit-leima-extra {
+    background: #f4f1ea;
+    color: #1c1408;
+    border: 1px dashed #6b5a3c;
+}
+
+.emit-lukija-page .emit-leima-extra .emit-leima-tila {
+    font-weight: 700;
+}
+
+.emit-lukija-page .emit-leima-sammunut {
+    background: #f4f1ea;
+    color: #5c5346;
+    border: 1px dotted #8a7d68;
+}
+
+.emit-lukija-page .emit-leima-sammunut .emit-leima-tila {
+    font-weight: 700;
+}
+
+.emit-lukija-page .emit-luettu {
+    font-size: 1.6rem;
+    font-weight: 800;
+    margin: 0.2rem 0;
+}
+
+.emit-lukija-page #lisaa-tallenna {
+    margin-top: 0.8rem;
+}
+
+/* Tumma teema jättää var(--text) vaaleaksi. Varoitustausta on kermainen,
+   joten teksti pidetään tummana ja loki luettavana ilman maalaamista. */
+.lahtoluennat-page.emit-lukija-page .timing-viesti,
+.lahtoluennat-page.emit-lukija-page .timing-viesti.ok,
+.lahtoluennat-page.emit-lukija-page .timing-viesti.varoitus,
+.lahtoluennat-page.emit-lukija-page .timing-viesti.virhe {
+    background: #fff8ee;
+    color: #1c1408;
+    text-align: left;
+    border-color: #ef6c00;
+}
+
+.lahtoluennat-page.emit-lukija-page .timing-viesti.ok {
+    background: #e7f6ea;
+    color: #102816;
+    border-color: #c49a22;
+}
+
+.lahtoluennat-page.emit-lukija-page .timing-viesti.virhe {
+    background: #fdecea;
+    color: #4a1010;
+    border-color: #c62828;
+}
+
+.lahtoluennat-page.emit-lukija-page .timing-viesti .muted,
+.lahtoluennat-page.emit-lukija-page #emit-yhteenveto,
+.lahtoluennat-page.emit-lukija-page #emit-usb,
+.lahtoluennat-page.emit-lukija-page #emit-loki {
+    color: #1c1408;
+}
+
+.lahtoluennat-page.emit-lukija-page #emit-yhteenveto {
+    font-family: "Barlow", system-ui, sans-serif;
+    font-size: 1.12rem;
+    font-weight: 650;
+    line-height: 1.45;
+    letter-spacing: 0.01em;
+    word-spacing: 0.08em;
+}
+
+.lahtoluennat-page.emit-lukija-page #emit-usb {
+    margin-top: 0.35rem;
+    font-weight: 700;
+}
+
+.lahtoluennat-page.emit-lukija-page #emit-loki {
+    margin: 0.5rem 0 0;
+    max-height: 16rem;
+    overflow: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    font-weight: 650;
+    background: transparent;
+    text-align: left;
+}
+
+.emit-lukija-page .emit-kasin {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.emit-lukija-page .emit-kasin input {
+    flex: 1;
+}
+
+.emit-lukija-page .emit-asetukset {
+    margin: 1rem 0;
+}
+
+.emit-lukija-page .emit-asetusnapit {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+@media (max-width: 640px) {
+    .emit-lukija-page .emit-moodit,
+    .emit-lukija-page .emit-kysy-napit {
+        grid-template-columns: 1fr 1fr;
+    }
+    .emit-lukija-page .emit-nimet {
+        grid-template-columns: 1fr;
+    }
+}
+
+.emit-lukija-page .emit-kysy {
+    margin: 0.8rem 0 1rem;
+    padding: 0.8rem;
+    border: 2px solid var(--primary);
+    border-radius: 0.6rem;
+    background: var(--card);
+}
+
+.emit-lukija-page .emit-kysy-otsikko {
+    font-weight: 800;
+    margin: 0 0 0.7rem;
+}
+
+.emit-lukija-page .emit-kysy-napit {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+}
+
+.emit-lukija-page .emit-ehdotukset {
+    margin: 0.6rem 0 0.8rem;
+    padding: 0.7rem;
+    border: 2px solid var(--primary);
+    border-radius: 0.6rem;
+    background: var(--card);
+}
+
+.emit-lukija-page .emit-ehdotukset-otsikko {
+    font-weight: 800;
+    margin: 0 0 0.5rem;
+}
+
+.emit-lukija-page .emit-maksu {
+    margin: 0 0 0.5rem;
+    font-size: 0.92rem;
+    font-weight: 750;
+}
+
+.emit-lukija-page .emit-maksu.is-ok {
+    color: #0b7a3b;
+}
+
+.emit-lukija-page .emit-maksu.is-ei {
+    color: #b42318;
+}
+
+.emit-lukija-page .emit-ilmo-tila {
+    margin: 0.2rem 0 0.6rem;
+}
+
+.emit-lukija-page .emit-ehdotukset-lista {
+    display: grid;
+    gap: 0.4rem;
+    margin-bottom: 0.5rem;
+}
+
+.emit-lukija-page .emit-ehdotus {
+    min-height: 2.8rem;
+    text-align: left;
+    font-weight: 700;
+    border: 2px solid var(--primary);
+    background: var(--card);
+    color: var(--text);
+    border-radius: 0.5rem;
+    padding: 0.4rem 0.7rem;
+}
+
+.emit-lukija-page .emit-ehdotus.is-valittu {
+    background: var(--primary);
+    color: var(--on-primary);
+}
+
+.emit-lukija-page .emit-uusi-henkilo {
+    width: 100%;
+}
+
+.emit-lukija-page .emit-paatos {
+    margin: 0.8rem 0 1rem;
+    padding: 0.8rem;
+    border: 3px solid #000;
+    border-radius: 0.6rem;
+    background: #fff6e8;
+}
+
+.emit-lukija-page .emit-jono {
+    margin: 0.4rem 0;
+    padding: 0.5rem 0.7rem;
+    background: #fff3cd;
+    color: #1c1408;
+    border: 2px solid #c49a22;
+    border-radius: 0.5rem;
+    font-family: "Barlow", system-ui, sans-serif;
+    font-weight: 650;
+    line-height: 1.4;
+    letter-spacing: 0.01em;
+    word-spacing: 0.08em;
+}
+
+.emit-lukija-page .emit-paatos-otsikko {
+    font-weight: 800;
+    margin: 0 0 0.7rem;
+}
+
+.emit-lukija-page .emit-arvaus {
+    margin: 0 0 0.7rem;
+}
+
+.emit-lukija-page .emit-arvaus-teksti {
+    font-weight: 800;
+    margin: 0 0 0.45rem;
+}
+
+.emit-lukija-page .emit-arvaus-nappi {
+    width: 100%;
+    min-height: 2.8rem;
+}
+
+.emit-lukija-page .emit-paatos-napit {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0.5rem;
+    margin-top: 0.7rem;
+}
+
+.emit-lukija-page .emit-paatos #paatos-rata {
+    width: 100%;
+    min-height: 44px;
+}
+
+.emit-lukija-page .emit-nimella {
+    margin: 0.8rem 0 1rem;
+    padding: 0.8rem;
+    border: 2px solid var(--input-border, #cfc6b6);
+    border-radius: 0.6rem;
+    background: var(--card);
+}
+
+.emit-lukija-page .emit-nimella-otsikko {
+    font-weight: 800;
+    margin: 0 0 0.4rem;
+}
+
+.emit-lukija-page .emit-nimella select,
+.emit-lukija-page .emit-nimella input {
+    display: block;
+    width: 100%;
+    min-height: 2.8rem;
+    margin-top: 0.2rem;
+}
+
+.emit-ok { color: #157347; font-weight: 700; }
+.emit-puute { color: #b42318; font-weight: 700; }
+.emit-aika { font-size: 1.15rem; }
+
+.emit-yla {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 0.6rem;
+    margin: 0 0 0.6rem;
+}
+
+.emit-yla .emit-moodit {
+    flex: 1 1 14rem;
+    margin: 0;
+}
+
+.emit-yla .emit-yhteys {
+    margin: 0;
+    flex: 0 0 auto;
+}
+
+.emit-yhteys--ikoni {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    min-height: 2.6rem;
+}
+
+.emit-lukija-tila {
+    display: block;
+    width: 100%;
+    min-height: 2.55rem;
+    padding: 0.35rem 0.6rem;
+    border: 0;
+    border-radius: 0.45rem;
+    background: transparent;
+    color: #157347;
+    font-weight: 800;
+    font-size: 1rem;
+    text-align: center;
+    cursor: pointer;
+}
+
+.emit-lukija-page.emit-iltarasti #yhdista[hidden],
+.emit-lukija-page.emit-iltarasti #lukija-yhteys[hidden],
+.emit-lukija-page.emit-iltarasti #lisaa-kentat[hidden],
+.emit-lukija-page.emit-iltarasti #emit-kysy[hidden],
+.emit-lukija-page.emit-iltarasti #emit-ehdotukset[hidden],
+.emit-lukija-page.emit-iltarasti #tulos[hidden],
+.emit-lukija-page.emit-iltarasti #leima-lista[hidden],
+.emit-lukija-page.emit-iltarasti #emit-paatos[hidden] {
+    display: none !important;
+}
+
+body.iltarasti-kuori.emit-iltarasti #emit-usb {
+    display: none !important;
+}
+
+/* Iltarasti: lisäyslomake yhdellä kännykkänäytöllä. */
+body.iltarasti-kuori.emit-iltarasti .admin-container {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    padding: 0.15rem 0.55rem 0.8rem;
+}
+
+body.iltarasti-kuori.emit-iltarasti .emit-yla { order: 1; }
+body.iltarasti-kuori.emit-iltarasti #emit-jono { order: 2; }
+body.iltarasti-kuori.emit-iltarasti #emit-tarkistus { order: 3; }
+body.iltarasti-kuori.emit-iltarasti #emit-kysy { order: 4; }
+body.iltarasti-kuori.emit-iltarasti #emit-ehdotukset { order: 5; }
+body.iltarasti-kuori.emit-iltarasti #lisaa-kentat { order: 6; }
+body.iltarasti-kuori.emit-iltarasti #viimeiset { order: 7; }
+body.iltarasti-kuori.emit-iltarasti #moodi-ohje,
+body.iltarasti-kuori.emit-iltarasti #nolla,
+body.iltarasti-kuori.emit-iltarasti #maali-huom {
+    display: none !important;
+}
+
+body.iltarasti-kuori.emit-iltarasti #kasin-form {
+    display: none !important;
+}
+
+body.iltarasti-kuori.emit-iltarasti.is-leimantarkistus #lisaa-kentat {
+    order: 6;
+}
+body.iltarasti-kuori.emit-iltarasti.is-leimantarkistus #emit-kysy {
+    order: 4;
+}
+body.iltarasti-kuori.emit-iltarasti.is-leimantarkistus #emit-ehdotukset {
+    order: 5;
+}
+body.iltarasti-kuori.emit-iltarasti.is-leimantarkistus #viimeiset {
+    display: none !important;
+}
+
+body.iltarasti-kuori.emit-iltarasti #emit-tarkistus:has(#tulos:not([hidden])),
+body.iltarasti-kuori.emit-iltarasti #emit-tarkistus:has(#leima-lista:not([hidden])) {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    flex: 0 1 auto;
+    min-height: 0;
+    padding: 0.7rem 0.75rem;
+    font-family: "Barlow", system-ui, sans-serif;
+    background: #fff8ee;
+    color: #1c1408;
+    border: 2px solid #cfc6b6;
+    border-radius: 0.55rem;
+}
+
+body.iltarasti-kuori.emit-iltarasti #emit-tarkistus #tulos {
+    margin: 0;
+    padding: 0.15rem 0 0.35rem;
+    background: transparent;
+    color: #1c1408;
+    border: 0;
+    box-shadow: none;
+}
+
+body.iltarasti-kuori.emit-iltarasti #emit-tarkistus #emit-yhteenveto,
+body.iltarasti-kuori.emit-iltarasti #emit-tarkistus .emit-leimat-otsikko,
+.emit-lukija-page.emit-iltarasti .emit-maali-nimi,
+.emit-lukija-page.emit-iltarasti .emit-maali-aika {
+    color: #1c1408;
+}
+
+.emit-lukija-page.emit-iltarasti .emit-maali-nimi {
+    font-size: 1.4rem;
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+.emit-lukija-page.emit-iltarasti .emit-maali-aika {
+    font-size: 1.85rem;
+    font-weight: 800;
+    margin: 0.2rem 0 0.25rem;
+    letter-spacing: 0.01em;
+}
+
+.emit-lukija-page.emit-iltarasti .emit-maali-tila {
+    display: inline-block;
+    margin: 0.15rem 0 0.35rem;
+    padding: 0.22rem 0.6rem;
+    border-radius: 0.35rem;
+    font-weight: 800;
+    font-size: 1.05rem;
+}
+
+.emit-lukija-page.emit-iltarasti .emit-maali-tila.is-t {
+    background: #157347;
+    color: #fff;
+}
+
+.emit-lukija-page.emit-iltarasti .emit-maali-tila.is-e {
+    background: #c2410c;
+    color: #fff;
+}
+
+.emit-lukija-page.emit-iltarasti .emit-maali-tila.is-h {
+    background: #7f1d1d;
+    color: #fff;
+}
+
+.emit-lukija-page.emit-iltarasti .emit-maali-tila.is-k {
+    background: #374151;
+    color: #fff;
+}
+
+.emit-lukija-page.emit-iltarasti.is-leimantarkistus .emit-paatos {
+    margin: 0.4rem 0 0;
+    padding: 0.55rem;
+}
+
+.emit-lukija-page.emit-iltarasti.is-leimantarkistus .emit-paatos-napit .emit-moodi {
+    min-height: 2.7rem;
+    font-size: 0.95rem;
+}
+
+.emit-lukija-page.emit-iltarasti .emit-yla {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: stretch;
+    gap: 0.35rem;
+    margin: 0 0 0.45rem;
+}
+
+.emit-lukija-page.emit-iltarasti .emit-moodit {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-column: 1 / -1;
+    gap: 0.35rem;
+    margin: 0;
+}
+
+.emit-lukija-page.emit-iltarasti .emit-yhteys--ikoni {
+    display: flex;
+    grid-column: 1 / -1;
+    align-items: center;
+    justify-content: flex-end;
+    min-height: 0;
+}
+
+.emit-lukija-page.emit-iltarasti .emit-moodi {
+    min-height: 2.7rem;
+    font-size: 0.88rem;
+    border-radius: 0.45rem;
+    border: 2px solid var(--border, #cfc6b6);
+    background: var(--card);
+    color: var(--text-muted, #6b5a3c);
+    font-weight: 650;
+    box-shadow: none;
+}
+
+.emit-lukija-page.emit-iltarasti .emit-moodi.is-valittu {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: var(--on-primary);
+    font-weight: 800;
+    box-shadow: inset 0 -3px 0 color-mix(in srgb, #000 28%, var(--primary));
+}
+
+.emit-lukija-page.emit-iltarasti .emit-yhdista {
+    width: auto;
+    min-width: 0;
+    min-height: 2.55rem;
+    padding: 0.3rem 0.7rem;
+    font-size: 0.92rem;
+}
+
+.emit-lukija-page.emit-iltarasti #yhdista.emit-yhdista--kutsu:not([hidden]) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    white-space: nowrap;
+    min-height: 2.85rem;
+    padding: 0.4rem 0.85rem;
+    font-size: 1rem;
+    font-weight: 800;
+    background: #0f7a3b;
+    color: #fff;
+    border: 2px solid #0a5c2c;
+    box-shadow: 0 1px 0 #083f1e;
+}
+
+.emit-lukija-page.emit-iltarasti #lukija-yhteys.emit-lukija-tila:not([hidden]) {
+    display: block;
+    width: 100%;
+    color: #c49a22;
+}
+
+.emit-lukija-page.emit-iltarasti .emit-lisaa {
+    margin: 0;
+}
+
+.emit-lukija-page.emit-iltarasti .emit-lisaa label {
+    margin: 0.12rem 0;
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+
+.emit-lukija-page.emit-iltarasti .emit-lisaa select,
+.emit-lukija-page.emit-iltarasti .emit-lisaa input:not([type="checkbox"]) {
+    min-height: 2.35rem;
+    font-size: 1rem;
+    margin-top: 0.08rem;
+}
+
+.emit-lukija-page.emit-iltarasti .emit-nimet,
+.emit-lukija-page.emit-iltarasti .emit-pari {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.4rem;
+}
+
+.emit-lukija-page.emit-iltarasti .emit-rukit {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem 1.1rem;
+    margin: 0.35rem 0 0.45rem;
+}
+
+.emit-lukija-page.emit-iltarasti .emit-lisaa .checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    font-weight: 700;
+    font-size: 1.05rem;
+    margin: 0;
+    min-height: 2.45rem;
+}
+
+.emit-lukija-page.emit-iltarasti .checkbox-label input {
+    width: 1.5rem;
+    height: 1.5rem;
+    min-height: 0;
+    margin: 0;
+    accent-color: var(--primary);
+}
+
+.emit-lukija-page.emit-iltarasti #lisaa-tallenna {
+    width: 100%;
+    margin-top: 0.15rem;
+}
+
+.emit-lukija-page.emit-iltarasti .lahto-list {
+    margin-top: 0.6rem;
+}
+
+.emit-lukija-page.emit-iltarasti .lahto-list:not(:has(li)) {
+    display: none;
+}
+
+@media (max-width: 640px) {
+    .emit-yla {
+        flex-direction: column;
+        max-width: 100%;
+    }
+    .emit-lukija-page.emit-iltarasti .emit-yla {
+        flex-direction: unset;
+        grid-template-columns: 1fr 1fr;
+        max-width: 100%;
+    }
+    .emit-lukija-page.emit-iltarasti .emit-nimet {
+        grid-template-columns: 1fr 1fr;
+    }
+    .emit-lukija-page .emit-paatos-napit {
+        grid-template-columns: 1fr;
+    }
+    .emit-lukija-page.emit-iltarasti.is-leimantarkistus .emit-paatos-napit {
+        grid-template-columns: 1fr 1fr 1fr;
+    }
+    .emit-lukija-page.emit-iltarasti.is-leimantarkistus .emit-paatos-napit .emit-moodi {
+        min-width: 0;
+        padding: 0.4rem 0.2rem;
+        font-size: 0.85rem;
+        white-space: normal;
+    }
+}
+
+.emit-lukija-page .emit-leimat,
+body.iltarasti-kuori.emit-iltarasti #emit-tarkistus,
+body.iltarasti-kuori.emit-iltarasti #leima-lista {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+body.iltarasti-kuori.emit-iltarasti #leima-lista.emit-leimat,
+.emit-lukija-page .emit-leimat {
+    max-height: min(55vh, 28rem);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.emit-lukija-page .emit-moodit,
+.emit-lukija-page .emit-paatos-napit,
+.emit-lukija-page .emit-kysy-napit {
+    max-width: 100%;
+    min-width: 0;
+}
+
+.emit-lukija-page.emit-iltarasti .emit-moodit:has([data-moodi="automaatti"]),
+.emit-lukija-page.emit-iltarasti .emit-moodit--3 {
+    grid-template-columns: 1fr 1fr 1fr;
+}
+
+body.is-automaatti-moodi {
+    overflow: hidden;
+}
+
+body.is-automaatti-moodi .admin-container > *:not(.emit-yla):not(#emit-jono) {
+    display: none !important;
+}
+
+body.is-automaatti-moodi #emit-jono {
+    position: relative;
+    z-index: 36;
+}
+
+body.is-automaatti-moodi .emit-yla {
+    position: relative;
+    z-index: 40;
+}
+
+.emit-automaatti {
+    position: fixed;
+    inset: 0;
+    top: 0;
+    z-index: 28;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: max(6.4rem, calc(env(safe-area-inset-top, 0px) + 5.8rem)) 1.1rem 1.4rem;
+    background: #071018;
+    color: #f8fafc;
+    text-align: center;
+    font-family: "Barlow Condensed", "Barlow", system-ui, sans-serif;
+}
+
+.emit-automaatti[hidden] {
+    display: none !important;
+}
+
+.emit-automaatti-puhe {
+    position: absolute;
+    top: max(6.6rem, calc(env(safe-area-inset-top, 0px) + 6rem));
+    right: 0.7rem;
+    width: 2.6rem;
+    height: 2.6rem;
+    border: 0;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    color: #e2e8f0;
+    font-size: 1.15rem;
+    cursor: pointer;
+}
+
+.emit-automaatti-odota,
+.emit-automaatti-tulos {
+    width: min(52rem, 100%);
+}
+
+.emit-automaatti-ots {
+    font-size: clamp(2.4rem, 9vw, 5.5rem);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #94a3b8;
+}
+
+.emit-automaatti-ala {
+    margin-top: 0.8rem;
+    font-size: 1.05rem;
+    color: #64748b;
+}
+
+.emit-automaatti-rata {
+    font-size: clamp(1.1rem, 3vw, 1.7rem);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #94a3b8;
+    margin-bottom: 0.35rem;
+}
+
+.emit-automaatti-nimi {
+    font-size: clamp(2.2rem, 8vw, 5.2rem);
+    font-weight: 700;
+    line-height: 1.05;
+    text-wrap: balance;
+}
+
+.emit-automaatti-aika {
+    margin-top: 0.35rem;
+    font-size: clamp(3.2rem, 12vw, 7.2rem);
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.02em;
+    line-height: 1;
+}
+
+.emit-automaatti-sija {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.45rem;
+    margin-top: 0.55rem;
+    padding: 0.15rem 0.85rem 0.25rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.emit-automaatti-sija-nro {
+    font-size: clamp(2.4rem, 8vw, 4.4rem);
+    font-weight: 800;
+    line-height: 1;
+}
+
+.emit-automaatti-sija-txt {
+    font-size: clamp(1.1rem, 3vw, 1.6rem);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #cbd5e1;
+}
+
+.emit-automaatti-sija.is-1 {
+    background: #eab308;
+    color: #1c1408;
+}
+
+.emit-automaatti-sija.is-2 {
+    background: #cbd5e1;
+    color: #0f172a;
+}
+
+.emit-automaatti-sija.is-3 {
+    background: #d97706;
+    color: #1c1408;
+}
+
+.emit-automaatti-tila {
+    margin-top: 0.7rem;
+    font-size: clamp(1.6rem, 5vw, 2.8rem);
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.emit-automaatti-puute {
+    margin-top: 0.55rem;
+    font-size: clamp(1.05rem, 3vw, 1.5rem);
+    color: #fecaca;
+}
+
+.emit-automaatti.is-ok .emit-automaatti-tila {
+    color: #4ade80;
+}
+
+.emit-automaatti.is-hylkays {
+    background: #2a0d0d;
+}
+
+.emit-automaatti.is-hylkays .emit-automaatti-tila,
+.emit-automaatti.is-tuntematon .emit-automaatti-tila {
+    color: #fb7185;
+}
+
+.emit-automaatti.is-tuntematon {
+    background: #1a1408;
+}
+
+.emit-automaatti.is-kesk .emit-automaatti-tila {
+    color: #cbd5e1;
+}

@@ -1,0 +1,4073 @@
+/* Seuranta + Tulokset — sama visuaalinen kieli kuin TV-näyttö.
+ * Oletus = vaalea (kuten theme.js / style.css). Tumma vain data-theme=dark. */
+
+body.live-board-page {
+  --lb-bg: #eef2f5;
+  --lb-panel: #ffffff;
+  --lb-line: #c5d0da;
+  --lb-text: #12202c;
+  --lb-muted: #5a6d7c;
+  --lb-accent: #c49a22;
+  --lb-nopein: #0b7a55;
+  --lb-warn: #b45309;
+  --lb-row: #f4f7f9;
+  --lb-row-alt: #e8eef3;
+  --lb-maasto: #5a6d7c;
+  /* Status (DNF/DNS/DSQ): amber, ei punainen */
+  --lb-status: #b45309;
+  --lb-top-bg: rgba(255, 255, 255, 0.9);
+  --lb-grad: linear-gradient(180deg, #d9e6f0 0%, var(--lb-bg) 40%);
+
+  margin: 0;
+  min-height: 100vh;
+  background: var(--lb-grad);
+  color: var(--lb-text);
+  font-family: "Barlow", system-ui, sans-serif;
+}
+
+html[data-theme="dark"] body.live-board-page,
+body.live-board-page[data-theme="dark"] {
+  --lb-bg: #071018;
+  --lb-panel: #0e1a24;
+  --lb-line: #1e3344;
+  --lb-text: #f2f6f8;
+  --lb-muted: #8aa0b0;
+  --lb-accent: #e4c35a;
+  --lb-nopein: #3dd6a5;
+  --lb-warn: #fbbf24;
+  --lb-row: #12202c;
+  --lb-row-alt: #152635;
+  --lb-maasto: #8aa0b0;
+  --lb-status: #fbbf24;
+  --lb-top-bg: rgba(0, 0, 0, 0.25);
+  --lb-grad: radial-gradient(1200px 600px at 50% -10%, #3a3218 0%, var(--lb-bg) 55%);
+}
+
+body.live-board-page .site-topbar {
+  display: flex;
+  /* Ei sticky: vierittyy pois kuten etusivulla (ei vie tilaa scrollatessa) */
+  position: relative;
+  z-index: auto;
+  padding: 0.28rem 0.7rem;
+  min-height: 0;
+  /* Sama tausta kuin globaalissa .site-topbar */
+  background: var(--lb-top-bg, var(--card));
+  border-bottom: 1px solid var(--lb-line, var(--border));
+}
+
+body.live-board-page .site-topbar .site-brand {
+  color: var(--primary, var(--lb-accent));
+  font-size: 1.05rem;
+  letter-spacing: 0.03em;
+  gap: 0.4rem;
+  line-height: 1;
+}
+
+body.live-board-page .site-topbar .site-brand-logo {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 6px;
+  box-shadow: none;
+}
+
+body.live-board-page .site-topbar-user {
+  color: var(--lb-muted, var(--text-muted));
+}
+
+body.live-board-page .site-topbar-actions {
+  gap: 0.35rem;
+}
+
+body.live-board-page .site-topbar-btn,
+body.live-board-page .theme-toggle {
+  min-height: 2rem;
+  padding: 0.25rem 0.65rem;
+  font-size: 0.85rem;
+}
+
+body.live-board-page .theme-toggle {
+  width: auto;
+  min-width: 2rem;
+}
+
+@media (min-width: 900px) {
+  body.live-board-page .site-topbar {
+    padding: 0.32rem 0.9rem;
+  }
+
+  body.live-board-page .site-topbar .site-brand {
+    font-size: 1.15rem;
+  }
+
+  body.live-board-page .site-topbar .site-brand-logo {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 7px;
+  }
+}
+
+@media (max-width: 768px) {
+  body.live-board-page .site-topbar {
+    padding: 0.22rem 0.55rem;
+  }
+
+  body.live-board-page .site-topbar .site-brand {
+    font-size: 0.98rem;
+    gap: 0.32rem;
+  }
+
+  body.live-board-page .site-topbar .site-brand-logo {
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 5px;
+  }
+
+  body.live-board-page .site-topbar-btn,
+  body.live-board-page .theme-toggle {
+    min-height: 1.85rem;
+    font-size: 0.8rem;
+    padding: 0.2rem 0.55rem;
+  }
+}
+
+body.live-board-page .container {
+  max-width: none;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+  border: none;
+}
+
+.lb {
+  min-height: calc(100vh - 8.5rem);
+  min-height: calc(100dvh - 8.5rem);
+  display: flex;
+  flex-direction: column;
+}
+
+.lb-top {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.2rem;
+  padding: 0.4rem 0.75rem;
+  border-bottom: 1px solid var(--lb-line);
+  background: transparent;
+  position: relative;
+  z-index: 5;
+}
+
+.lb-kisa {
+  font-family: "Barlow Condensed", sans-serif;
+  font-weight: 600;
+  font-size: clamp(0.95rem, 2vw, 1.35rem);
+  color: var(--lb-accent);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+
+.lb-actions {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.3rem;
+  align-items: center;
+  width: 100%;
+  order: -1;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.lb-actions::-webkit-scrollbar {
+  display: none;
+}
+
+.lb-brand {
+  font-family: "Barlow Condensed", system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 1.7rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--primary, var(--lb-accent));
+  text-decoration: none;
+  line-height: 1.1;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.lb-brand .site-brand-logo {
+  width: 7.25rem;
+  height: 7.25rem;
+  display: block;
+  flex-shrink: 0;
+  border-radius: 18px;
+  object-fit: contain;
+  background: #0a0a0a;
+}
+
+@media (min-width: 900px) {
+  .lb-brand {
+    font-size: 2.15rem;
+  }
+
+  .lb-brand .site-brand-logo {
+    width: 8.5rem;
+    height: 8.5rem;
+    border-radius: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .lb-brand {
+    font-size: 1.55rem;
+  }
+
+  .lb-brand .site-brand-logo {
+    width: 6.25rem;
+    height: 6.25rem;
+    border-radius: 16px;
+  }
+}
+
+.lb-chip,
+.lb-actions a,
+.lb-actions button,
+.lb-actions select {
+  font: inherit;
+  font-size: 0.88rem;
+  border: 1px solid var(--lb-line);
+  background: var(--lb-panel);
+  color: var(--lb-text);
+  border-radius: 999px;
+  padding: 0.32rem 0.75rem;
+  text-decoration: none;
+  cursor: pointer;
+  flex: 0 0 auto;
+  white-space: nowrap;
+  line-height: 1.25;
+  min-height: 2.15rem;
+  box-sizing: border-box;
+}
+
+.lb-chip,
+.lb-actions a,
+.lb-actions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Kilpailunavigaatio: hieman isompi kuin yleiset chipit */
+.lb-actions a,
+.lb-actions button {
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 0.38rem 0.9rem;
+  min-height: 2.35rem;
+}
+
+/* Tulokset / Rastiväliajat (ja muut näkymävaihtajat) — erottuvammat */
+.lb-nakyma .lb-chip {
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 0.4rem 0.95rem;
+  min-height: 2.4rem;
+  border-width: 1.5px;
+}
+
+@media (min-width: 900px) {
+  .lb-actions a,
+  .lb-actions button {
+    font-size: 1.05rem;
+    padding: 0.45rem 1.1rem;
+    min-height: 2.55rem;
+  }
+
+  .lb-nakyma .lb-chip {
+    font-size: 1.02rem;
+    padding: 0.45rem 1.15rem;
+    min-height: 2.55rem;
+  }
+}
+
+.lb-chip.is-active,
+.lb-actions a.is-active {
+  background: var(--lb-accent);
+  color: #1a1408;
+  border-color: transparent;
+  font-weight: 600;
+}
+
+html[data-theme="light"] .lb-chip.is-active,
+html[data-theme="light"] .lb-actions a.is-active {
+  color: #fff;
+}
+
+.lb-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  color: #1a1408;
+  background: var(--lb-accent);
+  border-radius: 999px;
+  padding: 0.15rem 0.55rem;
+  vertical-align: middle;
+  line-height: 1.2;
+}
+
+.lb-meta .lb-live {
+  position: relative;
+  top: -1px;
+}
+
+html[data-theme="light"] .lb-live {
+  color: #fff;
+}
+
+.lb-meta {
+  width: 100%;
+  color: var(--lb-muted);
+  font-size: 0.75rem;
+  margin: 0;
+  line-height: 1.25;
+}
+
+.lb-meta a {
+  color: var(--lb-accent);
+  text-decoration: none;
+}
+
+.lb-meta a:hover {
+  text-decoration: underline;
+}
+
+.lb-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 0.45rem;
+  align-items: center;
+  padding: 0.35rem 0.75rem;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: var(--lb-bg, var(--bg, #071018));
+  border-bottom: 1px solid var(--lb-line);
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--lb-line, #334155) 55%, transparent);
+}
+
+html[data-theme="light"] .lb-controls,
+body.live-board-page[data-theme="light"] .lb-controls {
+  background: color-mix(in srgb, var(--lb-bg, #eef2f5) 92%, #fff);
+}
+
+.lb-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.45rem;
+  align-items: center;
+  flex: 1 1 12rem;
+  min-width: 0;
+  margin: 0;
+  order: 1;
+}
+
+.lb-nakyma {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.3rem;
+  align-items: center;
+  margin-left: auto;
+  overflow-x: auto;
+  scrollbar-width: none;
+  order: 3;
+}
+
+.lb-nakyma::-webkit-scrollbar {
+  display: none;
+}
+
+.lb-osuus-valinta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  align-items: center;
+  flex: 1 0 100%;
+  width: 100%;
+  order: 2;
+  padding-top: 0.1rem;
+}
+
+.lb-paivitys {
+  flex: 1 1 auto;
+  order: 4;
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted, var(--lb-muted));
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.lb-paivitys[hidden] {
+  display: none !important;
+}
+
+.lb-otsikko .lb-paivitys--sarja {
+  display: inline;
+  flex: none;
+  order: 0;
+  margin-left: 0.35rem;
+  font-size: 1em;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+
+.lb-controls label {
+  color: var(--lb-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.lb-controls select {
+  min-width: min(100%, 10.5rem);
+  max-width: 100%;
+  font-size: 0.88rem;
+  padding: 0.28rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid var(--lb-line);
+  background: var(--lb-panel);
+  color: var(--lb-text);
+}
+
+.lb-haku-label {
+  margin-left: 0.15rem;
+}
+
+.lb-haku {
+  min-width: min(100%, 11rem);
+  width: min(100%, 14rem);
+  max-width: 100%;
+  flex: 1 1 10rem;
+  font: inherit;
+  font-size: 1rem;
+  padding: 0.45rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid var(--lb-line);
+  background: var(--lb-panel);
+  color: var(--lb-text);
+}
+
+.lb-haku:focus {
+  outline: 2px solid var(--lb-accent);
+  outline-offset: 1px;
+}
+
+.lb-nimi-link {
+  color: var(--lb-text);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.lb-nimi-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.lb-main {
+  padding: 0.3rem 0.75rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.lb-paneeli {
+  background: var(--lb-panel);
+  border: 1px solid var(--lb-line);
+  border-radius: 14px;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.lb-otsikko {
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: clamp(1.25rem, 2.5vw, 1.85rem);
+  font-weight: 700;
+  padding: 0.55rem 0.9rem;
+  border-bottom: 1px solid var(--lb-line);
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: baseline;
+}
+
+.lb-otsikko small {
+  color: var(--lb-muted);
+  font-size: 0.55em;
+  font-weight: 500;
+}
+
+.lb-ohje {
+  margin: 0;
+  padding: 0.45rem 0.9rem;
+  color: var(--lb-muted);
+  font-size: 0.88rem;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.12);
+}
+
+.lb-scroll {
+  overflow-x: auto;
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
+}
+
+.lb-rivi {
+  display: grid;
+  /* Sija + Nro + joustava nimi + aika + ero (tila myös 1d-ajoille) */
+  grid-template-columns: 3rem 3.6rem minmax(8rem, 1fr) minmax(6.75rem, max-content) minmax(6.75rem, max-content);
+  gap: 0.4rem;
+  align-items: start;
+  padding: 0.5rem 0.75rem;
+  font-size: clamp(0.98rem, 1.8vw, 1.25rem);
+  border-bottom: 1px solid rgba(128, 128, 128, 0.12);
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.lb-rivi:not(.has-va) {
+  width: max-content;
+  max-width: 100%;
+}
+
+body.seuranta-page .lb-main--tulokset .lb-rivi:not(.has-va) {
+  width: min(36rem, 100%);
+  max-width: 100%;
+}
+
+/* Viesti: rivit koko paneelin leveyteen, jotta nimet mahtuvat */
+body.seuranta-page .lb-main--tulokset .lb-rivi.lb-viesti-rivi {
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Matkan mukaan: Sarja-sarake nimen jälkeen; nimi joustaa */
+.lb-rivi.has-sarja {
+  grid-template-columns: 3rem 3.6rem minmax(8rem, 1fr) 4.8rem 5.6rem 6rem;
+}
+
+body.seuranta-page .lb-main--tulokset .lb-rivi.has-sarja {
+  width: min(52rem, 100%);
+  max-width: 100%;
+}
+
+.lb-rivi.has-sarja .lb-ero,
+.lb-rivi.has-sarja .lb-aika {
+  overflow: visible;
+  text-overflow: clip;
+}
+
+.lb-sarja-solu {
+  min-width: 0;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--lb-muted);
+}
+
+.lb-head .lb-sarja-solu {
+  color: var(--lb-muted);
+  font-weight: 700;
+}
+
+.lb-sarja-solu .lb-sarja-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.lb-sarja-solu .lb-sarja-link:hover {
+  color: var(--lb-accent);
+  text-decoration: underline;
+}
+
+body.seuranta-page .lb-main--tulokset .lb-paneeli {
+  width: fit-content;
+  max-width: 100%;
+}
+
+body.seuranta-page .lb-main--tulokset .lb-paneeli--viesti,
+body.seuranta-page .lb-main--tulokset .lb-paneeli--viesti-osuus {
+  width: 100%;
+  max-width: 100%;
+}
+
+body.seuranta-page .lb-main--tulokset .lb-scroll {
+  width: 100%;
+}
+
+.lb-rivi.lb-head {
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: var(--lb-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: rgba(0, 0, 0, 0.18) !important;
+  border-bottom: 1px solid var(--lb-line);
+  position: sticky;
+  top: 0;
+  z-index: 12;
+  align-items: end;
+}
+
+html[data-theme="light"] .lb-rivi.lb-head {
+  background: #e4ebf1 !important;
+}
+
+/* Otsikkorivi sticky scroll-kontainerin yläreunaan.
+ * Älä käytä --lb-sticky-offsetia tässä: .lb-scroll (overflow-x) on
+ * sticky-sisältävä boksi, jolloin offset työnsi SIJA/NRO/NIMI-rivin
+ * turhaan alas datarivien päälle. */
+body.seuranta-page .lb-rivi.lb-head,
+body.seuranta-embed .lb-rivi.lb-head,
+body.kilpailu-kuori-online .lb-rivi.lb-head {
+  top: 0;
+}
+
+.lb-rivi:nth-child(odd) { background: var(--lb-row); }
+.lb-rivi:nth-child(even) { background: var(--lb-row-alt); }
+
+/* Rastiväliajat: rivit lb-rivi-ryhmässä — striping wrapperiin */
+.lb-rivi-ryhma:nth-child(odd) .lb-rivi { background: var(--lb-row); }
+.lb-rivi-ryhma:nth-child(even) .lb-rivi { background: var(--lb-row-alt); }
+
+/* Status (DNF/DSQ): vain Aika-sarakkeessa */
+.lb-rivi.status .lb-aika {
+  color: var(--lb-status);
+  font-weight: 700;
+}
+
+/* Iltarasti: Esitys ei ole OK — selkeä punainen, WCAG-kontrasti vaalealla pohjalla */
+.lb-rivi.status-esitys .lb-aika {
+  color: #7f1d1d;
+  background: #fee2e2;
+  border-radius: 0.25rem;
+  padding: 0.05em 0.35em;
+  font-weight: 800;
+}
+html[data-theme="dark"] .lb-rivi.status-esitys .lb-aika,
+body.live-board-page[data-theme="dark"] .lb-rivi.status-esitys .lb-aika {
+  color: #fecaca;
+  background: #7f1d1d;
+}
+
+.lb-sija {
+  color: var(--lb-text);
+  font-family: "Barlow Condensed", sans-serif;
+  font-weight: 700;
+  font-size: 1.2em;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  padding-top: 0.05em;
+  text-align: left;
+  justify-self: start;
+  white-space: nowrap;
+  overflow: hidden;
+  min-width: 0;
+  line-height: 1.15;
+}
+
+.lb-numero {
+  color: var(--lb-muted);
+  font-weight: 500;
+  font-size: 0.92em;
+  font-variant-numeric: tabular-nums;
+  padding-top: 0.2em;
+  text-align: left;
+  justify-self: start;
+  white-space: nowrap;
+  overflow: hidden;
+  min-width: 0;
+  line-height: 1.2;
+}
+
+.lb-nimi {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.12rem;
+  min-width: 0;
+  max-width: 100%;
+  color: var(--lb-text);
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.lb-rivi .lb-nimi-link,
+.lb-rivi .lb-nimi-paa {
+  color: var(--lb-text);
+}
+
+.lb-rivi .lb-nimi-meta,
+.lb-rivi .lb-seura-link {
+  color: var(--lb-muted);
+}
+
+.lb-nimi-paa {
+  display: block;
+  max-width: 100%;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: unset;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* Online-tulokset: näytä koko nimi (ei ellipsiä) */
+body.seuranta-page .lb-main--tulokset .lb-rivi:not(.has-va) .lb-nimi-paa,
+body.seuranta-page .lb-main--tulokset .lb-rivi:not(.has-va) .lb-nimi-link {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: unset;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+body.seuranta-page .lb-main--tulokset .lb-rivi:not(.has-va) .lb-nimi {
+  overflow: visible;
+}
+
+.lb-nimi-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.2rem 0.35rem;
+  max-width: 100%;
+  color: var(--lb-muted);
+  font-size: 0.78em;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.lb-meta-sep {
+  opacity: 0.55;
+  user-select: none;
+}
+
+.lb-meta-item {
+  white-space: nowrap;
+}
+
+.lb-seura,
+.lb-tag {
+  color: var(--lb-muted);
+  font-size: 0.78em;
+  font-weight: 500;
+}
+
+.lb-va .lb-tag {
+  margin-left: 0.15rem;
+}
+
+.lb-seura-link {
+  color: var(--lb-muted);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.lb-sarja-link {
+  color: var(--lb-accent);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.lb-seura-link {
+  display: inline;
+  white-space: nowrap;
+}
+
+.lb-seura-link:hover,
+.lb-sarja-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.lb-otsikko .lb-sarja-link {
+  color: inherit;
+  font-weight: inherit;
+}
+
+.lb-osuudet {
+  display: block;
+  max-width: 100%;
+  color: var(--lb-muted);
+  font-size: 0.78em;
+  font-weight: 500;
+  line-height: 1.35;
+  white-space: normal;
+}
+
+.lb-osuudet .lb-nimi-link {
+  font-weight: 600;
+}
+
+.lb-aika {
+  color: var(--lb-accent);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+  overflow: visible;
+  text-overflow: clip;
+  padding-top: 0.15em;
+}
+
+.lb-aika .live-aika {
+  color: inherit;
+  font-weight: inherit;
+  font-variant-numeric: tabular-nums;
+}
+
+.lb-rivi.maastossa .lb-aika {
+  color: var(--lb-maasto);
+  font-weight: 600;
+  font-style: italic;
+}
+
+.lb-ero {
+  color: var(--lb-warn);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+  padding-top: 0.15em;
+}
+
+.lb-head .lb-aika,
+.lb-head .lb-ero,
+.lb-head .lb-va {
+  text-align: right;
+}
+
+.lb-head .lb-sija,
+.lb-head .lb-numero {
+  text-align: left;
+  justify-self: start;
+  color: var(--lb-muted);
+  font-family: inherit;
+  font-weight: 700;
+  font-size: inherit;
+  letter-spacing: inherit;
+  padding-top: 0;
+}
+
+.lb-head .lb-aika,
+.lb-head .lb-ero,
+.lb-head .lb-va {
+  color: var(--lb-muted);
+  font-weight: 600;
+  padding-top: 0;
+}
+
+.lb-head .lb-va {
+  align-items: flex-end;
+  width: 100%;
+}
+
+.lb-rivi-ryhma {
+  border-bottom: 1px solid var(--lb-line);
+}
+
+.lb-rivi-ryhma:last-child {
+  border-bottom: none;
+}
+
+.lb-rivi-ryhma .lb-rivi {
+  border-bottom: none;
+}
+
+.lb-rivi-split {
+  opacity: 0.88;
+  font-size: 0.85em;
+  padding-top: 0;
+  padding-bottom: 0.35rem;
+}
+
+.lb-rivi-split .lb-va {
+  color: var(--lb-muted);
+  font-size: 0.95em;
+}
+
+.lb-va .lb-tag {
+  margin-left: 0;
+}
+
+.lb-va-cell {
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 0.2em;
+  width: 100%;
+  min-width: 0;
+}
+
+.lb-va-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: flex-end;
+  width: 100%;
+  min-width: 0;
+  gap: 0.12rem;
+}
+
+.lb-va-stack-kok,
+.lb-va-stack-leg {
+  width: 100%;
+  min-width: 0;
+}
+
+.lb-va-stack-leg {
+  font-size: 0.85em;
+  opacity: 0.88;
+}
+
+.lb-va-stack-ero {
+  display: block;
+  width: 100%;
+  text-align: right;
+  font-size: 0.72em;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: #b45309;
+  line-height: 1.15;
+}
+
+.lb-va-stack-leg .lb-va-sija {
+  opacity: 0.62;
+  font-weight: 600;
+}
+
+.lb-va-sija {
+  font-style: normal;
+  font-size: 0.9em;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--lb-text);
+  opacity: 0.72;
+  flex: 0 0 auto;
+  min-width: 2.75em;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.lb-th-long {
+  display: inline;
+}
+
+.lb-th-short {
+  display: none;
+}
+
+.lb-va-sija--empty {
+  visibility: hidden;
+}
+
+.lb-rivi-split .lb-va-sija {
+  opacity: 0.62;
+  font-weight: 600;
+}
+
+.lb-va-aika {
+  flex: 0 0 auto;
+  text-align: right;
+}
+
+.lb-va-cell.is-nopein .lb-va-sija,
+.lb-va-cell.is-nopein .lb-va-aika {
+  color: var(--lb-nopein, #0b7a55);
+  opacity: 1;
+  font-weight: 700;
+}
+
+.valiajat-ero-txt.is-nopein {
+  color: var(--lb-nopein, #0b7a55);
+  font-weight: 700;
+}
+
+.lb-va-head {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: flex-end;
+  text-align: right;
+  line-height: 1.15;
+  padding-top: 0;
+}
+
+.lb-va-piste {
+  font-weight: 600;
+}
+
+.lb-va-koodi {
+  font-size: 0.72em;
+  font-weight: 500;
+  color: var(--lb-muted);
+}
+
+.lb-rivi-tyyppi {
+  font-size: 0.72em;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--lb-muted);
+}
+
+.lb-head-sub {
+  padding-top: 0;
+  padding-bottom: 0.15rem;
+  font-size: 0.78em;
+  border-bottom: none;
+}
+
+.lb-head-sub .lb-rivi-tyyppi {
+  font-size: inherit;
+}
+
+.lb-tag-sija {
+  font-size: 0.78em;
+  min-width: 1.4em;
+  opacity: 0.85;
+}
+
+.lb-va {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-end;
+  min-width: 0;
+  color: var(--lb-text);
+  font-size: 1em;
+  padding-top: 0.2em;
+}
+
+/*
+ * Rastiväliajat: KIINTEÄT sarakkeet (sama jokaisella rivillä).
+ * max-content nimessä rikkoi kohdistuksen (otsikko "Nimi" ≠ juoksijan nimi).
+ * --va-cols + --lb-va-* pitää otsikon ja datarivit samassa gridissä.
+ */
+.lb-rivi.has-va {
+  /* Nimisarakkeen leveys: riittää tyypilliselle nimelle, ei turhaa tyhjää VÄ:n eteen */
+  --lb-va-name: 11.5rem;
+  --lb-va-col: 5.85rem;
+  width: max-content;
+  max-width: none;
+  column-gap: 0.28rem;
+  grid-template-columns:
+    3rem 3.6rem 0 var(--lb-va-name)
+    repeat(var(--va-cols, 0), var(--lb-va-col))
+    5.2rem 4.5rem;
+}
+
+/*
+ * Online-tulokset: Sija | Nimi (+ seura alle) | Lähtö | VA… | Maali
+ * (ei erillistä Seura/Nro/Ero — seura meta-rivillä kuten Tulokset).
+ */
+.lb-rivi.has-online {
+  --lb-online-name: 14rem;
+  --lb-va-col: 5.6rem;
+  width: max-content;
+  max-width: none;
+  column-gap: 0.35rem;
+  grid-template-columns:
+    2.8rem var(--lb-online-name) 3.6rem
+    repeat(var(--va-cols, 0), var(--lb-va-col))
+    5.8rem;
+}
+
+.lb-rivi.has-online.has-online--tyhja {
+  grid-template-columns:
+    2.8rem var(--lb-online-name) 3.6rem 5.8rem;
+}
+
+.lb-rivi.has-online .lb-lahto {
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  color: var(--lb-muted);
+  font-size: 0.95em;
+}
+
+.lb-rivi.has-online .lb-va {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.lb-rivi.has-online .lb-va-sija {
+  margin-left: 0.15em;
+  color: var(--lb-muted);
+  font-weight: 600;
+  font-size: 0.92em;
+}
+
+.lb-rivi.has-online .lb-aika {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.lb-rivi.has-online .lb-nimi {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0.05rem;
+  min-width: 0;
+}
+
+.lb-rivi.has-online .lb-nimi-paa {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.lb-rivi.has-online .lb-nimi-meta {
+  display: flex;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+body.seuranta-page .lb-main--online {
+  width: max-content;
+  max-width: 100%;
+}
+
+body.seuranta-page .lb-main--online .lb-paneeli {
+  width: max-content;
+  max-width: 100%;
+}
+
+body.seuranta-page .lb-main--online .lb-scroll {
+  width: max-content;
+  max-width: 100%;
+}
+
+.lb-rivi.has-osuus {
+  --lb-va-col: 5.1rem;
+}
+
+.lb-rivi.has-osuus .lb-va-head .lb-th-long {
+  font-size: 0.72em;
+  opacity: 0.75;
+  margin-left: 0.15em;
+}
+
+@media (max-width: 720px) {
+  .lb-rivi.has-osuus {
+    --lb-va-col: 4.4rem;
+    --lb-va-name: 9rem;
+  }
+}
+
+/* Pirilä-tyylinen viesti: joukkuerivi + osuusrivit
+   Sarakkeet: sija | nro | nimi | osuusaika | osuussija | tulos | vaihto-sija
+   (ero ajan alla — erillistä ero-saraketta ei varata) */
+.lb-rivi.lb-viesti-rivi {
+  grid-template-columns:
+    2.4rem 2.8rem minmax(16rem, 1fr)
+    4.4rem 2.2rem 5.8rem 2.2rem;
+  column-gap: 0.45rem;
+  width: 100%;
+  max-width: none;
+}
+
+.lb-rivi.lb-viesti-rivi .lb-os-aika,
+.lb-rivi.lb-viesti-rivi .lb-aika,
+.lb-rivi.lb-viesti-rivi .lb-ero {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  justify-self: stretch;
+}
+
+.lb-rivi.lb-viesti-rivi .lb-aika.lb-aika--stack,
+.lb-rivi.lb-viesti-rivi .lb-os-aika {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 0.05rem;
+  line-height: 1.15;
+}
+
+.lb-rivi.lb-viesti-rivi .lb-ero--alla {
+  display: block;
+  font-size: 0.82em;
+  font-weight: 600;
+  color: var(--lb-warn);
+  line-height: 1.1;
+}
+
+.lb-rivi.lb-viesti-rivi .lb-ero--desk {
+  display: none !important;
+}
+
+.lb-viesti-stat-arvo {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.05rem;
+  line-height: 1.15;
+}
+
+.lb-viesti-stat--tulos .lb-viesti-stat-arvo .lb-ero--alla,
+.lb-viesti-stat--osuus .lb-viesti-stat-arvo .lb-ero--alla {
+  font-size: 0.9em;
+}
+
+.lb-rivi.lb-viesti-rivi .lb-os-sija,
+.lb-rivi.lb-viesti-rivi .lb-vaihto-sija,
+.lb-rivi.lb-viesti-rivi .lb-sija {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.lb-viesti-ryhma {
+  border-top: 1px solid color-mix(in srgb, var(--lb-text) 14%, transparent);
+}
+
+.lb-viesti-ryhma:first-of-type {
+  border-top: none;
+}
+
+.lb-rivi.lb-viesti-joukkue {
+  font-weight: 700;
+  border-top: none;
+  margin-top: 0;
+  padding-top: 0.45rem;
+  background: color-mix(in srgb, var(--lb-accent) 8%, var(--lb-row));
+}
+
+.lb-rivi.lb-viesti-joukkue .lb-nimi-paa {
+  font-weight: 700;
+}
+
+/* Joukkueen nimi + tulos: mobiilissa nimen perässä, työpöydällä Tulos-sarakkeessa */
+.lb-rivi.lb-viesti-joukkue .lb-nimi-rivi {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: baseline;
+  justify-content: flex-start;
+  gap: 0.55rem;
+  min-width: 0;
+  max-width: 100%;
+  width: auto;
+}
+
+.lb-rivi.lb-viesti-joukkue .lb-nimi {
+  min-width: 0;
+  overflow: visible;
+}
+
+.lb-rivi.lb-viesti-joukkue .lb-nimi-rivi .lb-nimi-paa {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: none;
+  overflow: visible;
+  text-overflow: unset;
+  white-space: nowrap !important;
+  overflow-wrap: normal !important;
+  word-break: normal !important;
+}
+
+.lb-joukkue-tulos {
+  display: none;
+  align-items: baseline;
+  flex: 0 0 auto;
+  gap: 0.35rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.lb-joukkue-tulos-aika {
+  font-weight: 700;
+}
+
+.lb-joukkue-tulos .lb-ero--inline {
+  font-size: 0.88em;
+  font-weight: 600;
+  color: var(--lb-warn);
+}
+
+.lb-rivi.lb-viesti-osuus {
+  font-weight: 400;
+  opacity: 0.96;
+  border-bottom: none;
+  padding-top: 0.28rem;
+  padding-bottom: 0.28rem;
+}
+
+.lb-rivi.lb-viesti-osuus .lb-nimi {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: baseline;
+  gap: 0.35rem;
+  padding-left: 1.15rem;
+  min-width: 0;
+}
+
+.lb-rivi.lb-viesti-osuus .lb-osuus-nro {
+  flex: 0 0 auto;
+  min-width: 1.15rem;
+  font-weight: 700;
+  opacity: 0.75;
+  font-variant-numeric: tabular-nums;
+}
+
+.lb-rivi.lb-viesti-osuus .lb-nimi-paa,
+.lb-rivi.lb-viesti-joukkue .lb-nimi-paa,
+body.seuranta-page .lb-main--tulokset .lb-rivi.lb-viesti-rivi .lb-nimi-paa {
+  white-space: nowrap !important;
+  overflow: visible;
+  text-overflow: unset;
+  overflow-wrap: normal !important;
+  word-break: normal !important;
+  max-width: none;
+}
+
+.lb-rivi.lb-viesti-osuus .lb-sija--tyhja {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.lb-rivi.lb-viesti-osuus .lb-sija {
+  opacity: 0.7;
+  font-weight: 600;
+}
+
+.lb-head.lb-viesti-rivi,
+.lb-viesti-head-desk,
+.lb-viesti-mobiili-head {
+  display: none !important;
+}
+
+/* Desktop: grid-wrapper ei muuta layouttia */
+.lb-viesti-grid {
+  display: contents;
+}
+
+/* Mobiilisarakkeet piilossa työpöydällä */
+.lb-viesti-leg-stats,
+.lb-viesti-leg-inline,
+.lb-viesti-mobiili-head,
+.lb-viesti-col-osuus,
+.lb-viesti-col-tulos {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  /*
+   * Scroll erillään gridistä. Yhteinen max-content-grid kaikille joukkueille.
+   * Osuusrivi display:contents → ajat samassa pystylinjassa.
+   * Rivitausta soluihin + box-shadow täyttää sarakkeiden välit.
+   */
+  .lb-scroll--viesti {
+    display: block;
+    overflow-x: auto;
+    overflow-y: visible;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+  }
+
+  /* cqw-viite sticky-seurariville (ei scrolliin — container-type rikkoo stickyn) */
+  .lb-paneeli--viesti {
+    overflow: hidden;
+    max-width: 100%;
+    container-type: inline-size;
+    container-name: viesti-paneeli;
+  }
+
+  .lb-paneeli--viesti .lb-viesti-grid {
+    display: grid;
+    grid-template-columns: max-content max-content max-content;
+    /* Ei column-gapia: tausta ei katkea; väli paddingilla soluissa */
+    column-gap: 0;
+    justify-content: start;
+    justify-items: stretch;
+    align-items: stretch;
+    width: max-content;
+    min-width: max-content;
+    box-sizing: border-box;
+    padding-bottom: 0.15rem;
+  }
+
+  .lb-paneeli--viesti .lb-viesti-ryhma {
+    display: contents;
+  }
+
+  /* Seurarivi: kiinteä viewport-leveys, ei sivulle vieritystä */
+  .lb-paneeli--viesti .lb-rivi.lb-viesti-rivi.lb-viesti-joukkue {
+    grid-column: 1 / -1;
+    display: flex !important;
+    flex-wrap: nowrap;
+    align-items: baseline;
+    gap: 0.45rem;
+    position: sticky !important;
+    left: 0 !important;
+    z-index: 4;
+    width: 100cqw !important;
+    min-width: 100cqw !important;
+    max-width: 100cqw !important;
+    box-sizing: border-box;
+    font-size: 1rem;
+    line-height: 1.3;
+    margin-top: 0.35rem;
+    border-top: 1px solid color-mix(in srgb, var(--lb-line) 85%, transparent);
+    border-bottom: 1px solid color-mix(in srgb, var(--lb-text) 8%, transparent);
+    padding: 0.5rem 0.7rem;
+    background: color-mix(in srgb, var(--lb-accent) 10%, var(--lb-row));
+  }
+
+  .lb-paneeli--viesti .lb-viesti-grid > .lb-viesti-ryhma:first-child .lb-rivi.lb-viesti-joukkue,
+  .lb-paneeli--viesti .lb-viesti-ryhma:first-of-type .lb-rivi.lb-viesti-joukkue {
+    margin-top: 0;
+  }
+
+  .lb-paneeli--viesti .lb-rivi.lb-viesti-rivi .lb-desk-col,
+  .lb-paneeli--viesti .lb-rivi.lb-viesti-rivi > .lb-os-aika,
+  .lb-paneeli--viesti .lb-rivi.lb-viesti-rivi > .lb-os-sija,
+  .lb-paneeli--viesti .lb-rivi.lb-viesti-rivi > .lb-aika,
+  .lb-paneeli--viesti .lb-rivi.lb-viesti-rivi > .lb-ero,
+  .lb-paneeli--viesti .lb-rivi.lb-viesti-rivi > .lb-vaihto-sija,
+  .lb-paneeli--viesti .lb-rivi.lb-viesti-osuus > .lb-numero,
+  .lb-paneeli--viesti .lb-rivi.lb-viesti-osuus > .lb-sija {
+    display: none !important;
+  }
+
+  .lb-paneeli--viesti .lb-rivi.lb-viesti-joukkue .lb-sija {
+    min-width: 1.6rem;
+    text-align: left;
+    font-size: 1.05rem;
+    font-weight: 700;
+    flex: 0 0 auto;
+  }
+
+  .lb-paneeli--viesti .lb-rivi.lb-viesti-joukkue .lb-numero {
+    min-width: 1.5rem;
+    text-align: left;
+    flex: 0 0 auto;
+  }
+
+  .lb-paneeli--viesti .lb-rivi.lb-viesti-joukkue .lb-nimi {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: none;
+    overflow: hidden;
+  }
+
+  .lb-paneeli--viesti .lb-rivi.lb-viesti-joukkue .lb-nimi-rivi {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: baseline;
+    width: 100%;
+    max-width: none;
+    gap: 0.55rem;
+  }
+
+  .lb-paneeli--viesti .lb-rivi.lb-viesti-joukkue .lb-nimi-paa {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap !important;
+    max-width: none;
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  /* Joukkueen aika oikeaan reunaan (viewport) */
+  .lb-paneeli--viesti .lb-rivi.lb-viesti-joukkue .lb-joukkue-tulos {
+    display: inline-flex;
+    margin-left: auto;
+    flex: 0 0 auto;
+    padding-left: 0.65rem;
+    padding-right: 0;
+  }
+
+  .lb-paneeli--viesti .lb-rivi.lb-viesti-rivi.lb-viesti-osuus {
+    display: contents !important;
+  }
+
+  .lb-paneeli--viesti .lb-rivi.lb-viesti-osuus > .lb-nimi,
+  .lb-paneeli--viesti .lb-rivi.lb-viesti-osuus > .lb-viesti-col-osuus,
+  .lb-paneeli--viesti .lb-rivi.lb-viesti-osuus > .lb-viesti-col-tulos {
+    box-sizing: border-box;
+    padding-top: 0.32rem;
+    padding-bottom: 0.32rem;
+    font-size: 0.98rem;
+    line-height: 1.25;
+    background: var(--lb-row);
+  }
+
+  .lb-paneeli--viesti .lb-viesti-ryhma > .lb-rivi.lb-viesti-osuus:nth-child(even) > .lb-nimi,
+  .lb-paneeli--viesti .lb-viesti-ryhma > .lb-rivi.lb-viesti-osuus:nth-child(even) > .lb-viesti-col-osuus,
+  .lb-paneeli--viesti .lb-viesti-ryhma > .lb-rivi.lb-viesti-osuus:nth-child(even) > .lb-viesti-col-tulos {
+    background: var(--lb-row-alt);
+  }
+
+  .lb-paneeli--viesti .lb-rivi.lb-viesti-osuus > .lb-nimi {
+    min-width: max-content;
+    max-width: none;
+    overflow: visible;
+    padding-left: 1.35rem;
+    /* Kevyt sticky-reuna; varsinainen väli osuusajan edessä on col-osuus padding-left */
+    padding-right: 0.55rem;
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: baseline;
+    gap: 0.35rem;
+    box-shadow: 0.4rem 0 0.5rem -0.25rem color-mix(in srgb, var(--lb-text) 24%, transparent);
+  }
+
+  .lb-paneeli--viesti .lb-rivi.lb-viesti-osuus .lb-osuus-nro {
+    min-width: 1.1rem;
+  }
+
+  .lb-paneeli--viesti .lb-rivi.lb-viesti-osuus .lb-nimi-paa {
+    flex: 0 0 auto;
+    min-width: max-content;
+    max-width: none;
+    overflow: visible;
+    text-overflow: unset;
+    font-weight: 600;
+  }
+
+  .lb-paneeli--viesti .lb-rivi.lb-viesti-osuus > .lb-viesti-col-osuus,
+  .lb-paneeli--viesti .lb-rivi.lb-viesti-osuus > .lb-viesti-col-tulos {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: baseline;
+    justify-content: flex-start;
+    gap: 0.25rem;
+    width: auto;
+    min-width: max-content;
+    max-width: none;
+    text-align: left;
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: visible;
+  }
+
+  .lb-paneeli--viesti .lb-rivi.lb-viesti-osuus > .lb-viesti-col-osuus {
+    /* Tyhjä ennen osuusaikaa → ei mene sticky-nimen reunan/varjon alle */
+    padding-left: 1.4rem;
+    padding-right: 0.85rem;
+  }
+
+  .lb-paneeli--viesti .lb-rivi.lb-viesti-osuus > .lb-viesti-col-tulos {
+    padding-right: 0.7rem;
+  }
+
+  .lb-paneeli--viesti .lb-viesti-col-aika {
+    display: inline-flex;
+    flex-wrap: nowrap;
+    align-items: baseline;
+    justify-content: flex-start;
+    gap: 0.25rem;
+    white-space: nowrap;
+  }
+
+  /* Aika-arvo kiinteä leveys + oikea reunus → h/m/s samoilla kohdilla */
+  .lb-paneeli--viesti .lb-viesti-aika-arvo {
+    display: inline-block;
+    min-width: 7ch;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+  }
+
+  .lb-paneeli--viesti .lb-viesti-col-aika .lb-ero--inline {
+    font-size: 0.82em;
+    font-weight: 600;
+    color: var(--lb-warn);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .lb-paneeli--viesti .lb-viesti-col-sija {
+    color: var(--lb-muted);
+    font-size: 0.86em;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .lb-paneeli--viesti .lb-rivi.lb-viesti-osuus.status > .lb-viesti-col-osuus,
+  .lb-paneeli--viesti .lb-rivi.lb-viesti-osuus.status > .lb-viesti-col-tulos {
+    color: var(--lb-status);
+  }
+}
+
+@media (max-width: 640px) {
+  .lb-paneeli--viesti .lb-rivi.lb-viesti-osuus > .lb-nimi {
+    padding-right: 0.45rem;
+  }
+
+  .lb-paneeli--viesti .lb-rivi.lb-viesti-osuus > .lb-viesti-col-osuus {
+    padding-left: 1.25rem;
+    padding-right: 0.7rem;
+  }
+}
+
+
+.lb-rivi.has-va .lb-nimi {
+  width: 100%;
+  max-width: 100%;
+  overflow: visible;
+}
+
+.lb-rivi.has-va .lb-nimi-paa {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.lb-rivi.has-va .lb-nimi-meta {
+  display: flex;
+  flex-wrap: nowrap;
+  max-width: none;
+  overflow: visible;
+  white-space: nowrap;
+}
+
+/* Sukunimilyhenne: piilossa kunnes sija/nro/nimi on scrollattu pois */
+.lb-nimi-lyh {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-width: 0;
+  width: 0;
+  max-width: 0;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.lb-rivi.has-va .lb-nimi-lyh {
+  display: flex;
+}
+
+.lb-scroll.is-past-name .lb-rivi.has-va .lb-nimi-lyh {
+  position: sticky;
+  left: 0;
+  z-index: 5;
+  width: max-content;
+  max-width: none;
+  min-width: 0;
+  padding: 0.1rem 0.28rem;
+  opacity: 1;
+  pointer-events: auto;
+  background: inherit;
+  box-shadow: 3px 0 5px -2px rgba(0, 0, 0, 0.35);
+}
+
+.lb-scroll.is-past-name .lb-rivi.has-va.lb-head .lb-nimi-lyh {
+  z-index: 6;
+  background: var(--lb-panel);
+}
+
+.lb-scroll.is-past-name .lb-rivi.has-va.lb-head .lb-nimi-lyh {
+  /* otsikossa ei tarvita ··· */
+  visibility: hidden;
+}
+
+@media (max-width: 899px) {
+  body.seuranta-page .lb-main--tulokset {
+    max-width: none;
+    width: 100%;
+    align-self: stretch;
+  }
+
+  body.seuranta-page .lb-main--tulokset .lb-scroll {
+    width: 100%;
+  }
+
+  body.seuranta-page .lb-main--tulokset .lb-paneeli {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  body.seuranta-page .lb-main--tulokset .lb-rivi:not(.has-va) {
+    width: 100%;
+    max-width: 100%;
+    grid-template-columns: 2.1rem 2.7rem minmax(0, 1fr) 4rem 3.4rem;
+  }
+
+  body.seuranta-page .lb-main--tulokset .lb-rivi.has-sarja {
+    grid-template-columns: 2rem 2.4rem minmax(0, 1fr) 3rem 4.2rem 4.2rem;
+    font-size: 0.88rem;
+    gap: 0.22rem;
+  }
+
+  body.seuranta-page .lb-main--tulokset .lb-rivi.has-sarja .lb-aika,
+  body.seuranta-page .lb-main--tulokset .lb-rivi.has-sarja .lb-ero {
+    font-size: 0.84rem;
+    overflow: visible;
+  }
+
+  body.seuranta-page .lb-controls {
+    max-width: none;
+    width: 100%;
+    margin-inline: 0;
+  }
+}
+
+@media (min-width: 900px) {
+  body.seuranta-page .lb-controls {
+    max-width: min(42rem, 100%);
+    margin-inline: auto;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  body.seuranta-page .lb-main--tulokset {
+    max-width: min(42rem, 100%);
+    margin-inline: auto;
+    width: 100%;
+    align-self: center;
+    flex: 0 1 auto;
+  }
+
+  /* Matkan mukaan: leveämpi lista jotta ero kärkeen mahtuu */
+  body.seuranta-page .lb-main--tulokset:has(.lb-paneeli--matka) {
+    max-width: min(54rem, 100%);
+  }
+
+  body.seuranta-page:has(.lb-paneeli--matka) .lb-controls {
+    max-width: min(54rem, 100%);
+  }
+
+  /* Viesti: leveä lista, jotta joukkue- ja osuusnimet mahtuvat kokonaan */
+  body.seuranta-page .lb-main--tulokset:has(.lb-paneeli--viesti),
+  body.seuranta-page .lb-main--tulokset:has(.lb-paneeli--viesti-osuus) {
+    max-width: min(72rem, 100%);
+  }
+
+  body.seuranta-page:has(.lb-paneeli--viesti) .lb-controls,
+  body.seuranta-page:has(.lb-paneeli--viesti-osuus) .lb-controls {
+    max-width: min(72rem, 100%);
+  }
+
+  body.seuranta-page .lb-main--tulokset .lb-scroll {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  /* Rastiväliajat: ikkuna sisällön levyinen ja keskitetty */
+  body.seuranta-page .lb-main--valiajat {
+    width: max-content;
+    max-width: 100%;
+    margin-inline: auto;
+    align-self: center;
+    flex: 0 1 auto;
+    box-sizing: border-box;
+  }
+
+  body.seuranta-page .lb-main--valiajat .lb-paneeli {
+    width: max-content;
+    max-width: 100%;
+  }
+
+  body.seuranta-page .lb-main--valiajat .lb-scroll {
+    width: max-content;
+    max-width: 100%;
+  }
+
+  body.seuranta-page:has(.lb-main--valiajat) .lb-controls {
+    max-width: none;
+    margin-inline: 0;
+  }
+
+  /* Online-väliajat: sama ikkunointi */
+  body.seuranta-page .lb-main--online {
+    width: max-content;
+    max-width: 100%;
+    margin-inline: auto;
+    align-self: center;
+    flex: 0 1 auto;
+    box-sizing: border-box;
+  }
+
+  body.seuranta-page .lb-main--online .lb-paneeli {
+    width: max-content;
+    max-width: 100%;
+  }
+
+  body.seuranta-page .lb-main--online .lb-scroll {
+    width: max-content;
+    max-width: 100%;
+  }
+
+  body.seuranta-page:has(.lb-main--online) .lb-controls {
+    max-width: none;
+    margin-inline: 0;
+  }
+
+  .lb-rivi.has-online {
+    --lb-online-name: 11rem;
+    --lb-va-col: 4.8rem;
+    grid-template-columns:
+      2.2rem var(--lb-online-name) 3.2rem
+      repeat(var(--va-cols, 0), var(--lb-va-col))
+      4.8rem;
+    font-size: 0.95rem;
+  }
+
+  .lb-rivi.has-online.has-online--tyhja {
+    grid-template-columns:
+      2.2rem var(--lb-online-name) 3.2rem 4.8rem;
+  }
+}
+
+.lb-link {
+  color: var(--lb-accent);
+  text-decoration: none;
+  font-size: 0.85em;
+  font-weight: 600;
+  margin-left: 0.5rem;
+  white-space: nowrap;
+}
+
+.lb-link:hover {
+  text-decoration: underline;
+}
+
+.lb-empty {
+  padding: 1.5rem;
+  text-align: center;
+  color: var(--lb-muted);
+  font-size: 1.1rem;
+}
+
+.lb-sub {
+  margin: 0;
+  padding: 0.65rem 0.9rem 0.25rem;
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--lb-muted);
+  border-top: 1px solid var(--lb-line);
+}
+
+@media (max-width: 640px) {
+  .lb-top {
+    padding: 0.3rem 0.5rem;
+  }
+  .lb-main,
+  .lb-controls {
+    padding-left: 0;
+    padding-right: 0;
+  }
+  body.seuranta-page .lb-controls,
+  body.seuranta-embed .lb-controls {
+    padding-left: 0.4rem;
+    padding-right: 0.4rem;
+  }
+  .lb-rivi {
+    grid-template-columns: 2.1rem 2.7rem minmax(0, 1fr) 4rem 3.4rem;
+    gap: 0.28rem;
+    padding: 0.42rem 0.4rem;
+    font-size: 0.95rem;
+  }
+  .lb-rivi.has-sarja {
+    grid-template-columns: 1.7rem 2.1rem minmax(0, 1fr) 2.7rem 3.4rem 3.5rem;
+    font-size: 0.78rem;
+    gap: 0.16rem;
+    padding: 0.35rem 0.28rem;
+  }
+  .lb-rivi.has-sarja .lb-sarja-solu {
+    font-size: 0.72rem;
+  }
+  .lb-rivi.has-sarja .lb-aika,
+  .lb-rivi.has-sarja .lb-ero {
+    font-size: 0.74rem;
+    overflow: visible;
+  }
+  .lb-rivi.has-sarja .lb-nimi-meta {
+    font-size: 0.68em;
+  }
+  .lb-rivi.has-sarja.lb-head {
+    font-size: 0.68rem;
+    letter-spacing: 0.02em;
+  }
+  .lb-sija {
+    font-size: 1.15em;
+  }
+  .lb-numero {
+    font-size: 0.88em;
+  }
+  .lb-aika,
+  .lb-ero {
+    font-size: 0.95em;
+  }
+  .lb-nimi-meta {
+    display: flex;
+    font-size: 0.78em;
+  }
+  .lb-osuudet {
+    display: block;
+  }
+  .lb-nakyma {
+    margin-left: 0;
+    width: 100%;
+  }
+  .lb-filters {
+    flex: 1 1 100%;
+  }
+  .lb-chip-hae {
+    display: none;
+  }
+
+  /*
+   * Rastiväliajat: kiinteät sarakkeet (sama fontti kuin Tulokset).
+   * Lyh-sarake (0) pakollinen — ilman sitä Ero/Sija menevät sekaisin.
+   */
+  .lb-rivi.has-va {
+    --lb-va-name: 9.5rem;
+    --lb-va-col: 5.1rem;
+    width: max-content;
+    max-width: none;
+    column-gap: 0.28rem;
+    grid-template-columns:
+      2.1rem 2.7rem 0 var(--lb-va-name)
+      repeat(var(--va-cols, 0), var(--lb-va-col))
+      4rem 3.4rem;
+    font-size: 0.95rem;
+  }
+
+  .lb-scroll.is-past-name .lb-rivi.has-va .lb-nimi-lyh {
+    font-size: 0.95rem;
+    padding: 0.08rem 0.22rem;
+  }
+
+  .lb-rivi.has-va .lb-ero {
+    display: block;
+  }
+
+  .lb-rivi.has-va .lb-nimi-meta {
+    display: flex;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+    max-width: none;
+    overflow: visible;
+    font-size: 0.78em;
+  }
+
+  .lb-rivi.has-va .lb-va {
+    font-size: 1em;
+    padding-top: 0.1em;
+  }
+
+  .lb-rivi.has-va .lb-va-sija {
+    flex: 0 0 1.7em;
+    min-width: 1.7em;
+    font-size: 0.88em;
+  }
+
+  .lb-rivi.has-va .lb-va-cell {
+    gap: 0.12em;
+    flex-wrap: nowrap;
+  }
+
+  .lb-rivi.has-va .lb-va-stack {
+    gap: 0.1rem;
+  }
+
+  .lb-rivi.has-va .lb-va-stack-leg {
+    font-size: 0.88em;
+  }
+
+  .lb-rivi.has-va .lb-va-stack-ero {
+    font-size: 0.7em;
+  }
+
+  .lb-rivi.has-va .lb-va-koodi {
+    display: none;
+  }
+
+  .lb-rivi.has-va.lb-head {
+    font-size: 0.95rem;
+  }
+
+  .lb-rivi.has-va .lb-va-aika {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+
+  .lb-rivi.has-va .lb-va-stack-kok .lb-va-cell,
+  .lb-rivi.has-va .lb-va-stack-leg .lb-va-cell {
+    max-width: 100%;
+  }
+
+  body.seuranta-page .lb-scroll:has(.has-va),
+  body.seuranta-page .lb-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  body.seuranta-page .lb-main--tulokset .lb-rivi:not(.has-va) {
+    width: 100%;
+    max-width: 100%;
+    grid-template-columns: 2.1rem 2.7rem minmax(0, 1fr) 4rem 3.4rem;
+    font-size: 0.95rem;
+  }
+
+  body.seuranta-page .lb-main--tulokset .lb-paneeli {
+    width: 100%;
+  }
+
+  body.vertailu-page .lb-main {
+    max-width: none;
+    padding-left: 0.45rem;
+    padding-right: 0.45rem;
+  }
+
+  .lb-th-long {
+    display: none;
+  }
+
+  .lb-th-short {
+    display: inline;
+  }
+
+  .lb-table {
+    font-size: 0.88rem;
+  }
+
+  .lb-table th,
+  .lb-table td {
+    padding: 0.32rem 0.35rem;
+  }
+
+  .lb-table th {
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+  }
+
+  body.tulospalvelu-page .table-scroll {
+    overflow-x: visible;
+  }
+
+  /* Kilpailijan sivut: koko leveys, tiivis header */
+  body.valiajat-page .lb-main {
+    max-width: 100%;
+    width: 100%;
+    padding-left: 0.4rem;
+    padding-right: 0.4rem;
+  }
+
+  body.valiajat-page .lb-paneeli {
+    padding-left: 0.35rem;
+    padding-right: 0.35rem;
+  }
+
+  .lb-valiajat-kilpailija {
+    font-size: 0.95rem;
+    line-height: 1.35;
+    margin-bottom: 0.45rem;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .lb-valiajat-maali,
+  .lb-valiajat-meta {
+    font-size: 0.85rem;
+    margin-bottom: 0.45rem;
+  }
+
+  /* Mobiili: 4 saraketta — matka+vauhti välin alla, ei leikkausta */
+  .valiajat-table--analyysi {
+    font-size: 0.84rem;
+  }
+
+  .valiajat-table--analyysi th,
+  .valiajat-table--analyysi td {
+    padding: 0.28rem 0.18rem;
+  }
+
+  .valiajat-table--analyysi col.valiajat-col-matka,
+  .valiajat-table--analyysi col.valiajat-col-vauhti,
+  .valiajat-table--analyysi .valiajat-matka-col,
+  .valiajat-table--analyysi .valiajat-vauhti-col,
+  .valiajat-table--analyysi .valiajat-matka,
+  .valiajat-table--analyysi .valiajat-vauhti {
+    display: none;
+  }
+
+  .valiajat-table--analyysi .valiajat-leg-meta {
+    display: block;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+  }
+
+  .valiajat-table--analyysi .valiajat-cum-pace {
+    display: block;
+    white-space: normal;
+    overflow: visible;
+  }
+
+  .valiajat-table--analyysi .valiajat-tilanne {
+    overflow: visible;
+    white-space: normal;
+  }
+
+  .valiajat-table--analyysi col.valiajat-col-rasti { width: 2.85rem; }
+  .valiajat-table--analyysi col.valiajat-col-tilanne { width: 4.35rem; }
+  .valiajat-table--analyysi col.valiajat-col-split { width: auto; }
+  .valiajat-table--analyysi col.valiajat-col-ero { width: 3.6rem; }
+
+  .valiajat-table--analyysi .valiajat-rasti-col,
+  .valiajat-table--analyysi .valiajat-rasti {
+    width: 2.85rem;
+    min-width: 2.85rem;
+    overflow: visible;
+  }
+
+  .valiajat-table--analyysi .valiajat-tilanne,
+  .valiajat-table--analyysi .valiajat-split,
+  .valiajat-table--analyysi .valiajat-ero {
+    overflow: visible;
+    white-space: nowrap;
+  }
+
+  .valiajat-table--analyysi .valiajat-split {
+    white-space: normal;
+  }
+
+  .valiajat-table--analyysi .valiajat-tilanne .lb-va-aika,
+  .valiajat-table--analyysi .valiajat-tilanne .lb-va-cell,
+  .valiajat-table--analyysi .valiajat-split .lb-va-cell {
+    overflow: visible;
+    max-width: none;
+  }
+
+  .valiajat-table--analyysi .valiajat-ero {
+    min-width: 0;
+    width: 3.85rem;
+    padding-left: 0.1rem;
+    padding-right: 0.1rem;
+  }
+
+  .valiajat-table--analyysi .valiajat-ero-txt {
+    font-size: 0.88em;
+    letter-spacing: -0.02em;
+  }
+
+  .valiajat-table--analyysi .valiajat-rasti-koodi {
+    display: block;
+    font-size: 0.72em;
+    line-height: 1.15;
+    overflow: visible;
+    white-space: nowrap;
+  }
+
+  .valiajat-table--analyysi .valiajat-split .lb-va-sija,
+  .valiajat-table--analyysi .valiajat-tilanne .lb-va-sija {
+    flex: 0 0 auto;
+    min-width: 2.5em;
+    font-size: 0.8em;
+  }
+
+  .vertailu-table .vertailu-th-split-a,
+  .vertailu-table .vertailu-th-split-b,
+  .vertailu-table .valiajat-split {
+    display: none;
+  }
+
+  .vertailu-table col.valiajat-col-rasti { width: 2rem; }
+
+  /* Lähtölista mobiili: seura nimen alla, kaikki sarakkeet näytölle */
+  body.lahtolista-page .lb-sarja-nav {
+    flex-wrap: nowrap;
+    overflow: visible;
+    padding: 0.4rem 0.55rem;
+    gap: 0;
+  }
+
+  body.lahtolista-page .lb-sarja-nav-chips {
+    display: none;
+  }
+
+  body.lahtolista-page .lb-sarja-nav-select-wrap {
+    display: flex;
+  }
+
+  body.lahtolista-page .lahtolista-scroll {
+    overflow-x: hidden;
+  }
+
+  body.lahtolista-page .lahtolista-table {
+    width: 100%;
+    min-width: 0;
+    table-layout: fixed;
+  }
+
+  body.lahtolista-page .lahtolista-table col.lahto-col-nro { width: 2.35rem; }
+  body.lahtolista-page .lahtolista-table col.lahto-col-emit { width: 4.4rem; }
+  body.lahtolista-page .lahtolista-table col.lahto-col-nimi { width: auto; }
+  body.lahtolista-page .lahtolista-table col.lahto-col-kolmas { width: 0; }
+  body.lahtolista-page .lahtolista-table col.lahto-col-rata { width: 2.2rem; }
+  body.lahtolista-page .lahtolista-table col.lahto-col-lahto { width: 3.5rem; }
+
+  body.lahtolista-page .lahtolista-table .lahto-th-kolmas,
+  body.lahtolista-page .lahtolista-table .lahto-td-kolmas {
+    display: none;
+  }
+
+  body.lahtolista-page .lahtolista-table .lahto-nimi-meta {
+    display: block;
+  }
+
+  body.lahtolista-page .lahtolista-table .lahto-emit-peraan {
+    display: inline-block;
+    margin-left: 0.35rem;
+  }
+
+  body.lahtolista-page .lahtolista-table .lahto-seura-rivi > td {
+    padding-left: 0.45rem;
+    padding-right: 0.45rem;
+  }
+
+  body.lahtolista-page .lb-otsikko-lahto {
+    font-size: 0.95rem;
+  }
+
+  body.lahtolista-page .lahtolista-table .lahto-td-nimi,
+  body.lahtolista-page .lahtolista-table .lahto-th-nimi {
+    white-space: normal;
+    overflow: hidden;
+  }
+
+  body.lahtolista-page .lahtolista-table .lahto-td-nimi .lb-nimi-link {
+    white-space: normal;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline;
+  }
+
+  body.lahtolista-page .lahtolista-table .lahto-td-emit,
+  body.lahtolista-page .lahtolista-table .lahto-th-emit {
+    font-size: 0.78em;
+    padding-left: 0.15rem;
+    padding-right: 0.15rem;
+    overflow: visible;
+    text-overflow: clip;
+    white-space: nowrap;
+  }
+
+  body.lahtolista-page .lahtolista-table .lahto-td-nro,
+  body.lahtolista-page .lahtolista-table .lahto-td-rata,
+  body.lahtolista-page .lahtolista-table .lahto-td-lahto,
+  body.lahtolista-page .lahtolista-table .lahto-th-nro,
+  body.lahtolista-page .lahtolista-table .lahto-th-rata,
+  body.lahtolista-page .lahtolista-table .lahto-th-lahto {
+    padding-left: 0.2rem;
+    padding-right: 0.2rem;
+    font-size: 0.9em;
+  }
+
+  body.lahtolista-page .lahtolista-table th,
+  body.lahtolista-page .lahtolista-table td {
+    padding-top: 0.32rem;
+    padding-bottom: 0.32rem;
+  }
+
+  /* Riviväri jokaiseen soluun — tr-tausta ei aina jatku viimeiseen sarakkeeseen mobiilissa */
+  body.lahtolista-page .lahtolista-table tbody tr:nth-child(odd) > td {
+    background-color: var(--lb-row);
+  }
+
+  body.lahtolista-page .lahtolista-table tbody tr:nth-child(even) > td {
+    background-color: var(--lb-row-alt);
+  }
+
+  .lb-vertailu-otsikot {
+    font-size: 0.82rem;
+    gap: 0.35rem;
+  }
+
+  .lb-vertailu-select {
+    min-width: 0;
+    flex: 1 1 8rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .lb-rivi {
+    grid-template-columns: 2rem 2.5rem minmax(0, 1fr) 3.7rem 3.1rem;
+    font-size: 0.95rem;
+  }
+
+  .lb-rivi.has-va {
+    --lb-va-name: 8.5rem;
+    --lb-va-col: 4.8rem;
+    grid-template-columns:
+      2rem 2.5rem 0 var(--lb-va-name)
+      repeat(var(--va-cols, 0), var(--lb-va-col))
+      3.7rem 3.1rem;
+    font-size: 0.95rem;
+  }
+
+  .lb-rivi.has-va .lb-va {
+    font-size: 1em;
+  }
+
+  .lb-table th,
+  .lb-table td {
+    padding: 0.28rem 0.3rem;
+  }
+}
+
+/* Haku tuloksista -dialogi */
+.lb-haku-lyhyt {
+  display: none;
+}
+
+.lb-haku-pitka {
+  display: inline;
+}
+
+.tulos-haku-dialog {
+  border: none;
+  border-radius: 14px;
+  padding: 0;
+  width: min(520px, calc(100vw - 1.5rem));
+  max-width: calc(100vw - 1rem);
+  max-height: min(80vh, 80dvh, 640px);
+  background: var(--lb-panel, #121a22);
+  color: var(--lb-text, #e8eef4);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+}
+
+.tulos-haku-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.tulos-haku-box {
+  display: flex;
+  flex-direction: column;
+  max-height: min(80vh, 80dvh, 640px);
+  padding: 1rem 1.1rem 1.1rem;
+  box-sizing: border-box;
+}
+
+.tulos-haku-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.tulos-haku-head h2 {
+  margin: 0;
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 1.45rem;
+  font-weight: 700;
+}
+
+.tulos-haku-close {
+  border: 1px solid var(--lb-line, #334155);
+  background: transparent;
+  color: inherit;
+  border-radius: 999px;
+  width: 2rem;
+  height: 2rem;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.tulos-haku-label {
+  font-size: 0.85rem;
+  color: var(--text-muted, var(--lb-muted, #a8bcc9));
+  margin-bottom: 0.35rem;
+}
+
+.tulos-haku-input {
+  width: 100%;
+  box-sizing: border-box;
+  font: inherit;
+  font-size: 1.05rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: 10px;
+  border: 1px solid var(--lb-line, #334155);
+  background: rgba(0, 0, 0, 0.2);
+  color: inherit;
+  margin-bottom: 0.55rem;
+}
+
+.tulos-haku-status {
+  margin: 0 0 0.55rem;
+  font-size: 0.92rem;
+  color: var(--text-muted, var(--lb-muted, #a8bcc9));
+}
+
+.tulos-haku-list {
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  min-height: 0;
+}
+
+.tulos-haku-item {
+  border: 1px solid var(--lb-line, #334155);
+  border-radius: 10px;
+  padding: 0.55rem 0.7rem;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.tulos-haku-item-title {
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+  line-height: 1.3;
+}
+
+.tulos-haku-item-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.tulos-haku-link {
+  display: inline-block;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid var(--lb-line, #334155);
+  color: var(--lb-accent, #e4c35a);
+  text-decoration: none;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.tulos-haku-link:hover {
+  border-color: var(--lb-accent, #e4c35a);
+}
+
+html[data-theme="light"] .tulos-haku-dialog {
+  background: #fff;
+  color: #0f172a;
+}
+
+html[data-theme="light"] .tulos-haku-input {
+  background: #f8fafc;
+}
+
+button.lahtolista-valinta {
+  font: inherit;
+  cursor: pointer;
+}
+
+/* --- Yhtenäinen tulospalvelu (kilpailu / lähtöajat / ilmoittautuneet / väliajat) --- */
+
+.lb-hub {
+  padding: 1.1rem 1.15rem 1.25rem;
+}
+
+.lb-hub-otsikko {
+  font-family: "Barlow Condensed", sans-serif;
+  font-weight: 700;
+  font-size: 1.35rem;
+  letter-spacing: 0.02em;
+  margin: 0 0 0.85rem;
+  color: var(--lb-text);
+}
+
+.lb-hub-linkit {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.lb-hub-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.55rem;
+  padding: 0.55rem 1.1rem;
+  border: 1px solid var(--lb-line);
+  border-radius: 10px;
+  background: var(--lb-row);
+  color: var(--lb-text);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.lb-hub-link:hover {
+  border-color: var(--lb-accent);
+  color: var(--lb-accent);
+}
+
+.lb-hub-link--primary {
+  background: var(--lb-accent);
+  border-color: transparent;
+  color: #1a1408;
+}
+
+.lb-hub-link--primary:hover {
+  filter: brightness(1.06);
+  color: #1a1408;
+}
+
+html[data-theme="light"] .lb-hub-link--primary {
+  color: #fff;
+}
+
+html[data-theme="light"] .lb-hub-link--primary:hover {
+  color: #fff;
+}
+
+.lb-hub-ohje {
+  margin: 1rem 0 0;
+  color: var(--text-muted, var(--lb-muted));
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.lb-hub-ohje a {
+  color: var(--lb-accent);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.lb-hub-ohje a:hover {
+  text-decoration: underline;
+}
+
+.lb-hub-lisatiedot {
+  margin-top: 0.85rem;
+  border-top: 1px solid var(--lb-line, var(--border));
+  padding-top: 0.55rem;
+}
+
+.lb-hub-lisatiedot summary {
+  cursor: pointer;
+  font-weight: 650;
+  color: var(--text-muted, var(--lb-muted));
+  font-size: 0.9rem;
+  list-style: none;
+}
+
+.lb-hub-lisatiedot summary::-webkit-details-marker {
+  display: none;
+}
+
+.lb-hub-lisatiedot summary::before {
+  content: "▸ ";
+  color: var(--lb-accent, var(--primary));
+}
+
+.lb-hub-lisatiedot[open] summary::before {
+  content: "▾ ";
+}
+
+.lb-hub-lisatiedot .lb-hub-ohje {
+  margin-top: 0.45rem;
+}
+
+button.lb-hub-link {
+  font: inherit;
+  cursor: pointer;
+}
+
+.lb-notice {
+  margin: 0;
+  padding: 0.75rem 0.9rem;
+  border-radius: 10px;
+  border: 1px solid var(--lb-line);
+  background: var(--lb-row);
+  color: var(--lb-text);
+}
+
+.lb-notice--ok {
+  border-color: var(--lb-accent);
+}
+
+.lb-notice--virhe {
+  border-color: var(--lb-warn);
+  color: var(--lb-warn);
+}
+
+/* Kilpailukuori: Online samalla sivulla (iframe) + Seura-palkki */
+body.kilpailu-kuori-online .container {
+  max-width: none;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+
+/* Online-kuori: kisanimi näkyviin, meta piiloon tilan säästämiseksi */
+body.kilpailu-kuori-online .lb-meta {
+  display: none;
+}
+
+body.kilpailu-kuori-online .lb-kisa {
+  display: block;
+  font-size: clamp(1.05rem, 2.4vw, 1.45rem);
+  line-height: 1.2;
+  margin: 0.1rem 0 0;
+}
+
+body.kilpailu-kuori-online .lb-top {
+  padding: 0.35rem 0.55rem 0.4rem;
+  gap: 0.2rem;
+}
+
+/* Kuori: ei pakota ylimääräistä korkeutta iframe-alueen alle */
+body.kilpailu-kuori-online .lb {
+  min-height: 0;
+}
+
+body.kilpailu-kuori-online .lb-main--kuori,
+.lb-main--kuori {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-height: 0;
+  padding-top: 0.25rem;
+  background: transparent;
+}
+
+.lb-online-embed {
+  display: block;
+  width: 100%;
+  flex: 0 0 auto;
+  min-height: 0;
+  height: 0;
+  border: 0;
+  border-radius: 0;
+  /* Tumma/vaalea canvas heti — ei selain-oletusvalkoista iframe-alueella */
+  background: var(--lb-bg, var(--bg, #071018));
+  color-scheme: inherit;
+  overflow: hidden;
+}
+
+html[data-theme="dark"] .lb-online-embed,
+body[data-theme="dark"] .lb-online-embed {
+  background: #071018;
+  color-scheme: dark;
+}
+
+/* Embed-dokumentti: ei omaa scrollia, tausta peittää koko iframe-canvasin */
+html:has(body.jah-embed) {
+  margin: 0;
+  height: auto;
+  min-height: 0;
+  overflow: hidden !important;
+  background: var(--bg, #eef2f5);
+  background-color: var(--bg, #eef2f5);
+}
+
+html[data-theme="dark"]:has(body.jah-embed) {
+  background: #071018;
+  background-color: #071018;
+  color-scheme: dark;
+}
+
+body.jah-embed {
+  margin: 0;
+  min-height: 0 !important;
+  height: auto;
+  background: var(--lb-bg, var(--bg, #eef2f5)) !important;
+  background-color: var(--lb-bg, var(--bg, #eef2f5)) !important;
+  background-image: none !important;
+  /* Ei toista sivukuorta iframessa (yläpalkki / teema / vieritys) */
+  overflow: hidden !important;
+}
+
+html[data-theme="dark"] body.jah-embed,
+body.jah-embed[data-theme="dark"] {
+  background: #071018 !important;
+  background-color: #071018 !important;
+  background-image: none !important;
+}
+
+/* Embedissä ei viewport-min-korkeutta (aiheutti tyhjää + väärän scrollHeightin) */
+body.jah-embed .lb {
+  min-height: 0 !important;
+}
+
+body.jah-embed .site-topbar,
+body.jah-embed .theme-toggle {
+  display: none !important;
+}
+
+body.jah-embed .container,
+body.jah-embed .container--embed {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+body.seuranta-embed .lb-top {
+  display: none;
+}
+
+body.seuranta-embed .lb-controls {
+  border-radius: 0;
+  padding-left: 0.55rem;
+  padding-right: 0.55rem;
+}
+
+/* Iltarasti: rata ylhäällä, Tulokset / Rastiväliajat alla (Pirilän lb-chip). */
+body.seuranta-iltarasti .lb-controls {
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  gap: 0.4rem;
+}
+body.seuranta-iltarasti .lb-filters {
+  order: 1;
+  flex: 0 0 auto;
+  width: 100%;
+  margin: 0;
+}
+body.seuranta-iltarasti .lb-nakyma {
+  order: 2;
+  margin-left: 0;
+  width: 100%;
+  justify-content: flex-start;
+}
+body.seuranta-iltarasti .lb-filters .lb-filter-select,
+body.seuranta-iltarasti .lb-filters select {
+  flex: 1 1 10rem;
+  min-width: 8rem;
+  width: auto;
+}
+
+/* Iltarastit: ei kilpailunumerosaraketta */
+body.seuranta-iltarasti .lb-rivi:not(.has-va):not(.has-sarja):not(.lb-viesti-rivi):not(.has-online) {
+  grid-template-columns: 3rem minmax(8rem, 1fr) minmax(6.75rem, max-content) minmax(6.75rem, max-content);
+}
+
+body.seuranta-iltarasti .lb-rivi.has-va {
+  grid-template-columns:
+    3rem 0 var(--lb-va-name)
+    repeat(var(--va-cols, 0), var(--lb-va-col))
+    5.2rem 4.5rem;
+}
+
+@media (max-width: 899px) {
+  body.seuranta-page.seuranta-iltarasti .lb-main--tulokset .lb-rivi:not(.has-va),
+  body.seuranta-iltarasti .lb-rivi:not(.has-va):not(.has-sarja):not(.lb-viesti-rivi):not(.has-online) {
+    grid-template-columns: 2.1rem minmax(0, 1fr) 4rem 3.4rem;
+  }
+}
+
+@media (max-width: 640px) {
+  body.seuranta-page.seuranta-iltarasti .lb-main--tulokset .lb-rivi:not(.has-va),
+  body.seuranta-iltarasti .lb-rivi:not(.has-va):not(.has-sarja):not(.lb-viesti-rivi):not(.has-online) {
+    grid-template-columns: 2.1rem minmax(0, 1fr) 4rem 3.4rem;
+  }
+
+  body.seuranta-iltarasti .lb-rivi.has-va {
+    grid-template-columns:
+      2.1rem 0 var(--lb-va-name)
+      repeat(var(--va-cols, 0), var(--lb-va-col))
+      4rem 3.4rem;
+  }
+}
+
+@media (max-width: 380px) {
+  body.seuranta-iltarasti .lb-rivi:not(.has-va):not(.has-sarja):not(.lb-viesti-rivi):not(.has-online) {
+    grid-template-columns: 2rem minmax(0, 1fr) 3.7rem 3.1rem;
+  }
+
+  body.seuranta-iltarasti .lb-rivi.has-va {
+    grid-template-columns:
+      2rem 0 var(--lb-va-name)
+      repeat(var(--va-cols, 0), var(--lb-va-col))
+      3.7rem 3.1rem;
+  }
+}
+
+body.seuranta-embed .lb-main {
+  padding-left: 0.55rem;
+  padding-right: 0.55rem;
+}
+
+.lb-seura-strip {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 0.3rem 0.4rem;
+  padding: 0.28rem 0.45rem;
+  border: 1px solid color-mix(in srgb, var(--lb-accent, #c49a22) 35%, var(--lb-line, #c5d0da));
+  border-radius: 8px;
+  background: var(--lb-row, #fff);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.lb-seura-strip::-webkit-scrollbar {
+  display: none;
+}
+
+.lb-seura-strip-label {
+  font-family: "Barlow Condensed", sans-serif;
+  font-weight: 700;
+  font-size: 0.82rem;
+  letter-spacing: 0.02em;
+  color: var(--lb-accent, #c49a22);
+  margin-right: 0.1rem;
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.lb-seura-strip-linkit {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.28rem;
+}
+
+.lb-seura-strip-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.65rem;
+  padding: 0.15rem 0.5rem;
+  border: 1px solid var(--lb-line, #c5d0da);
+  border-radius: 7px;
+  background: var(--lb-bg, #fff);
+  color: var(--lb-text, #12202c);
+  text-decoration: none;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+
+.lb-seura-strip-link:hover {
+  border-color: var(--lb-accent, #c49a22);
+  color: var(--lb-accent, #c49a22);
+  text-decoration: none;
+}
+
+@media (max-width: 900px) {
+  /* Tulosruutu reunasta reunaan kapealla / tabletilla */
+  body.live-board-page .container,
+  body.kilpailu-kuori-online .container,
+  body.jah-embed .container,
+  body.jah-embed .container--embed,
+  body.seuranta-embed .container,
+  body.seuranta-embed .container--embed,
+  body.seuranta-page .container {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    max-width: none !important;
+    width: 100% !important;
+  }
+
+  body.kilpailu-kuori-online .lb-top {
+    padding-left: 0.55rem;
+    padding-right: 0.55rem;
+  }
+
+  body.kilpailu-kuori-online .lb-main--kuori,
+  .lb-main--kuori {
+    padding-left: 0;
+    padding-right: 0;
+    gap: 0.25rem;
+  }
+
+  body.kilpailu-kuori-online .lb-seura-strip {
+    margin-left: 0.4rem;
+    margin-right: 0.4rem;
+  }
+
+  .lb-online-embed {
+    border-radius: 0;
+    border-left: 0;
+    border-right: 0;
+    width: 100%;
+  }
+
+  .lb-main,
+  body.seuranta-page .lb-main--tulokset,
+  body.seuranta-page .lb-main--valiajat {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    max-width: none !important;
+    margin-inline: 0 !important;
+    width: 100% !important;
+    align-self: stretch !important;
+  }
+
+  body.seuranta-page .lb-controls {
+    max-width: none !important;
+    margin-inline: 0 !important;
+    width: 100%;
+    padding-left: 0.4rem;
+    padding-right: 0.4rem;
+  }
+
+  .lb-main {
+    padding-top: 0.35rem;
+    padding-bottom: 0.85rem;
+  }
+
+  .lb-paneeli,
+  .lb-paneeli--viesti,
+  .lb-paneeli--viesti-osuus,
+  .lb-paneeli--matka {
+    border-radius: 0;
+    border-left: 0;
+    border-right: 0;
+    width: 100%;
+    max-width: none;
+  }
+
+  .lb-otsikko {
+    padding-left: 0.55rem;
+    padding-right: 0.55rem;
+  }
+
+  .lb-rivi {
+    padding-left: 0.55rem;
+    padding-right: 0.55rem;
+  }
+
+  .lb-osuus-valinta {
+    padding-left: 0.4rem;
+    padding-right: 0.4rem;
+  }
+}
+
+@media (max-width: 720px) {
+  /* Bränditeksti näkyy kuten muillakin sivuilla (globaali topbar) */
+
+  body.live-board-page .site-topbar-user {
+    display: none;
+  }
+
+  .lb-controls {
+    padding: 0.28rem 0.4rem;
+    gap: 0.28rem;
+  }
+
+  .lb-paivitys {
+    flex: 1 1 100%;
+    white-space: normal;
+    margin-top: 0.05rem;
+  }
+
+  .lb-controls label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .lb-filters {
+    flex: 1 1 auto;
+    flex-wrap: nowrap;
+    gap: 0.28rem;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .lb-controls select {
+    min-width: 0;
+    flex: 1 1 auto;
+    font-size: 1rem;
+    padding: 0.45rem 0.75rem;
+    min-height: 44px;
+  }
+
+  .lb-filters .lb-chip,
+  .lb-osuus-valinta .lb-chip {
+    padding: 0.35rem 0.65rem;
+    font-size: 0.85rem;
+    min-height: 44px;
+  }
+
+  /* Tulokset / Rastiväliajat: mobiilissa selvästi huomattavat */
+  .lb-nakyma {
+    width: 100%;
+    margin-left: 0;
+    gap: 0.4rem;
+    order: 2;
+  }
+
+  .lb-nakyma .lb-chip {
+    flex: 1 1 auto;
+    justify-content: center;
+    font-size: 0.98rem;
+    font-weight: 700;
+    padding: 0.55rem 0.85rem;
+    min-height: 44px;
+    border-width: 2px;
+  }
+
+  .lb-actions a,
+  .lb-actions button {
+    font-size: 0.92rem;
+    padding: 0.45rem 0.85rem;
+    min-height: 44px;
+  }
+
+  .lb-chip-haku {
+    flex: 0 0 auto;
+    max-width: none;
+  }
+
+  .lb-haku-pitka {
+    display: none;
+  }
+
+  .lb-haku-lyhyt {
+    display: inline;
+  }
+}
+
+@media (display-mode: standalone), (display-mode: fullscreen) {
+  body.kilpailu-kuori-online .lb-online-embed {
+    border-radius: 0;
+    border-left: 0;
+    border-right: 0;
+  }
+}
+
+.lb-form-paneeli {
+  max-width: 36rem;
+}
+
+.lb-form label {
+  color: var(--lb-text);
+}
+
+.lb-form input,
+.lb-form select,
+.lb-form textarea {
+  background: var(--lb-row);
+  color: var(--lb-text);
+  border: 1px solid var(--lb-line);
+  border-radius: 8px;
+}
+
+.lb-form input:focus,
+.lb-form select:focus,
+.lb-form textarea:focus {
+  outline: 2px solid var(--lb-accent);
+  outline-offset: 1px;
+}
+
+.lb-form .form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  align-items: center;
+}
+
+.lb-form .form-actions button {
+  background: var(--lb-accent);
+  color: #1a1408;
+  border: none;
+  border-radius: 8px;
+  padding: 0.65rem 1.15rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+html[data-theme="light"] .lb-form .form-actions button {
+  color: #fff;
+}
+
+.lb-form .btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.65rem 1.15rem;
+  border-radius: 8px;
+  border: 1px solid var(--lb-line);
+  color: var(--lb-text);
+  text-decoration: none;
+  background: var(--lb-row);
+}
+
+.lb-maksuohje {
+  margin: 1rem 0;
+  padding: 0.85rem 1rem;
+  border-radius: 10px;
+  border: 1px solid var(--lb-line);
+  background: var(--lb-row);
+}
+
+.lb-maksuohje h3 {
+  margin: 0 0 0.5rem;
+  font-family: "Barlow Condensed", sans-serif;
+}
+
+.lb-list-ryhma {
+  overflow: hidden;
+}
+
+.lb-list-ryhma .lb-otsikko {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.4rem;
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid var(--lb-line);
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.lb-otsikko-meta {
+  color: var(--lb-muted);
+  font-size: 0.9rem;
+  font-weight: 500;
+  font-family: "Barlow", sans-serif;
+}
+
+.lb-list-meta {
+  margin: 0;
+  padding: 0.35rem 1rem 0.55rem;
+  color: var(--lb-muted);
+  font-size: 0.85rem;
+}
+
+.lb-sarja-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: center;
+  padding: 0.55rem 0.75rem;
+  margin-bottom: 0.65rem;
+}
+
+.lb-sarja-nav-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.lb-sarja-nav-select-wrap {
+  display: none;
+  align-items: center;
+  gap: 0.45rem;
+  width: 100%;
+  min-width: 0;
+}
+
+.lb-sarja-nav-select-label {
+  flex: 0 0 auto;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--lb-muted);
+}
+
+.lb-sarja-nav-select {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--lb-text);
+  background: var(--lb-panel);
+  border: 1px solid var(--lb-line);
+  border-radius: 8px;
+  padding: 0.45rem 0.65rem;
+  appearance: auto;
+}
+
+.lb-sarja-nav-link {
+  color: var(--lb-accent);
+  border-color: var(--lb-accent);
+  background: transparent;
+  font-weight: 600;
+}
+
+.lb-sarja-nav-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  background: rgba(61, 214, 165, 0.1);
+}
+
+html[data-theme="light"] .lb-sarja-nav-link:hover {
+  background: rgba(196, 154, 34, 0.08);
+}
+
+.lb-sarja-nav--sticky {
+  flex-shrink: 0;
+  margin-bottom: 0;
+  border-bottom: 1px solid var(--lb-line);
+  background: transparent;
+}
+
+html[data-theme="light"] .lb-sarja-nav--sticky {
+  background: transparent;
+}
+
+/* Lähtölista: normaali sivuscroll (valikot rullaavat pois) */
+body.lahtolista-page:has(.lahtolista-has-nav) .lb {
+  max-height: none;
+  overflow: visible;
+}
+
+body.lahtolista-page:has(.lahtolista-has-nav) .lb-main {
+  min-height: 0;
+  overflow: visible;
+  padding-bottom: 0.75rem;
+}
+
+body.lahtolista-page .lahtolista-sisalto {
+  flex: none;
+  min-height: 0;
+  overflow: visible;
+  padding-bottom: 0.75rem;
+  scroll-padding-top: 0.35rem;
+}
+
+body.lahtolista-page .lahtolista-sisalto .lb-list-ryhma {
+  margin-bottom: 0.85rem;
+}
+
+body.lahtolista-page .lahtolista-sisalto .lb-list-ryhma:last-child {
+  margin-bottom: 0;
+}
+
+.lb-list-ryhma[id] {
+  scroll-margin-top: 0.35rem;
+}
+
+body.lahtolista-page .lb-main {
+  max-width: min(52rem, 100%);
+  margin-inline: auto;
+  width: 100%;
+}
+
+.lahtolista-table {
+  table-layout: fixed;
+  width: max-content;
+  min-width: 100%;
+}
+
+.lahtolista-table col.lahto-col-nro { width: 3rem; }
+.lahtolista-table col.lahto-col-emit { width: 5.75rem; }
+.lahtolista-table col.lahto-col-nimi { width: 14rem; }
+.lahtolista-table col.lahto-col-kolmas { width: 10rem; }
+.lahtolista-table col.lahto-col-rata { width: 3.25rem; }
+.lahtolista-table col.lahto-col-lahto { width: 5.5rem; }
+
+.lahtolista-table th,
+.lahtolista-table td {
+  padding: 0.45rem 0.55rem;
+}
+
+body.lahtolista-page .lahtolista-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+body.lahtolista-page .lb-list-ryhma {
+  width: 100%;
+}
+
+.lahtolista-table .lahto-th-emit,
+.lahtolista-table .lahto-td-emit {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.lahtolista-table .lahto-th-lahto,
+.lahtolista-table .lahto-td-lahto {
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.lahtolista-table .lahto-td-nro {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.lahtolista-table .lahto-td-nimi,
+.lahtolista-table .lahto-td-kolmas,
+.lahtolista-table .lahto-th-nimi,
+.lahtolista-table .lahto-th-kolmas {
+  white-space: nowrap;
+  overflow: visible;
+}
+
+.lahtolista-table .lahto-td-nimi .lb-nimi-link {
+  display: inline;
+  white-space: nowrap;
+  overflow: visible;
+  text-overflow: unset;
+}
+
+.lahtolista-table .lahto-nimi-meta {
+  display: none;
+  margin-top: 0.12rem;
+  font-size: 0.78em;
+  font-weight: 500;
+  color: var(--lb-muted);
+  line-height: 1.2;
+  white-space: normal;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lb-otsikko-lahto {
+  color: var(--lb-muted);
+  font-family: "Barlow", sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.lahtolista-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 8;
+  background: var(--lb-panel, var(--card));
+  box-shadow: 0 1px 0 var(--lb-line, var(--border));
+}
+
+body.lahtolista-page .lb-controls {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--lb-bg, var(--bg));
+}
+
+.lahto-emit-peraan {
+  margin-left: 0.45rem;
+  color: var(--lb-muted);
+  font-family: "Barlow Condensed", "Barlow", sans-serif;
+  font-size: 0.92em;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.lahto-sarja-aika {
+  margin-left: 0.35rem;
+  color: var(--lb-muted);
+  font-size: 0.9em;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.lahtolista-table .lahto-seura-rivi > td {
+  padding: 0.55rem 0.65rem 0.28rem;
+  border-bottom: 1px solid var(--lb-line);
+  background: color-mix(in srgb, var(--lb-surface, #fff) 86%, var(--lb-line) 14%);
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 1.02rem;
+  font-weight: 700;
+}
+
+.lahtolista-table .lahto-seura-rivi .lb-seura-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.lahtolista-table .lahto-seura-rivi .lb-seura-link:hover {
+  text-decoration: underline;
+}
+
+.lahtolista-table .lahto-joukkue-rivi > td {
+  font-weight: 700;
+  padding-top: 0.45rem;
+}
+
+.lahtolista-table .lahto-td-joukkue {
+  font-family: "Barlow Condensed", "Barlow", sans-serif;
+  font-size: 1.02rem;
+}
+
+.lahtolista-table .lahto-osuus-rivi .lahto-td-nimi {
+  padding-left: 1.1rem;
+}
+
+.lahtolista-table--seura-ryhmat tbody tr:not(.lahto-seura-rivi) > td {
+  background: transparent;
+}
+
+.lahtolista-table .lahto-nimi-meta .lb-seura-link,
+.lahtolista-table .lahto-nimi-meta .lb-sarja-link {
+  color: inherit;
+  font-weight: 500;
+}
+
+.lahtolista-table .lahto-nimi-meta .lb-list-osuudet {
+  display: inline;
+  margin: 0;
+  font-size: inherit;
+}
+
+body.lahtolista-page .lb-list-osuudet {
+  margin-top: 0.15rem;
+  font-size: 0.82em;
+  color: var(--lb-muted);
+}
+
+/*
+ * Mobiili vaakataso: ylävalikot tiiviiksi / sivuscrolliksi,
+ * jotta lähtölista jää näkyviin (ei peitä koko näyttöä).
+ */
+@media (orientation: landscape) and (max-height: 520px) {
+  body.lahtolista-page .site-topbar {
+    display: none;
+  }
+
+  body.lahtolista-page:has(.lahtolista-has-nav) .lb {
+    max-height: none;
+    min-height: 0;
+    overflow: visible;
+  }
+
+  body.lahtolista-page .lb-top {
+    padding: 0.25rem 0.55rem;
+    gap: 0.15rem;
+  }
+
+  body.lahtolista-page .lb-kisa,
+  body.lahtolista-page .lb-meta {
+    display: none;
+  }
+
+  body.lahtolista-page .lb-actions {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    gap: 0.3rem;
+    width: 100%;
+    scrollbar-width: thin;
+  }
+
+  body.lahtolista-page .lb-actions a,
+  body.lahtolista-page .lb-actions button {
+    flex: 0 0 auto;
+    padding: 0.22rem 0.5rem;
+    font-size: 0.78rem;
+  }
+
+  body.lahtolista-page .lb-controls {
+    padding: 0.25rem 0.55rem;
+    gap: 0.3rem;
+  }
+
+  body.lahtolista-page .lb-chip {
+    padding: 0.2rem 0.45rem;
+    font-size: 0.78rem;
+  }
+
+  body.lahtolista-page .lb-sarja-nav {
+    flex-wrap: nowrap;
+    overflow: visible;
+    padding: 0.28rem 0.55rem;
+    gap: 0;
+  }
+
+  body.lahtolista-page .lb-sarja-nav-chips {
+    display: none;
+  }
+
+  body.lahtolista-page .lb-sarja-nav-select-wrap {
+    display: flex;
+  }
+
+  body.lahtolista-page .lb-sarja-nav-select {
+    padding: 0.35rem 0.55rem;
+    font-size: 0.88rem;
+  }
+
+  body.lahtolista-page .lb-sarja-nav-link {
+    flex: 0 0 auto;
+    padding: 0.2rem 0.45rem;
+    font-size: 0.78rem;
+  }
+
+  body.lahtolista-page .lb-main {
+    padding-top: 0.35rem;
+    padding-bottom: 0.35rem;
+  }
+
+  body.lahtolista-page .lahtolista-sisalto {
+    min-height: 55dvh;
+  }
+
+  body.lahtolista-page .lb-otsikko {
+    padding: 0.35rem 0.65rem;
+    font-size: 1.1rem;
+  }
+
+  body.lahtolista-page .lahtolista-table th,
+  body.lahtolista-page .lahtolista-table td {
+    padding: 0.28rem 0.4rem;
+  }
+}
+
+
+.lb-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+
+.lb-table th,
+.lb-table td {
+  padding: 0.45rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--lb-line);
+  vertical-align: top;
+}
+
+.lb-table th {
+  color: var(--lb-muted);
+  font-weight: 700;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: var(--lb-row);
+  position: relative;
+  top: auto;
+}
+
+.lahtolista-table thead th,
+.valiajat-table thead th {
+  font-size: 0.98rem;
+  font-weight: 700;
+}
+
+.lb-table tbody tr:nth-child(even) {
+  background: var(--lb-row-alt);
+}
+
+.lb-table tbody tr:nth-child(odd) {
+  background: var(--lb-row);
+}
+
+/* Lähtölista: riviväri myös soluihin (luotettavampi mobiilissa) */
+.lahtolista-table tbody tr:nth-child(odd) > td {
+  background-color: var(--lb-row);
+}
+
+.lahtolista-table tbody tr:nth-child(even) > td {
+  background-color: var(--lb-row-alt);
+}
+
+.lb-table tr.is-dns td {
+  opacity: 0.55;
+  text-decoration: line-through;
+}
+
+.lb-table tr.is-status td {
+  opacity: 0.78;
+}
+
+.lb-muted {
+  color: var(--lb-muted);
+}
+
+body.valiajat-page .lb-main {
+  max-width: min(40rem, 100%);
+  margin-inline: auto;
+  width: 100%;
+}
+
+@media (min-width: 900px) {
+  /* Kilpailijan rastiväliajat: ikkuna taulukon levyinen, keskitetty */
+  body.valiajat-page .lb-main {
+    width: max-content;
+    max-width: 100%;
+  }
+
+  body.valiajat-page .lb-paneeli {
+    width: max-content;
+    max-width: 100%;
+  }
+
+  body.valiajat-page .table-scroll {
+    width: max-content;
+    max-width: 100%;
+  }
+}
+
+body.vertailu-page .lb-main {
+  max-width: min(52rem, 100%);
+  margin-inline: auto;
+  width: 100%;
+}
+
+.lb-vertailu-valinta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem 0.65rem;
+  margin: 0 0 0.85rem;
+}
+
+.lb-vertailu-label {
+  font-size: 0.95rem;
+  color: var(--lb-muted);
+}
+
+.lb-vertailu-select {
+  flex: 1 1 12rem;
+  min-width: 10rem;
+  max-width: 100%;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--lb-line);
+  border-radius: 8px;
+  background: var(--lb-bg);
+  color: var(--lb-text);
+  font: inherit;
+}
+
+.lb-vertailu-nappi {
+  padding: 0.35rem 0.85rem;
+  border: 1px solid var(--lb-accent);
+  border-radius: 8px;
+  background: var(--lb-accent);
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.lb-vertailu-otsikot {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0 0 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.lb-vertailu-nimi--a {
+  color: var(--lb-text);
+}
+
+.lb-vertailu-nimi--b {
+  color: var(--lb-text);
+}
+
+.vertailu-table .vertailu-ero-col,
+.vertailu-table .vertailu-ero {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.vertailu-table .vertailu-ero {
+  color: var(--lb-muted);
+}
+
+.lb-valiajat-kilpailija {
+  margin: 0.35rem 0 0.75rem;
+  font-size: 1.15rem;
+  line-height: 1.45;
+}
+
+.lb-valiajat-maali {
+  margin: 0 0 0.85rem;
+  font-size: 1rem;
+}
+
+.valiajat-table {
+  table-layout: fixed;
+  width: 100%;
+  min-width: 0;
+}
+
+.valiajat-table col.valiajat-col-rasti { width: 3.25rem; }
+.valiajat-table col.valiajat-col-tilanne { width: 5.5rem; }
+.valiajat-table col.valiajat-col-split { width: auto; }
+.valiajat-table col.valiajat-col-ero { width: 4.75rem; }
+.valiajat-table col.valiajat-col-matka { width: 4.25rem; }
+.valiajat-table col.valiajat-col-vauhti { width: 5rem; }
+
+.valiajat-table .valiajat-rasti-col {
+  width: 3.25rem;
+}
+
+.valiajat-table .valiajat-tilanne-col,
+.valiajat-table .valiajat-split-col,
+.valiajat-table .valiajat-ero-col,
+.valiajat-table .valiajat-matka-col,
+.valiajat-table .valiajat-vauhti-col,
+.valiajat-table .valiajat-tilanne,
+.valiajat-table .valiajat-split,
+.valiajat-table .valiajat-ero,
+.valiajat-table .valiajat-matka,
+.valiajat-table .valiajat-vauhti {
+  text-align: right;
+}
+
+.valiajat-table .valiajat-tilanne,
+.valiajat-table .valiajat-matka,
+.valiajat-table .valiajat-vauhti {
+  overflow: hidden;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.valiajat-table .valiajat-tilanne {
+  overflow: visible;
+  white-space: normal;
+}
+
+.valiajat-table .valiajat-split {
+  overflow: visible;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.valiajat-table .valiajat-ero {
+  overflow: visible;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.valiajat-table .valiajat-tilanne .lb-va-aika,
+.valiajat-table .valiajat-tilanne .lb-va-cell {
+  display: inline-flex;
+  max-width: 100%;
+  min-width: 0;
+  overflow: visible;
+}
+
+.valiajat-cum-pace {
+  display: block;
+  margin-top: 0.12rem;
+  font-size: 0.72em;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--lb-muted);
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.valiajat-table .valiajat-split .lb-va-cell {
+  display: inline-flex;
+  max-width: none;
+  min-width: 0;
+  overflow: visible;
+}
+
+.valiajat-table .valiajat-rasti-col,
+.valiajat-table .valiajat-rasti {
+  text-align: center;
+}
+
+.valiajat-rasti {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.1rem;
+  line-height: 1.2;
+}
+
+.valiajat-rasti-nro {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.valiajat-rasti-koodi {
+  font-size: 0.78em;
+  font-weight: 500;
+  color: var(--lb-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.valiajat-tilanne .lb-va-cell,
+.valiajat-split .lb-va-cell {
+  justify-content: flex-end;
+}
+
+.valiajat-split .lb-va-sija {
+  opacity: 0.72;
+}
+
+body.tulospalvelu-page .table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 640px) {
+  .lb-main {
+    padding: 0.55rem 0.65rem 1.1rem;
+  }
+
+  .lb-hub-link {
+    flex: 1 1 calc(50% - 0.55rem);
+    min-width: 8.5rem;
+  }
+
+  body.seuranta-page .lb-main--tulokset {
+    width: 100%;
+    max-width: none;
+  }
+
+  body.seuranta-page .lb-main--tulokset .lb-paneeli,
+  body.seuranta-page .lb-main--tulokset .lb-rivi:not(.has-va) {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  body.seuranta-page .lb-main--tulokset .lb-rivi:not(.has-va) {
+    grid-template-columns: 2.1rem 2.7rem minmax(0, 1fr) 4rem 3.4rem;
+  }
+
+  body.seuranta-page .lb-main--tulokset .lb-rivi.has-sarja {
+    grid-template-columns: 1.7rem 2.1rem minmax(0, 1fr) 2.7rem 3.4rem 3.5rem;
+    font-size: 0.88rem;
+    gap: 0.2rem;
+    padding: 0.45rem 0.35rem;
+    min-height: 44px;
+    align-items: center;
+  }
+
+  body.seuranta-page .lb-main--tulokset .lb-rivi.has-sarja .lb-aika,
+  body.seuranta-page .lb-main--tulokset .lb-rivi.has-sarja .lb-ero {
+    font-size: 0.74rem;
+    overflow: visible;
+  }
+}
+
+/* Kilpailijan rastivälianalyysi (ei heatmap-rivivärejä) */
+.lb-valiajat-meta {
+  margin: 0 0 0.75rem;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.valiajat-ero-txt {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: #b45309;
+}
+
+.valiajat-matka,
+.valiajat-vauhti {
+  font-variant-numeric: tabular-nums;
+  font-size: 0.92em;
+  color: var(--lb-muted);
+}
+
+/* Desktop: erilliset matka/vauhti-sarakkeet; mobiilissa leg-meta välin alla */
+.valiajat-leg-meta {
+  display: none;
+  margin-top: 0.12rem;
+  font-size: 0.72em;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--lb-muted);
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.valiajat-table .valiajat-split {
+  white-space: normal;
+}
+
+/* Mobiili: kosketuspinnat ≥ 44px (nav, sarja, näkymä, nimet) */
+@media (max-width: 900px) {
+  .lb-actions a,
+  .lb-actions button {
+    min-height: 44px;
+  }
+
+  .lb-controls select,
+  .lb-filter-select,
+  #sarja,
+  #matka {
+    min-height: 44px;
+    font-size: 1rem;
+    padding: 0.5rem 0.75rem;
+    box-sizing: border-box;
+  }
+
+  .lb-nakyma .lb-chip {
+    min-height: 44px;
+  }
+
+  .lb-rivi:not(.lb-head) {
+    min-height: 44px;
+    align-items: center;
+  }
+
+  .lb-rivi:not(.lb-head) .lb-nimi {
+    min-height: 44px;
+    justify-content: center;
+  }
+
+  .lb-rivi:not(.lb-head) .lb-nimi-paa,
+  .lb-rivi:not(.lb-head) .lb-nimi-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    box-sizing: border-box;
+  }
+
+  .lb-rivi:not(.lb-head) .lb-nimi-link {
+    padding-top: 0.35rem;
+    padding-bottom: 0.35rem;
+  }
+}
+.maksu-tiedot { margin: 0.4rem 0 0.8rem; }
+.maksu-tiedot > div { display: flex; gap: 0.75rem; align-items: baseline; margin: 0.35rem 0; }
+.maksu-tiedot dt { min-width: 7.5rem; color: inherit; opacity: 0.75; }
+.maksu-tiedot dd { margin: 0; }
+.maksu-arvo { font-variant-numeric: tabular-nums; font-weight: 700; letter-spacing: 0.03em; }
+.maksu-kuittaus { display: inline; margin-left: 0.35rem; }
+
+.lb-va-grafiikka {
+  padding: 0.55rem 0.75rem 0.7rem;
+  border-bottom: 1px solid var(--lb-line);
+  background: color-mix(in srgb, var(--lb-panel) 88%, #0f172a 12%);
+}
+
+.lb-va-asemat {
+  display: flex;
+  gap: 0.4rem;
+  overflow-x: auto;
+  padding: 0.15rem 0 0.45rem;
+  -webkit-overflow-scrolling: touch;
+}
+
+.lb-va-asema {
+  flex: 0 0 auto;
+  min-width: 4.4rem;
+  padding: 0.35rem 0.45rem 0.4rem;
+  border: 1px solid var(--lb-line);
+  border-radius: 0.55rem;
+  background: var(--lb-panel);
+  text-align: center;
+}
+
+.lb-va-asema-nro {
+  font-family: "Barlow Condensed", sans-serif;
+  font-weight: 700;
+  font-size: 1.05rem;
+  line-height: 1.1;
+}
+
+.lb-va-asema-koodi {
+  font-size: 0.72rem;
+  color: var(--lb-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.lb-va-asema-karki {
+  margin-top: 0.2rem;
+  font-weight: 700;
+  font-size: 0.82rem;
+  white-space: nowrap;
+  max-width: 6.2rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lb-va-asema-aika {
+  font-variant-numeric: tabular-nums;
+  font-size: 0.78rem;
+  font-weight: 650;
+}
+
+.lb-va-asema-n {
+  font-size: 0.7rem;
+  color: var(--lb-muted);
+}
+
+.lb-va-kaavio {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 11.5rem;
+  margin-top: 0.15rem;
+}
+
+.lb-va-grid {
+  stroke: var(--lb-line);
+  stroke-width: 1;
+}
+
+.lb-va-grid-txt {
+  fill: var(--lb-muted);
+  font-size: 10px;
+  font-family: "Barlow", system-ui, sans-serif;
+}
+
+.lb-va-viiva-nimi {
+  font-size: 10px;
+  font-family: "Barlow Condensed", sans-serif;
+  font-weight: 700;
+}
+
+.lb-va-selite {
+  margin-top: 0.2rem;
+  font-size: 0.72rem;
+  color: var(--lb-muted);
+}
+
+@media (max-width: 640px) {
+  .lb-va-asema {
+    min-width: 3.9rem;
+    padding: 0.28rem 0.32rem;
+  }
+  .lb-va-kaavio {
+    max-height: 9.5rem;
+  }
+}
