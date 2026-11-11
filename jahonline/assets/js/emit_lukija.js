@@ -1654,14 +1654,25 @@
         if (!toimet) {
             return;
         }
+        var net = document.getElementById('iltarasti-yhteys');
+        if (net) {
+            net.setAttribute('data-online', 'Palvelin ok');
+            net.setAttribute('data-offline', 'Ei verkkoa');
+            net.setAttribute('title', 'Tulospalvelimen verkkoyhteys');
+            net.classList.add('emit-automaatti-palvelin');
+            net.textContent = navigator.onLine !== false ? 'Palvelin ok' : 'Ei verkkoa';
+        }
         var puhe = luoAutomaattiPuheNappi();
         if (puhe.parentNode !== toimet) {
             toimet.insertBefore(puhe, toimet.firstChild);
         }
+        if (net && net.parentNode === toimet) {
+            toimet.insertBefore(net, puhe);
+        }
         var yhd = document.getElementById('yhdista');
         if (yhd && yhd.parentNode !== toimet) {
             yhd.classList.add('emit-automaatti-ylapalkki-yhdista');
-            yhd.textContent = 'Yhdistä';
+            yhd.textContent = 'Yhdistä lukija';
             toimet.insertBefore(yhd, puhe.nextSibling);
         }
         var ikoni = document.getElementById('lukija-yhteys');

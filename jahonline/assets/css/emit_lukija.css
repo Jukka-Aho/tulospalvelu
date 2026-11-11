@@ -817,6 +817,27 @@ body.emit-automaatti-sivu .site-topbar-actions {
     gap: 0.35rem;
 }
 
+body.emit-automaatti-sivu .iltarasti-yhteys,
+body.emit-automaatti-sivu .emit-automaatti-palvelin {
+    max-width: none;
+    font-size: 0.72rem;
+    font-weight: 650;
+    line-height: 1.15;
+    letter-spacing: 0.01em;
+    text-align: left;
+    color: #64748b;
+}
+
+body.emit-automaatti-sivu .iltarasti-yhteys.is-online,
+body.emit-automaatti-sivu .emit-automaatti-palvelin.is-online {
+    color: #64748b;
+}
+
+body.emit-automaatti-sivu .iltarasti-yhteys.is-offline,
+body.emit-automaatti-sivu .emit-automaatti-palvelin.is-offline {
+    color: #b45309;
+}
+
 body.emit-automaatti-sivu .site-topbar .emit-automaatti-puhe {
     position: static;
     width: 2.5rem;
