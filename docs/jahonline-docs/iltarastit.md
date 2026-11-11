@@ -234,12 +234,15 @@ kaatuu, leimat silti merkitsevät Esityksen. Esitys tallennetaan
 
 **Automaatti** (Navisport-tyylinen maalinäyttö) avautuu hamburgerista
 omaksi kioskisivuksi (`/public/automaatti.php`), koko näytölle ilman
-sisäänluvun ja leimantarkastuksen välilehtiä. Kortin luku käsitellään
-maalina. Ruutuun tulee isoina henkilön nimi, tulosaika ja sijoitus
-(1.–3. mitalivärein) tai vaihtoehtoisesti **Hylkäysesitys** puuttuvine
-rasteineen. Tuntematon kortti näyttää *Tuntematon kortti* ilman
-nimilomaketta. Näyttö tyhjenee noin 12 sekunnissa (kaksoisklikkaus
-tyhjentää heti). Puhe (fi-FI) on päällä; mykistys jää puhelimeen.
+sisäänluvun ja leimantarkastuksen välilehtiä. Ensimmäisellä avauksella
+ruudussa on **Yhdistä Emit-lukija**; Chromen USB-valikosta valitaan
+USB Serial. Yhdistämisen jälkeen odotusnäyttö pyytää lukemaan kortin.
+Kortin luku käsitellään maalina. Ruutuun tulee isoina henkilön nimi,
+tulosaika ja sijoitus (1.–3. mitalivärein) tai vaihtoehtoisesti
+**Hylkäysesitys** puuttuvine rasteineen. Tuntematon kortti näyttää
+*Tuntematon kortti* ilman nimilomaketta. Näyttö tyhjenee noin
+12 sekunnissa (kaksoisklikkaus tyhjentää heti). Puhe (fi-FI) on päällä;
+mykistys jää puhelimeen.
 Sijoitus luetaan tulossivulta, ja jos verkko ei vastaa, se lasketaan
 illan hyväksytyistä ajoista. Esitystä ei muuteta hylkäykseksi.
 

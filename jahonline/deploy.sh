@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 HOST="${JAHONLINE_HOST:-root@46.225.174.104}"
 DEST="${JAHONLINE_DEST:-/var/www/jahonline}"
-VER="20261111kioski"
+VER="20261111yhdista"
 KEY="${JAHONLINE_SSH_KEY:-$HOME/.ssh/hetzner_key}"
 SSH=(ssh -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new)
 SCP=(scp -q -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new)

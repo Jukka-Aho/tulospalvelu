@@ -3,7 +3,7 @@
 from pathlib import Path
 
 DEST = Path("/var/www/jahonline")
-VER = "20261111kioski"
+VER = "20261111yhdista"
 
 
 def sub(txt, a, b, pakko=False):
@@ -27,9 +27,15 @@ def patch_emit_lukija():
     txt = p.read_text(encoding="utf-8")
     orig = txt
     txt, _ = sub(txt, "$emitCssV = '20261111auto';", "$emitCssV = '%s';" % VER)
+    txt, _ = sub(txt, "$emitCssV = '20261111kioski';", "$emitCssV = '%s';" % VER)
     txt, _ = sub(
         txt,
         "emit_lukija.js?v=20261111auto",
+        "emit_lukija.js?v=" + VER,
+    )
+    txt, _ = sub(
+        txt,
+        "emit_lukija.js?v=20261111kioski",
         "emit_lukija.js?v=" + VER,
     )
     merkk = "asetaValittuKilpailu($kilpailu_id);"
@@ -121,14 +127,23 @@ def patch_iltarasti():
 def cache_bust():
     repls = [
         ("emit_lukija.js?v=20261111auto", "emit_lukija.js?v=" + VER),
+        ("emit_lukija.js?v=20261111kioski", "emit_lukija.js?v=" + VER),
         ("emit_lukija.css?v=20261111auto", "emit_lukija.css?v=" + VER),
+        ("emit_lukija.css?v=20261111kioski", "emit_lukija.css?v=" + VER),
         ("seuranta.js?v=20261111auto", "seuranta.js?v=" + VER),
+        ("seuranta.js?v=20261111kioski", "seuranta.js?v=" + VER),
         ("live_board.css?v=20261111auto", "live_board.css?v=" + VER),
+        ("live_board.css?v=20261111kioski", "live_board.css?v=" + VER),
         ("jah-pwa.js?v=20261111auto", "jah-pwa.js?v=" + VER),
+        ("jah-pwa.js?v=20261111kioski", "jah-pwa.js?v=" + VER),
         ("sw-jahonline.js?v=20261111auto", "sw-jahonline.js?v=" + VER),
+        ("sw-jahonline.js?v=20261111kioski", "sw-jahonline.js?v=" + VER),
         ("TULOSPALVELU_ASSET_V = '20261111auto'", "TULOSPALVELU_ASSET_V = '%s'" % VER),
+        ("TULOSPALVELU_ASSET_V = '20261111kioski'", "TULOSPALVELU_ASSET_V = '%s'" % VER),
         ("$emitCssV = '20261111auto'", "$emitCssV = '%s'" % VER),
-        ("jahonline-app-v13", "jahonline-app-v14"),
+        ("$emitCssV = '20261111kioski'", "$emitCssV = '%s'" % VER),
+        ("jahonline-app-v13", "jahonline-app-v15"),
+        ("jahonline-app-v14", "jahonline-app-v15"),
     ]
     n = 0
     for root in [DEST / "public", DEST / "admin", DEST / "includes", DEST / "assets"]:

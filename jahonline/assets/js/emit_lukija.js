@@ -180,6 +180,10 @@
     }
 
     function naytaTulos(luokka, html) {
+        if (onkoAutomaatti()) {
+            naytaAutomaattiVirhe(luokka === 'virhe' ? html : '');
+            return;
+        }
         if (cfg.iltarasti && tulosEl) {
             tulosEl.hidden = false;
         }
@@ -1619,8 +1623,9 @@
             + ' aria-pressed="' + (automaattiPuhu ? 'true' : 'false') + '"'
             + ' title="Puhe">' + (automaattiPuhu ? '🔊' : '🔇') + '</button>'
             + '<div class="emit-automaatti-odota" id="emit-automaatti-odota">'
-            + '<div class="emit-automaatti-ots">Lue kortti</div>'
+            + '<div class="emit-automaatti-ots" id="emit-automaatti-ots">Yhdistä lukija</div>'
             + '<div class="emit-automaatti-ala" id="emit-automaatti-yhteys"></div>'
+            + '<div class="emit-automaatti-virhe" id="emit-automaatti-virhe" hidden></div>'
             + '</div>'
             + '<div class="emit-automaatti-tulos" id="emit-automaatti-tulos" hidden></div>';
         document.body.appendChild(el);
@@ -1639,18 +1644,93 @@
                 }
             });
         }
-        el.addEventListener('dblclick', function () {
+        el.addEventListener('click', function (ev) {
+            var nappi = ev.target && ev.target.closest
+                ? ev.target.closest('#emit-automaatti-yhdista, #emit-automaatti-katkaise')
+                : null;
+            if (!nappi) {
+                return;
+            }
+            ev.preventDefault();
+            ev.stopPropagation();
+            yhdista();
+        });
+        el.addEventListener('dblclick', function (ev) {
+            if (ev.target && ev.target.closest
+                    && ev.target.closest('#emit-automaatti-yhdista, #emit-automaatti-katkaise, #emit-automaatti-puhe')) {
+                return;
+            }
             tyhjennaAutomaatti();
         });
+        paivitaAutomaattiYhteys();
         return el;
+    }
+
+    function usbLukijaSaatavilla() {
+        if (onPuhelin()) {
+            return !!(navigator.usb && window.JahUsbSerial);
+        }
+        return !!(navigator.serial || (window.JahUsbSerial && navigator.usb));
     }
 
     function paivitaAutomaattiYhteys() {
         var el = document.getElementById('emit-automaatti-yhteys');
+        var ots = document.getElementById('emit-automaatti-ots');
         if (!el) {
             return;
         }
-        el.textContent = auki ? 'Lukija yhdistetty' : 'Yhdistä lukija ylhäältä';
+        if (ots) {
+            ots.textContent = auki ? 'Lue kortti' : 'Yhdistä lukija';
+        }
+        if (auki) {
+            var virheEl = document.getElementById('emit-automaatti-virhe');
+            if (virheEl) {
+                virheEl.hidden = true;
+                virheEl.textContent = '';
+            }
+            el.innerHTML = '<div class="emit-automaatti-yhteys-ok">Lukija yhdistetty</div>'
+                + '<button type="button" class="emit-automaatti-katkaise" id="emit-automaatti-katkaise">'
+                + 'Katkaise yhteys</button>';
+            return;
+        }
+        if (!usbLukijaSaatavilla()) {
+            el.innerHTML = '<div class="emit-automaatti-yhteys-ohje">'
+                + 'USB-lukija vaatii Chromen tai Edgen.</div>';
+            return;
+        }
+        el.innerHTML = '<button type="button" class="emit-automaatti-yhdista" id="emit-automaatti-yhdista">'
+            + 'Yhdistä Emit-lukija</button>'
+            + '<div class="emit-automaatti-yhteys-ohje">Valitse listasta USB Serial</div>';
+    }
+
+    function naytaAutomaattiVirhe(html) {
+        varmistaAutomaattiNaytto();
+        paivitaAutomaattiYhteys();
+        var virheEl = document.getElementById('emit-automaatti-virhe');
+        var odota = document.getElementById('emit-automaatti-odota');
+        var tulos = document.getElementById('emit-automaatti-tulos');
+        var teksti = String(html || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+        if (virheEl) {
+            if (teksti) {
+                virheEl.hidden = false;
+                virheEl.textContent = teksti;
+            } else {
+                virheEl.hidden = true;
+                virheEl.textContent = '';
+            }
+        }
+        if (teksti) {
+            var wrap = document.getElementById('emit-automaatti');
+            if (wrap) {
+                wrap.hidden = false;
+            }
+            if (odota) {
+                odota.hidden = false;
+            }
+            if (tulos) {
+                tulos.hidden = true;
+            }
+        }
     }
 
     function tyhjennaAutomaatti() {
@@ -1672,6 +1752,11 @@
         if (tulos) {
             tulos.hidden = true;
             tulos.innerHTML = '';
+        }
+        var virheEl = document.getElementById('emit-automaatti-virhe');
+        if (virheEl) {
+            virheEl.hidden = true;
+            virheEl.textContent = '';
         }
         paivitaAutomaattiYhteys();
     }

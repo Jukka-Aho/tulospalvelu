@@ -128,8 +128,8 @@
     }
 
     var AUTO = /\/(ahoauto|autot|ohjaus|scenic)(\/|$)/;
-    var SW = '/sw-jahonline.js?v=20261111kioski';
-    var CACHE = 'jahonline-app-v14';
+    var SW = '/sw-jahonline.js?v=20261111yhdista';
+    var CACHE = 'jahonline-app-v15';
 
     function iltarastiPrefetchUrlit() {
         var urls = {};
