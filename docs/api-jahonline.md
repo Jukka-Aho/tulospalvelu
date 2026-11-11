@@ -92,6 +92,7 @@ Vaatii käyttäjäkohtaisen avaimen (admin, pääkäyttäjä tai seuran admin).
 Luonne tulee Pirilän kilpailulajista ja ohjaa, mitkä valikot netissä näkyvät
 (juoksussa ajanotto, suunnistuksessa ratatiedot ja Emit-sivut). Palvelimen
 toteutus: [jahonline-docs/kisan-luonne.md](jahonline-docs/kisan-luonne.md).
+Iltarastit (Rastilippu): [jahonline-docs/iltarastit.md](jahonline-docs/iltarastit.md).
 
 ### `kilpailijat` (JAHOnline → Pirilä)
 ```json
