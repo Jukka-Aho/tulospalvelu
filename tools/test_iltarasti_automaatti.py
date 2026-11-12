@@ -23,7 +23,8 @@ def read(path):
 
 
 def test_tiedostot():
-    for p in (EMIT_JS, SI_JS, SEURANTA_JS, EMIT_CSS, BOARD_CSS, SW, PWA):
+    KUORI_CSS = os.path.join(JAH, "assets/css/iltarasti_kuori.css")
+    for p in (EMIT_JS, SI_JS, SEURANTA_JS, EMIT_CSS, BOARD_CSS, KUORI_CSS, SW, PWA):
         assert os.path.isfile(p), p
     print("ok tiedostot")
 
@@ -76,9 +77,23 @@ def test_automaatti_lahde():
     pwa = read(PWA)
     assert "automaatti.php" in pwa
     sw = read(SW)
-    assert "jahonline-app-v20" in sw
-    assert "20261112si" in sw
+    assert "jahonline-app-v22" in sw
+    assert "20261112selite" in sw
     assert "si_proto.js" in sw
+    assert "iltarasti_kuori.css" in sw
+    pwa = read(PWA)
+    assert "varmistaYhteysPallo" in pwa
+    assert "varmistaYhteysSelite" in pwa
+    assert "onIltarastiKuori" in pwa
+    assert "/api/yhteys.php" in pwa
+    assert os.path.isfile(os.path.join(JAH, "api/yhteys.php"))
+    kuori = read(os.path.join(JAH, "assets/css/iltarasti_kuori.css"))
+    assert "border-radius: 50%" in kuori
+    assert "#22c55e" in kuori
+    assert "#ef4444" in kuori
+    assert "iltarasti-yhteys-selite" in kuori
+    assert "iltarasti-yhteys-rivi" in pwa
+    assert "iltarasti-yhteys-rivi" in js
     assert "CP210xSerialPort" in read(os.path.join(JAH, "assets/js/usb_sarja.js"))
     print("ok automaatti lahde")
 
@@ -305,6 +320,16 @@ def test_docs():
     assert "Hylkäysesitys" in docs
     assert "Tilanne rasteilla" in docs or "rastitilanne" in docs.lower() or "grafiikka" in docs
     assert "SportIdent" in docs
+    assert "pallo" in docs
+    assert "Palvelin" in docs
+    deploy = read(os.path.join(JAH, "deploy.sh"))
+    assert "20261112selite" in deploy
+    assert "iltarasti_kuori.css" in deploy
+    assert "yhteys.php" in deploy
+    patch = read(os.path.join(JAH, "patch_automaatti_sivu.py"))
+    assert "def patch_layout" in patch
+    assert "iltarasti_kuori.css" in patch
+    assert "iltarasti-yhteys-selite" in patch
     print("ok docs")
 
 

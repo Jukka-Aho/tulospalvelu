@@ -1,0 +1,59 @@
+/* Iltarastien yläpalkin palvelinyhteys: selite + vihreä / punainen pallo */
+
+body.iltarasti-kuori .site-topbar .iltarasti-yhteys-rivi,
+body.emit-automaatti-sivu .site-topbar .iltarasti-yhteys-rivi {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    flex: 0 0 auto;
+    margin: 0 0.1rem 0 0.15rem;
+    white-space: nowrap;
+}
+
+body.iltarasti-kuori .site-topbar .iltarasti-yhteys-selite,
+body.emit-automaatti-sivu .site-topbar .iltarasti-yhteys-selite {
+    font-family: "Barlow Condensed", system-ui, sans-serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    line-height: 1;
+    color: var(--text);
+    opacity: 0.85;
+}
+
+body.iltarasti-kuori .site-topbar .iltarasti-yhteys,
+body.iltarasti-kuori .site-topbar .emit-automaatti-palvelin,
+body.emit-automaatti-sivu .site-topbar .iltarasti-yhteys,
+body.emit-automaatti-sivu .site-topbar .emit-automaatti-palvelin {
+    display: inline-block;
+    box-sizing: border-box;
+    width: 0.9rem;
+    height: 0.9rem;
+    min-width: 0.9rem;
+    min-height: 0.9rem;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: #22c55e;
+    box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.35);
+    font-size: 0;
+    font-weight: 400;
+    line-height: 0;
+    letter-spacing: 0;
+    text-align: left;
+    color: transparent;
+    overflow: hidden;
+    flex: 0 0 auto;
+    vertical-align: middle;
+    align-self: center;
+}
+
+body.iltarasti-kuori .site-topbar .iltarasti-yhteys.is-offline,
+body.iltarasti-kuori .site-topbar .emit-automaatti-palvelin.is-offline,
+body.emit-automaatti-sivu .site-topbar .iltarasti-yhteys.is-offline,
+body.emit-automaatti-sivu .site-topbar .emit-automaatti-palvelin.is-offline {
+    background: #ef4444;
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.4);
+}

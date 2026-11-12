@@ -1684,19 +1684,25 @@
             return;
         }
         var net = document.getElementById('iltarasti-yhteys');
+        var netRivi = net;
         if (net) {
             net.setAttribute('data-online', 'Palvelin ok');
             net.setAttribute('data-offline', 'Ei verkkoa');
-            net.setAttribute('title', 'Tulospalvelimen verkkoyhteys');
+            net.setAttribute('title', navigator.onLine !== false ? 'Palvelin ok' : 'Ei verkkoa');
+            net.setAttribute('aria-label', net.getAttribute('title'));
             net.classList.add('emit-automaatti-palvelin');
-            net.textContent = navigator.onLine !== false ? 'Palvelin ok' : 'Ei verkkoa';
+            net.textContent = '';
+            if (net.parentNode && net.parentNode.classList
+                && net.parentNode.classList.contains('iltarasti-yhteys-rivi')) {
+                netRivi = net.parentNode;
+            }
         }
         var puhe = luoAutomaattiPuheNappi();
         if (puhe.parentNode !== toimet) {
             toimet.insertBefore(puhe, toimet.firstChild);
         }
-        if (net && net.parentNode === toimet) {
-            toimet.insertBefore(net, puhe);
+        if (netRivi && netRivi.parentNode === toimet) {
+            toimet.insertBefore(netRivi, puhe);
         }
         var yhd = document.getElementById('yhdista');
         if (yhd && yhd.parentNode !== toimet) {

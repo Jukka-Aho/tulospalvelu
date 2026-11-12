@@ -26,7 +26,7 @@ kuten sisäänluku ja leimantarkastus. Etusivulta voi asentaa JAHOnlinen
 kotinäytölle (Chrome → Asenna sovellus). USB-lukija Chromessa (Android).
 Tapahtuman osanottajat, asetukset, tulokset ja tulospalvelu avautuvat
 kioskina (koko näyttö, ilman selaimen sulje-X:ää). Yläpalkissa näkyy
-yhteyden tila (Yhteydessä / Paikallisesti toimiva). Hamburger-valikon
+selite **Palvelin** ja yhteyden pallo (vihreä = ok, punainen = ei verkkoa). Hamburger-valikon
 **Sulje tapahtuma** palauttaa tapahtuman valintaan; **Siirry julkiselle
 etusivulle** ja **Kirjaudu ulos** ovat erillään muista. **Kirjaudu ulos**
 vie aina julkiselle etusivulle. Asetuksista **Siirry tulospalveluun** avaa
@@ -156,7 +156,8 @@ Lähetys noudattaa EResults Liten rajapintaa:
 
 ## Avattu tapahtuma
 
-Koko ikkuna (`iltarastiKuori`). Ylhäällä hamburger ja tapahtuman nimi.
+Koko ikkuna (`iltarastiKuori`). Ylhäällä hamburger, tapahtuman nimi ja
+selite **Palvelin** sekä yhteyden pallo (vihreä = ok, punainen = ei verkkoa).
 
 Hamburger:
 
@@ -234,7 +235,7 @@ kaatuu, leimat silti merkitsevät Esityksen. Esitys tallennetaan
 
 **Automaatti** (Navisport-tyylinen maalinäyttö) avautuu hamburgerista
 omaksi kioskisivuksi (`/public/automaatti.php`), koko näytölle ilman
-sisäänluvun ja leimantarkastuksen välilehtiä. Yläpalkissa on palvelimen verkkotila (**Palvelin ok** / **Ei verkkoa**),
+sisäänluvun ja leimantarkastuksen välilehtiä. Yläpalkissa on selite **Palvelin** ja vihreä / punainen pallo,
 kaiutin ja **Yhdistä lukija** (sama USB-yhteys kuin sisäänluvussa). Ruudussa valitaan
 **Emit** tai **SportIdent** ja iso **Yhdistä lukija**. Chromen USB-valikosta
 valitaan USB Serial (Emit) tai SPORTident BSM7/BSM8. SportIdent-asema pidetään

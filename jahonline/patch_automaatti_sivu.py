@@ -3,7 +3,7 @@
 from pathlib import Path
 
 DEST = Path("/var/www/jahonline")
-VER = "20261112si"
+VER = "20261112selite"
 
 
 def sub(txt, a, b, pakko=False):
@@ -34,6 +34,7 @@ def patch_emit_lukija():
     txt, _ = sub(txt, "$emitCssV = '20261111graf';", "$emitCssV = '%s';" % VER)
     txt, _ = sub(txt, "$emitCssV = '20261112asema';", "$emitCssV = '%s';" % VER)
     txt, _ = sub(txt, "$emitCssV = '20261112si';", "$emitCssV = '%s';" % VER)
+    txt, _ = sub(txt, "$emitCssV = '20261112pallo';", "$emitCssV = '%s';" % VER)
     txt, _ = sub(
         txt,
         "emit_lukija.js?v=20261111auto",
@@ -71,7 +72,27 @@ def patch_emit_lukija():
     )
     txt, _ = sub(
         txt,
+        "emit_lukija.js?v=20261112si",
+        "emit_lukija.js?v=" + VER,
+    )
+    txt, _ = sub(
+        txt,
+        "emit_lukija.js?v=20261112pallo",
+        "emit_lukija.js?v=" + VER,
+    )
+    txt, _ = sub(
+        txt,
         "emit_lukija.css?v=20261112asema",
+        "emit_lukija.css?v=" + VER,
+    )
+    txt, _ = sub(
+        txt,
+        "emit_lukija.css?v=20261112si",
+        "emit_lukija.css?v=" + VER,
+    )
+    txt, _ = sub(
+        txt,
+        "emit_lukija.css?v=20261112pallo",
         "emit_lukija.css?v=" + VER,
     )
     txt, _ = sub(
@@ -163,6 +184,49 @@ if (!$automaattiSivu && (($_GET['moodi'] ?? '') === 'automaatti')) {
     write_if(p, txt, orig)
 
 
+def patch_layout():
+    p = DEST / "includes/layout.php"
+    txt = p.read_text(encoding="utf-8")
+    orig = txt
+    vanha_txt = (
+        "echo '<span class=\"iltarasti-yhteys is-online\" id=\"iltarasti-yhteys\"'\n"
+        "            . ' data-online=\"Yhteydessä\" data-offline=\"Paikallisesti toimiva\">Yhteydessä</span>';"
+    )
+    vanha_pallo = (
+        "echo '<span class=\"iltarasti-yhteys is-online\" id=\"iltarasti-yhteys\"'\n"
+        "            . ' role=\"img\" data-online=\"Palvelin ok\" data-offline=\"Ei verkkoa\"'\n"
+        "            . ' title=\"Palvelin ok\" aria-label=\"Palvelin ok\"></span>';"
+    )
+    uusi = (
+        "echo '<span class=\"iltarasti-yhteys-rivi\">'\n"
+        "            . '<span class=\"iltarasti-yhteys-selite\" aria-hidden=\"true\">Palvelin</span>'\n"
+        "            . '<span class=\"iltarasti-yhteys is-online\" id=\"iltarasti-yhteys\"'\n"
+        "            . ' role=\"img\" data-online=\"Palvelin ok\" data-offline=\"Ei verkkoa\"'\n"
+        "            . ' title=\"Palvelin ok\" aria-label=\"Palvelin ok\"></span></span>';"
+    )
+    if "iltarasti-yhteys-selite" not in txt:
+        if vanha_pallo in txt:
+            txt, _ = sub(txt, vanha_pallo, uusi, pakko=True)
+        else:
+            txt, _ = sub(txt, vanha_txt, uusi, pakko=True)
+    if "iltarasti_kuori.css" not in txt:
+        txt, _ = sub(
+            txt,
+            "echo '<link rel=\"stylesheet\" href=\"/assets/css/seura_kisavalikko.css?v=20261019gold3\">';",
+            "echo '<link rel=\"stylesheet\" href=\"/assets/css/seura_kisavalikko.css?v=20261019gold3\">';\n"
+            "    if ($iltarastiKuori) {\n"
+            "        echo '<link rel=\"stylesheet\" href=\"/assets/css/iltarasti_kuori.css?v="
+            + VER
+            + "\">';\n"
+            "    }",
+            pakko=True,
+        )
+    else:
+        for vanha_v in ("20261112si", "20261112pallo", "20261112selite"):
+            txt = txt.replace("iltarasti_kuori.css?v=" + vanha_v, "iltarasti_kuori.css?v=" + VER)
+    write_if(p, txt, orig)
+
+
 def patch_nav():
     p = DEST / "includes/admin_nav.php"
     txt = p.read_text(encoding="utf-8")
@@ -246,6 +310,22 @@ def cache_bust():
         ("emit_lukija.css?v=20261112asema", "emit_lukija.css?v=" + VER),
         ("seuranta.js?v=20261112asema", "seuranta.js?v=" + VER),
         ("jah-pwa.js?v=20261112asema", "jah-pwa.js?v=" + VER),
+        ("jah-pwa.js?v=20261112si", "jah-pwa.js?v=" + VER),
+        ("emit_lukija.js?v=20261112si", "emit_lukija.js?v=" + VER),
+        ("emit_lukija.css?v=20261112si", "emit_lukija.css?v=" + VER),
+        ("seuranta.js?v=20261112si", "seuranta.js?v=" + VER),
+        ("live_board.css?v=20261112si", "live_board.css?v=" + VER),
+        ("sw-jahonline.js?v=20261112si", "sw-jahonline.js?v=" + VER),
+        ("TULOSPALVELU_ASSET_V = '20261112si'", "TULOSPALVELU_ASSET_V = '%s'" % VER),
+        ("$emitCssV = '20261112si'", "$emitCssV = '%s'" % VER),
+        ("jah-pwa.js?v=20261112pallo", "jah-pwa.js?v=" + VER),
+        ("emit_lukija.js?v=20261112pallo", "emit_lukija.js?v=" + VER),
+        ("emit_lukija.css?v=20261112pallo", "emit_lukija.css?v=" + VER),
+        ("seuranta.js?v=20261112pallo", "seuranta.js?v=" + VER),
+        ("live_board.css?v=20261112pallo", "live_board.css?v=" + VER),
+        ("sw-jahonline.js?v=20261112pallo", "sw-jahonline.js?v=" + VER),
+        ("TULOSPALVELU_ASSET_V = '20261112pallo'", "TULOSPALVELU_ASSET_V = '%s'" % VER),
+        ("$emitCssV = '20261112pallo'", "$emitCssV = '%s'" % VER),
         ("sw-jahonline.js?v=20261112asema", "sw-jahonline.js?v=" + VER),
         ("TULOSPALVELU_ASSET_V = '20261112asema'", "TULOSPALVELU_ASSET_V = '%s'" % VER),
         ("$emitCssV = '20261112asema'", "$emitCssV = '%s'" % VER),
@@ -278,8 +358,10 @@ def cache_bust():
         ("jahonline-app-v15", "jahonline-app-v19"),
         ("jahonline-app-v16", "jahonline-app-v19"),
         ("jahonline-app-v17", "jahonline-app-v19"),
-        ("jahonline-app-v18", "jahonline-app-v20"),
-        ("jahonline-app-v19", "jahonline-app-v20"),
+        ("jahonline-app-v18", "jahonline-app-v22"),
+        ("jahonline-app-v19", "jahonline-app-v22"),
+        ("jahonline-app-v20", "jahonline-app-v22"),
+        ("jahonline-app-v21", "jahonline-app-v22"),
     ]
     n = 0
     for root in [DEST / "public", DEST / "admin", DEST / "includes", DEST / "assets"]:
@@ -301,6 +383,7 @@ def cache_bust():
 
 if __name__ == "__main__":
     patch_emit_lukija()
+    patch_layout()
     patch_nav()
     patch_helpers()
     patch_iltarasti()

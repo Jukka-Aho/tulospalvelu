@@ -3,7 +3,7 @@
  * /ahoauto/, /autot/, /ohjaus/ ja /scenic/ jätetään rauhaan.
  * Iltarastit: verkko ensin, muuten viimeisin avattu sivu.
  */
-const CACHE = 'jahonline-app-v20';
+const CACHE = 'jahonline-app-v22';
 const SHELL = [
   '/gps/assets/css/gps.css',
   '/gps/assets/icons/icon-192.png',
@@ -14,11 +14,12 @@ const SHELL = [
   '/public/icon-192.png',
   '/public/icon-512.png',
   '/assets/css/style.css?v=20261106palvelut',
-  '/assets/css/emit_lukija.css?v=20261112si',
-  '/assets/css/live_board.css?v=20261112si',
+  '/assets/css/emit_lukija.css?v=20261112selite',
+  '/assets/css/live_board.css?v=20261112pallo',
+  '/assets/css/iltarasti_kuori.css?v=20261112selite',
   '/assets/css/palvelu_valitsin.css?v=20261106mobiili',
-  '/assets/js/emit_lukija.js?v=20261112si',
-  '/assets/js/seuranta.js?v=20261112si',
+  '/assets/js/emit_lukija.js?v=20261112selite',
+  '/assets/js/seuranta.js?v=20261112pallo',
   '/assets/js/jah-radat-offline.js?v=20261107radat',
   '/assets/js/emit_proto.js?v=20261024leima2',
   '/assets/js/si_proto.js?v=20261112si',
@@ -26,7 +27,7 @@ const SHELL = [
   '/assets/js/usb_sarja_boot.js?v=20261112si',
   '/assets/js/wake_lock.js?v=20260718a',
   '/assets/js/admin_nav.js?v=20261016avaus',
-  '/assets/js/jah-pwa.js?v=20261107radat',
+  '/assets/js/jah-pwa.js?v=20261112selite',
   '/assets/js/theme.js?v=20260917teema2'
 ];
 const AUTO_PREFIXES = ['/ahoauto', '/autot', '/ohjaus', '/scenic'];
@@ -57,6 +58,7 @@ function isIltarastiOfflinePath(pathname) {
     pathname.indexOf('/assets/js/jah-pwa') === 0 ||
     pathname.indexOf('/assets/js/jah-radat') === 0 ||
     pathname.indexOf('/assets/css/style.css') === 0 ||
+    pathname.indexOf('/assets/css/iltarasti_') === 0 ||
     pathname.indexOf('/assets/css/palvelu_valitsin') === 0
   );
 }

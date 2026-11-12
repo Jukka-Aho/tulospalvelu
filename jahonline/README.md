@@ -5,6 +5,6 @@ palvelimelle vietävät JS/CSS-tiedostot Automaatti-näyttöä ja
 rastiväliaikojen rastitilanne-grafiikkaa varten.
 
 Kopioi Hetznerille (`/var/www/jahonline`) skriptillä `deploy.sh`.
-Välimuistiversio: `20261112si`, PWA-välimuisti `jahonline-app-v20`.
+Välimuistiversio: `20261112selite`, PWA-välimuisti `jahonline-app-v22`.
 USB-lukija tukee Emitiä ja SportIdentia (BSM7/BSM8).
 Automaatti avautuu `/public/automaatti.php` koko näytön kioskina.

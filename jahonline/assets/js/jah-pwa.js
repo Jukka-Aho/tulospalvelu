@@ -38,21 +38,147 @@
         } catch (e) { /* */ }
     }
 
-    function paivitaYhteys() {
-        var el = document.getElementById('iltarasti-yhteys');
+    function onIltarastiKuori() {
+        return !!(document.body && document.body.classList.contains('iltarasti-kuori'));
+    }
+
+    function varmistaYhteysSelite(el) {
         if (!el) {
             return;
         }
-        var online = navigator.onLine !== false;
-        el.textContent = online
-            ? (el.getAttribute('data-online') || 'Yhteydessä')
-            : (el.getAttribute('data-offline') || 'Paikallisesti toimiva');
+        var parent = el.parentNode;
+        var rivi = parent && parent.classList && parent.classList.contains('iltarasti-yhteys-rivi')
+            ? parent
+            : null;
+        if (!rivi) {
+            rivi = document.createElement('span');
+            rivi.className = 'iltarasti-yhteys-rivi';
+            if (parent) {
+                parent.insertBefore(rivi, el);
+            }
+            rivi.appendChild(el);
+        }
+        if (!rivi.querySelector('.iltarasti-yhteys-selite')) {
+            var selite = document.createElement('span');
+            selite.className = 'iltarasti-yhteys-selite';
+            selite.setAttribute('aria-hidden', 'true');
+            selite.textContent = 'Palvelin';
+            rivi.insertBefore(selite, el);
+        }
+    }
+
+    function varmistaYhteysPallo() {
+        if (!onIltarastiKuori()) {
+            return document.getElementById('iltarasti-yhteys');
+        }
+        var el = document.getElementById('iltarasti-yhteys');
+        if (el) {
+            varmistaYhteysSelite(el);
+            return el;
+        }
+        var toimet = document.querySelector('.site-topbar-actions');
+        if (!toimet) {
+            var palkki = document.querySelector('.site-topbar');
+            if (!palkki) {
+                return null;
+            }
+            toimet = document.createElement('div');
+            toimet.className = 'site-topbar-actions';
+            palkki.appendChild(toimet);
+        }
+        el = document.createElement('span');
+        el.id = 'iltarasti-yhteys';
+        el.className = 'iltarasti-yhteys is-online';
+        el.setAttribute('role', 'img');
+        el.setAttribute('data-online', 'Palvelin ok');
+        el.setAttribute('data-offline', 'Ei verkkoa');
+        var rivi = document.createElement('span');
+        rivi.className = 'iltarasti-yhteys-rivi';
+        var selite = document.createElement('span');
+        selite.className = 'iltarasti-yhteys-selite';
+        selite.setAttribute('aria-hidden', 'true');
+        selite.textContent = 'Palvelin';
+        rivi.appendChild(selite);
+        rivi.appendChild(el);
+        toimet.insertBefore(rivi, toimet.firstChild);
+        return el;
+    }
+
+    function merkitseYhteys(online) {
+        var el = varmistaYhteysPallo();
+        if (!el) {
+            return;
+        }
+        var okTxt = el.getAttribute('data-online') || 'Palvelin ok';
+        var eiTxt = el.getAttribute('data-offline') || 'Ei verkkoa';
+        var teksti = online ? okTxt : eiTxt;
+        el.textContent = '';
+        el.setAttribute('title', teksti);
+        el.setAttribute('aria-label', teksti);
         el.classList.toggle('is-online', online);
         el.classList.toggle('is-offline', !online);
+    }
+
+    var yhteysHaku = 0;
+    function kokeilePalvelin() {
+        if (!onIltarastiKuori()) {
+            return;
+        }
+        if (navigator.onLine === false) {
+            merkitseYhteys(false);
+            return;
+        }
+        var nro = ++yhteysHaku;
+        var ctrl = typeof AbortController === 'function' ? new AbortController() : null;
+        var t = setTimeout(function () {
+            if (ctrl) {
+                ctrl.abort();
+            }
+        }, 4000);
+        fetch('/api/yhteys.php?t=' + Date.now(), {
+            cache: 'no-store',
+            credentials: 'omit',
+            signal: ctrl ? ctrl.signal : undefined
+        }).then(function (res) {
+            clearTimeout(t);
+            if (nro !== yhteysHaku) {
+                return;
+            }
+            merkitseYhteys(!!(res && res.status !== 503));
+        }).catch(function () {
+            clearTimeout(t);
+            if (nro !== yhteysHaku) {
+                return;
+            }
+            merkitseYhteys(false);
+        });
+    }
+
+    function paivitaYhteys() {
+        if (!onIltarastiKuori()) {
+            return;
+        }
+        if (navigator.onLine === false) {
+            merkitseYhteys(false);
+            return;
+        }
+        merkitseYhteys(true);
+        kokeilePalvelin();
     }
     paivitaYhteys();
     window.addEventListener('online', paivitaYhteys);
     window.addEventListener('offline', paivitaYhteys);
+    document.addEventListener('visibilitychange', function () {
+        if (document.visibilityState !== 'hidden') {
+            paivitaYhteys();
+        }
+    });
+    setInterval(function () {
+        if (!onIltarastiKuori() || document.visibilityState === 'hidden') {
+            return;
+        }
+        kokeilePalvelin();
+    }, 20000);
 
     function iltarastiOfflineSallittu(href) {
         try {
@@ -128,8 +254,8 @@
     }
 
     var AUTO = /\/(ahoauto|autot|ohjaus|scenic)(\/|$)/;
-    var SW = '/sw-jahonline.js?v=20261112si';
-    var CACHE = 'jahonline-app-v20';
+    var SW = '/sw-jahonline.js?v=20261112selite';
+    var CACHE = 'jahonline-app-v22';
 
     function iltarastiPrefetchUrlit() {
         var urls = {};

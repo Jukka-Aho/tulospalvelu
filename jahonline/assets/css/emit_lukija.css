@@ -841,25 +841,44 @@ body.emit-automaatti-sivu .site-topbar-actions {
     gap: 0.35rem;
 }
 
+body.emit-automaatti-sivu .iltarasti-yhteys-rivi {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+body.emit-automaatti-sivu .iltarasti-yhteys-selite {
+    font-size: 0.78rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--text);
+    letter-spacing: 0.04em;
+}
+
 body.emit-automaatti-sivu .iltarasti-yhteys,
 body.emit-automaatti-sivu .emit-automaatti-palvelin {
+    width: 0.9rem;
+    height: 0.9rem;
+    min-width: 0.9rem;
     max-width: none;
-    font-size: 0.72rem;
-    font-weight: 650;
-    line-height: 1.15;
-    letter-spacing: 0.01em;
+    font-size: 0;
+    font-weight: 400;
+    line-height: 0;
+    letter-spacing: 0;
     text-align: left;
-    color: #64748b;
+    color: transparent;
 }
 
 body.emit-automaatti-sivu .iltarasti-yhteys.is-online,
 body.emit-automaatti-sivu .emit-automaatti-palvelin.is-online {
-    color: #64748b;
+    background: #22c55e;
+    color: transparent;
 }
 
 body.emit-automaatti-sivu .iltarasti-yhteys.is-offline,
 body.emit-automaatti-sivu .emit-automaatti-palvelin.is-offline {
-    color: #b45309;
+    background: #ef4444;
+    color: transparent;
 }
 
 body.emit-automaatti-sivu .site-topbar .emit-automaatti-puhe {
