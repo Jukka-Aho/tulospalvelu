@@ -330,6 +330,12 @@ def test_docs():
     assert "def patch_layout" in patch
     assert "iltarasti_kuori.css" in patch
     assert "iltarasti-yhteys-selite" in patch
+    assert "def patch_index" in patch
+    assert "def patch_kilpailu" in patch
+    assert "def patch_seuranta" in patch
+    assert "def patch_iltarasti_tulokset" in patch
+    assert "iltarasti_tulokset.php?kilpailu_id=" in patch
+    assert "vaadiJulkinenNakyvyys" in patch
     print("ok docs")
 
 

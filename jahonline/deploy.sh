@@ -14,7 +14,7 @@ if [ -f "$KEY" ]; then
 fi
 
 "${SSH[@]}" "$HOST" "mkdir -p '$DEST/assets/js' '$DEST/assets/css' '$DEST/api' '$DEST/public' '$DEST/deploy/bak-kioski-$VER'"
-"${SSH[@]}" "$HOST" "cp -a '$DEST/assets/js/emit_lukija.js' '$DEST/assets/js/seuranta.js' '$DEST/assets/js/jah-pwa.js' '$DEST/assets/css/emit_lukija.css' '$DEST/assets/css/live_board.css' '$DEST/assets/css/iltarasti_kuori.css' '$DEST/sw-jahonline.js' '$DEST/public/emit_lukija.php' '$DEST/includes/layout.php' '$DEST/includes/admin_nav.php' '$DEST/includes/helpers.php' '$DEST/includes/iltarasti.php' '$DEST/includes/tulospalvelu.php' '$DEST/deploy/bak-kioski-$VER/' 2>/dev/null || true"
+"${SSH[@]}" "$HOST" "cp -a '$DEST/assets/js/emit_lukija.js' '$DEST/assets/js/seuranta.js' '$DEST/assets/js/jah-pwa.js' '$DEST/assets/css/emit_lukija.css' '$DEST/assets/css/live_board.css' '$DEST/assets/css/iltarasti_kuori.css' '$DEST/sw-jahonline.js' '$DEST/public/emit_lukija.php' '$DEST/public/index.php' '$DEST/public/kilpailu.php' '$DEST/public/seuranta.php' '$DEST/admin/iltarasti_tulokset.php' '$DEST/includes/layout.php' '$DEST/includes/admin_nav.php' '$DEST/includes/helpers.php' '$DEST/includes/iltarasti.php' '$DEST/includes/tulospalvelu.php' '$DEST/deploy/bak-kioski-$VER/' 2>/dev/null || true"
 "${SCP[@]}" \
   "$ROOT/jahonline/assets/js/emit_lukija.js" \
   "$ROOT/jahonline/assets/js/seuranta.js" \

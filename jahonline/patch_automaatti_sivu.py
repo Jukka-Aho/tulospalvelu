@@ -273,6 +273,141 @@ def patch_iltarasti():
         default => '/public/iltarastit.php',"""
     if "'automaatti' =>" not in txt:
         txt, _ = sub(txt, vanha, uusi, pakko=True)
+    txt, _ = sub(
+        txt,
+        "'tulokset' => '/public/iltarasti_tulokset.php',",
+        "'tulokset' => '/public/iltarasti_tulokset.php?kilpailu_id=' . (int) $kilpailuId,",
+    )
+    write_if(p, txt, orig)
+
+
+def patch_index():
+    p = DEST / "public/index.php"
+    txt = p.read_text(encoding="utf-8")
+    orig = txt
+    if "iltarasti_tulokset.php?kilpailu_id=" in txt and "function etusivuKisaHref" in txt:
+        write_if(p, txt, orig)
+        return
+    vanha = """function etusivuKisaHref(array $k, array $linkit): string
+{
+    $tila = (string) ($k['tila'] ?? '');
+    if ($tila === 'kaynnissa' || $tila === 'valmis') {
+        return (string) ($linkit['seuranta'] ?? $linkit['kilpailu']);
+    }
+"""
+    uusi = """function etusivuKisaHref(array $k, array $linkit): string
+{
+    if (etusivuOnIltarasti($k)) {
+        $id = (int) ($k['id'] ?? 0);
+        return '/public/iltarasti_tulokset.php?kilpailu_id=' . $id;
+    }
+    $tila = (string) ($k['tila'] ?? '');
+    if ($tila === 'kaynnissa' || $tila === 'valmis') {
+        return (string) ($linkit['seuranta'] ?? $linkit['kilpailu']);
+    }
+"""
+    txt, _ = sub(txt, vanha, uusi, pakko=True)
+    write_if(p, txt, orig)
+
+
+def patch_kilpailu():
+    p = DEST / "public/kilpailu.php"
+    txt = p.read_text(encoding="utf-8")
+    orig = txt
+    if "Location: /public/iltarasti_tulokset.php" in txt:
+        write_if(p, txt, orig)
+        return
+    vanha = """vaadiJulkinenNakyvyys($kilpailu);
+
+$linkit = julkinenLinkit($kilpailu_id, true);
+"""
+    uusi = """vaadiJulkinenNakyvyys($kilpailu);
+
+if (is_readable(__DIR__ . '/../includes/iltarasti.php')) {
+    require_once __DIR__ . '/../includes/iltarasti.php';
+}
+if (function_exists('kisaOnIltarasti') && kisaOnIltarasti($kilpailu)) {
+    $q = ['kilpailu_id' => $kilpailu_id];
+    $nakyma = trim((string) ($_GET['nakyma'] ?? ''));
+    if ($nakyma === 'valiajat') {
+        $q['nakyma'] = 'valiajat';
+    }
+    header('Location: /public/iltarasti_tulokset.php?' . http_build_query($q), true, 302);
+    exit;
+}
+
+$linkit = julkinenLinkit($kilpailu_id, true);
+"""
+    txt, _ = sub(txt, vanha, uusi, pakko=True)
+    write_if(p, txt, orig)
+
+
+def patch_seuranta():
+    p = DEST / "public/seuranta.php"
+    txt = p.read_text(encoding="utf-8")
+    orig = txt
+    if "$onIltarasti && !$fragmentOnly && !$embedMode" in txt:
+        write_if(p, txt, orig)
+        return
+    vanha = """// Täysi sivu → kilpailukuori (yksi sivu + oikeusvalikot). Embed/live-fragmentti jäävät suoraan.
+if (!$fragmentOnly && !$embedMode) {
+"""
+    uusi = """// Iltarasti: kuori ilman kilpailun tulospalveluvalikoita.
+if ($onIltarasti && !$fragmentOnly && !$embedMode) {
+    $q = ['kilpailu_id' => $kilpailu_id];
+    $nakyma = trim((string) ($_GET['nakyma'] ?? ''));
+    if ($nakyma === 'valiajat') {
+        $q['nakyma'] = 'valiajat';
+    }
+    header('Location: /public/iltarasti_tulokset.php?' . http_build_query($q), true, 302);
+    exit;
+}
+
+// Täysi sivu → kilpailukuori (yksi sivu + oikeusvalikot). Embed/live-fragmentti jäävät suoraan.
+if (!$fragmentOnly && !$embedMode) {
+"""
+    txt, _ = sub(txt, vanha, uusi, pakko=True)
+    write_if(p, txt, orig)
+
+
+def patch_iltarasti_tulokset():
+    p = DEST / "admin/iltarasti_tulokset.php"
+    txt = p.read_text(encoding="utf-8")
+    orig = txt
+    if "$_GET['kilpailu_id']" in txt and "vaadiJulkinenNakyvyys" in txt:
+        write_if(p, txt, orig)
+        return
+    vanha = """vaadiKisahallinta();
+
+$kilpailu = vaadiValittuKilpailu($pdo);
+vaadiKilpailunHallinta($kilpailu);
+if (!kisaOnIltarasti($kilpailu)) {
+    header('Location: index.php');
+    exit;
+}
+iltarastiOhjaaJulkiseen('/public/iltarasti_tulokset.php');
+"""
+    uusi = """$getId = (int) ($_GET['kilpailu_id'] ?? 0);
+if ($getId > 0) {
+    $kilpailu = haeKilpailu($pdo, $getId);
+    if (!$kilpailu || !kisaOnIltarasti($kilpailu)) {
+        header('Location: /public/index.php');
+        exit;
+    }
+    vaadiJulkinenNakyvyys($kilpailu, '/public/index.php');
+    asetaValittuKilpailu($getId);
+} else {
+    vaadiKisahallinta();
+    $kilpailu = vaadiValittuKilpailu($pdo);
+    vaadiKilpailunHallinta($kilpailu);
+    if (!kisaOnIltarasti($kilpailu)) {
+        header('Location: index.php');
+        exit;
+    }
+}
+iltarastiOhjaaJulkiseen('/public/iltarasti_tulokset.php');
+"""
+    txt, _ = sub(txt, vanha, uusi, pakko=True)
     write_if(p, txt, orig)
 
 
@@ -387,5 +522,9 @@ if __name__ == "__main__":
     patch_nav()
     patch_helpers()
     patch_iltarasti()
+    patch_index()
+    patch_kilpailu()
+    patch_seuranta()
+    patch_iltarasti_tulokset()
     cache_bust()
     print("ok php")

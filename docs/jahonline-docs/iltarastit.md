@@ -13,6 +13,8 @@ mihin seuralla ja tunnuksella on oikeus. Hallintavalikko pysyy mukana.
 Julkiset kilpailut ja iltarastit ovat erilliset osiot. Kilpailuilla on
 sarakkeet **Käynnissä**, **Ilmoittautuminen** ja **Valmiit**. Iltarastit
 ovat yhtenä sarakkeena, uusin ylimpänä. Haku kattaa molemmat.
+Iltarastin tuloslinkki avaa tapahtuman kuoren (`iltarasti_tulokset.php`),
+ei kilpailun tulospalveluvalikoita (lähtöajat, IOF XML, nimenhuuto, lähtökello).
 
 Ohjesivu (`/public/ohjeet.php`) näyttää vain ne osiot, joihin tunnuksella
 on oikeus. Kirjautumaton ja iltarastiseura näkevät iltarastien ohjeet
