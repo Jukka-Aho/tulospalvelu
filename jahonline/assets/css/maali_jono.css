@@ -1,0 +1,307 @@
+/* Maalinappi + numerot. Tuotantoon erillisenä, jotta style.css:ää ei tarvitse ylikirjoittaa. */
+
+body.mobiili-fullscreen .nappi-paneeli,
+body.mobiili-fullscreen .numerot-paneeli {
+    flex: 1 1 auto;
+    justify-content: flex-start;
+    max-width: none;
+    margin: 0;
+}
+
+body.jono-page .mobiili-viesti.varoitus {
+    background: #fff3e0;
+}
+
+.nappi-paneeli {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+    max-width: 520px;
+    margin: 0.5rem auto 1rem;
+    padding: 0 0.5rem;
+    min-height: 0;
+    flex: 1 1 auto;
+    overflow: hidden;
+}
+
+.nappi-paneeli > .kouru-ohje,
+.nappi-paneeli > .maali-nappi-btn,
+.nappi-paneeli > .nappi-peru,
+.nappi-paneeli > .jono-yhteenveto {
+    flex-shrink: 0;
+}
+
+.maali-nappi-btn {
+    min-height: 22vh;
+    border: 0;
+    border-radius: 24px;
+    background: #166534;
+    color: #fff;
+    font-size: clamp(2.4rem, 10vw, 4.4rem);
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    box-shadow: 0 8px 24px rgba(22, 101, 52, 0.35);
+}
+
+.maali-nappi-btn:active,
+.maali-nappi-btn.is-flash {
+    background: #22c55e;
+    transform: scale(0.98);
+}
+
+.nappi-paneeli .kouru-viimeiset {
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: min(40vh, 22rem);
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    border: 1px solid var(--border, #c5d0da);
+    border-radius: 10px;
+    background: var(--card, #fff);
+    padding: 0.15rem 0.45rem;
+    margin-top: 0;
+}
+
+body.mobiili-fullscreen .nappi-paneeli .kouru-viimeiset {
+    max-height: none;
+}
+
+.numerot-paneeli {
+    max-width: 720px;
+    min-height: 0;
+    flex: 1 1 auto;
+    overflow: hidden;
+}
+
+.numerot-paneeli > .kouru-ohje,
+.numerot-paneeli > .kouru-input,
+.numerot-paneeli > .kouru-napit,
+.numerot-paneeli > .jono-yhteenveto {
+    flex-shrink: 0;
+}
+
+.jono-yhteenveto {
+    text-align: center;
+    font-weight: 600;
+    color: var(--text-muted);
+    flex-shrink: 0;
+}
+
+.jono-yhteenveto.is-ero {
+    background: #b91c1c;
+    color: #fff;
+    font-size: clamp(1.15rem, 4.2vw, 1.85rem);
+    font-weight: 800;
+    line-height: 1.25;
+    padding: 0.7rem 0.85rem;
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(185, 28, 28, 0.35);
+}
+
+.jono-yhteenveto.is-ero .jono-ero-luku {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.02em;
+}
+
+.jono-lista-wrap {
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: min(55vh, 28rem);
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    border: 1px solid var(--border, #c5d0da);
+    border-radius: 10px;
+    background: var(--card, #fff);
+    padding: 0.15rem 0.35rem;
+}
+
+body.mobiili-fullscreen .numerot-paneeli {
+    justify-content: flex-start;
+    max-height: none;
+}
+
+body.mobiili-fullscreen .jono-lista-wrap {
+    max-height: none;
+    flex: 1 1 auto;
+}
+
+.jono-lista {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.jono-rivi {
+    display: grid;
+    grid-template-columns: 2.2rem 3.4rem minmax(0, 1fr) 5.2rem minmax(4.5rem, auto) auto;
+    gap: 0.35rem;
+    align-items: center;
+    padding: 0.45rem 0.2rem;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.9rem;
+}
+
+.jono-sija {
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+}
+
+.jono-nro {
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+}
+
+.jono-nimi {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.jono-aika {
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+}
+
+.jono-status {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+}
+
+.jono-toiminnot {
+    display: flex;
+    gap: 0.2rem;
+    justify-content: flex-end;
+}
+
+.jono-icon {
+    width: 34px;
+    height: 34px;
+    border: 0;
+    border-radius: 8px;
+    background: #334155;
+    color: #fff;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.jono-icon:disabled {
+    opacity: 0.35;
+    cursor: default;
+}
+
+.jono-icon-del {
+    background: #7f1d1d;
+}
+
+.nappi-leima-rivi {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    flex-wrap: wrap;
+}
+
+.nappi-leima-rivi .nappi-leima-aika {
+    font-variant-numeric: tabular-nums;
+    min-width: 4.5rem;
+}
+
+.nappi-leima-rivi .nappi-leima-nro {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.nappi-leima-rivi .nappi-leima-poista {
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+.jono-tila-yhdistetty {
+    background: rgba(22, 101, 52, 0.12);
+}
+
+.jono-tila-odottaa_numeroa,
+.jono-tila-odottaa_aikaa {
+    background: rgba(180, 83, 9, 0.16);
+    box-shadow: inset 3px 0 0 #c2410c;
+}
+
+.jono-tila-ei_loydu,
+.jono-tila-duplikaatti,
+.jono-tila-konflikti {
+    background: rgba(127, 29, 29, 0.18);
+    box-shadow: inset 3px 0 0 #b91c1c;
+    animation: jono-pulse 1.2s ease-in-out 2;
+}
+
+@keyframes jono-pulse {
+    0%, 100% { filter: brightness(1); }
+    50% { filter: brightness(1.08); }
+}
+
+.jono-tila {
+    font-size: 0.8rem;
+    font-style: normal;
+    font-weight: 700;
+}
+
+.jono-rivi {
+    min-height: 3rem;
+    font-size: 1rem;
+}
+
+.jono-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 1.1rem;
+}
+
+.nappi-paneeli .kouru-viimeiset {
+    max-height: min(48vh, 28rem);
+    font-size: 1.05rem;
+}
+
+.nappi-leima-rivi {
+    padding: 0.35rem 0;
+    min-height: 2.6rem;
+}
+
+.jono-lista-wrap {
+    max-height: min(60vh, 34rem);
+}
+
+.jono-peruutus {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    justify-content: center;
+    flex-shrink: 0;
+    padding: 0.35rem 0;
+}
+
+.jono-peruutus-btn {
+    min-height: 44px;
+    padding: 0.5rem 1rem;
+    font-weight: 700;
+}
+
+@media (max-width: 640px) {
+    .jono-rivi {
+        grid-template-columns: 1.6rem 3rem minmax(0, 1fr) auto;
+        grid-template-areas:
+            "sija nro nimi toiminnot"
+            "sija aika status toiminnot";
+    }
+    .jono-sija { grid-area: sija; }
+    .jono-nro { grid-area: nro; }
+    .jono-nimi { grid-area: nimi; }
+    .jono-aika { grid-area: aika; }
+    .jono-status { grid-area: status; }
+    .jono-toiminnot { grid-area: toiminnot; }
+}
