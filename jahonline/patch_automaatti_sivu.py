@@ -3,7 +3,7 @@
 from pathlib import Path
 
 DEST = Path("/var/www/jahonline")
-VER = "20261111graf"
+VER = "20261112asema"
 
 
 def sub(txt, a, b, pakko=False):
@@ -31,6 +31,7 @@ def patch_emit_lukija():
     txt, _ = sub(txt, "$emitCssV = '20261111yhdista';", "$emitCssV = '%s';" % VER)
     txt, _ = sub(txt, "$emitCssV = '20261111pwa';", "$emitCssV = '%s';" % VER)
     txt, _ = sub(txt, "$emitCssV = '20261111net';", "$emitCssV = '%s';" % VER)
+    txt, _ = sub(txt, "$emitCssV = '20261111graf';", "$emitCssV = '%s';" % VER)
     txt, _ = sub(
         txt,
         "emit_lukija.js?v=20261111auto",
@@ -54,6 +55,11 @@ def patch_emit_lukija():
     txt, _ = sub(
         txt,
         "emit_lukija.js?v=20261111net",
+        "emit_lukija.js?v=" + VER,
+    )
+    txt, _ = sub(
+        txt,
+        "emit_lukija.js?v=20261111graf",
         "emit_lukija.js?v=" + VER,
     )
     txt, _ = sub(
@@ -169,46 +175,55 @@ def cache_bust():
         ("emit_lukija.js?v=20261111yhdista", "emit_lukija.js?v=" + VER),
         ("emit_lukija.js?v=20261111pwa", "emit_lukija.js?v=" + VER),
         ("emit_lukija.js?v=20261111net", "emit_lukija.js?v=" + VER),
+        ("emit_lukija.js?v=20261111graf", "emit_lukija.js?v=" + VER),
         ("emit_lukija.css?v=20261111auto", "emit_lukija.css?v=" + VER),
         ("emit_lukija.css?v=20261111kioski", "emit_lukija.css?v=" + VER),
         ("emit_lukija.css?v=20261111yhdista", "emit_lukija.css?v=" + VER),
         ("emit_lukija.css?v=20261111pwa", "emit_lukija.css?v=" + VER),
         ("emit_lukija.css?v=20261111net", "emit_lukija.css?v=" + VER),
+        ("emit_lukija.css?v=20261111graf", "emit_lukija.css?v=" + VER),
         ("seuranta.js?v=20261111auto", "seuranta.js?v=" + VER),
         ("seuranta.js?v=20261111kioski", "seuranta.js?v=" + VER),
         ("seuranta.js?v=20261111yhdista", "seuranta.js?v=" + VER),
         ("seuranta.js?v=20261111pwa", "seuranta.js?v=" + VER),
         ("seuranta.js?v=20261111net", "seuranta.js?v=" + VER),
+        ("seuranta.js?v=20261111graf", "seuranta.js?v=" + VER),
         ("live_board.css?v=20261111auto", "live_board.css?v=" + VER),
         ("live_board.css?v=20261111kioski", "live_board.css?v=" + VER),
         ("live_board.css?v=20261111yhdista", "live_board.css?v=" + VER),
         ("live_board.css?v=20261111pwa", "live_board.css?v=" + VER),
         ("live_board.css?v=20261111net", "live_board.css?v=" + VER),
+        ("live_board.css?v=20261111graf", "live_board.css?v=" + VER),
         ("jah-pwa.js?v=20261111auto", "jah-pwa.js?v=" + VER),
         ("jah-pwa.js?v=20261111kioski", "jah-pwa.js?v=" + VER),
         ("jah-pwa.js?v=20261111yhdista", "jah-pwa.js?v=" + VER),
         ("jah-pwa.js?v=20261111pwa", "jah-pwa.js?v=" + VER),
         ("jah-pwa.js?v=20261111net", "jah-pwa.js?v=" + VER),
+        ("jah-pwa.js?v=20261111graf", "jah-pwa.js?v=" + VER),
         ("sw-jahonline.js?v=20261111auto", "sw-jahonline.js?v=" + VER),
         ("sw-jahonline.js?v=20261111kioski", "sw-jahonline.js?v=" + VER),
         ("sw-jahonline.js?v=20261111yhdista", "sw-jahonline.js?v=" + VER),
         ("sw-jahonline.js?v=20261111pwa", "sw-jahonline.js?v=" + VER),
         ("sw-jahonline.js?v=20261111net", "sw-jahonline.js?v=" + VER),
+        ("sw-jahonline.js?v=20261111graf", "sw-jahonline.js?v=" + VER),
         ("TULOSPALVELU_ASSET_V = '20261111auto'", "TULOSPALVELU_ASSET_V = '%s'" % VER),
         ("TULOSPALVELU_ASSET_V = '20261111kioski'", "TULOSPALVELU_ASSET_V = '%s'" % VER),
         ("TULOSPALVELU_ASSET_V = '20261111yhdista'", "TULOSPALVELU_ASSET_V = '%s'" % VER),
         ("TULOSPALVELU_ASSET_V = '20261111pwa'", "TULOSPALVELU_ASSET_V = '%s'" % VER),
         ("TULOSPALVELU_ASSET_V = '20261111net'", "TULOSPALVELU_ASSET_V = '%s'" % VER),
+        ("TULOSPALVELU_ASSET_V = '20261111graf'", "TULOSPALVELU_ASSET_V = '%s'" % VER),
         ("$emitCssV = '20261111auto'", "$emitCssV = '%s'" % VER),
         ("$emitCssV = '20261111kioski'", "$emitCssV = '%s'" % VER),
         ("$emitCssV = '20261111yhdista'", "$emitCssV = '%s'" % VER),
         ("$emitCssV = '20261111pwa'", "$emitCssV = '%s'" % VER),
         ("$emitCssV = '20261111net'", "$emitCssV = '%s'" % VER),
-        ("jahonline-app-v13", "jahonline-app-v18"),
-        ("jahonline-app-v14", "jahonline-app-v18"),
-        ("jahonline-app-v15", "jahonline-app-v18"),
-        ("jahonline-app-v16", "jahonline-app-v18"),
-        ("jahonline-app-v17", "jahonline-app-v18"),
+        ("$emitCssV = '20261111graf'", "$emitCssV = '%s'" % VER),
+        ("jahonline-app-v13", "jahonline-app-v19"),
+        ("jahonline-app-v14", "jahonline-app-v19"),
+        ("jahonline-app-v15", "jahonline-app-v19"),
+        ("jahonline-app-v16", "jahonline-app-v19"),
+        ("jahonline-app-v17", "jahonline-app-v19"),
+        ("jahonline-app-v18", "jahonline-app-v19"),
     ]
     n = 0
     for root in [DEST / "public", DEST / "admin", DEST / "includes", DEST / "assets"]:

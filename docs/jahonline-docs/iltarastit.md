@@ -284,11 +284,10 @@ rastiväliajat-välilehti päivittyy ilman sarjan tai kilpailijan
 uudelleenlaskentaa. Uudelleenlaskenta tekee saman kirjoituksen uudestaan
 jos rata tai leimat muuttuvat.
 
-Rastiväliajat-välilehdellä taulukon yläpuolella on rastitilanne:
-jokaisesta rastista kärki, kärkiaika ja montako on leimannut, sekä
-viivakaavio erosta kärkeen (WinSplits/Navisport). Puhelimessa kaavio
-vierii vaakaan eikä kutistu, viivat ovat paksumpia, ja nimet näkyvät
-väriselitteessä. Grafiikka piirtyy uudelleen live-päivityksessä.
+Rastiväliajat-välilehdellä taulukon yläpuolella on viivakaavio erosta
+kärkeen (WinSplits/Navisport). Puhelimessa kaavio vierii vaakaan eikä
+kutistu, viivat ovat paksumpia, ja nimet näkyvät väriselitteessä.
+Grafiikka piirtyy uudelleen live-päivityksessä.
 
 ## Osanottajat
 

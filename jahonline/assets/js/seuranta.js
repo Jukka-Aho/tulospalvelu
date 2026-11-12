@@ -456,24 +456,6 @@
             }
         }
 
-        var asemat = document.createElement('div');
-        asemat.className = 'lb-va-asemat';
-        data.tilanne.forEach(function (t) {
-            var r = t.rastit;
-            var el = document.createElement('div');
-            el.className = 'lb-va-asema';
-            var karki = t.karki ? escapeAttr(t.karki.lyh || t.karki.nimi) : '–';
-            var karkiAika = t.karki ? formatAikaSec(t.karki.aika).replace(/^00:/, '') : '';
-            el.innerHTML = '<div class="lb-va-asema-nro">' + escapeAttr(r.piste) + '</div>'
-                + (r.koodi ? '<div class="lb-va-asema-koodi">' + escapeAttr(r.koodi) + '</div>' : '')
-                + '<div class="lb-va-asema-karki" title="' + escapeAttr(t.karki ? t.karki.nimi : '') + '">'
-                + escapeAttr(karki) + '</div>'
-                + '<div class="lb-va-asema-aika">' + escapeAttr(karkiAika) + '</div>'
-                + '<div class="lb-va-asema-n">' + t.n + '/' + t.total + '</div>';
-            asemat.appendChild(el);
-        });
-        wrap.appendChild(asemat);
-
         var kapea = onkoKapea();
         var nR = data.rastit.length;
         var W = Math.max(kapea ? 300 : 560, (kapea ? 52 : 88) + nR * (kapea ? 72 : 76));

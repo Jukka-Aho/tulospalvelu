@@ -5,5 +5,5 @@ palvelimelle vietävät JS/CSS-tiedostot Automaatti-näyttöä ja
 rastiväliaikojen rastitilanne-grafiikkaa varten.
 
 Kopioi Hetznerille (`/var/www/jahonline`) skriptillä `deploy.sh`.
-Välimuistiversio: `20261111graf`, PWA-välimuisti `jahonline-app-v18`.
+Välimuistiversio: `20261112asema`, PWA-välimuisti `jahonline-app-v19`.
 Automaatti avautuu `/public/automaatti.php` koko näytön kioskina.
