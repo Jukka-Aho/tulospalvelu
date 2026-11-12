@@ -3,7 +3,7 @@
 from pathlib import Path
 
 DEST = Path("/var/www/jahonline")
-VER = "20261112selite"
+VER = "20261112esitys"
 
 
 def sub(txt, a, b, pakko=False):
@@ -209,6 +209,49 @@ def patch_layout():
             txt, _ = sub(txt, vanha_pallo, uusi, pakko=True)
         else:
             txt, _ = sub(txt, vanha_txt, uusi, pakko=True)
+    vanha_tila = (
+        "        echo '<span class=\"iltarasti-yhteys-rivi\">'\n"
+        "            . '<span class=\"iltarasti-yhteys-selite\" aria-hidden=\"true\">Palvelin</span>'\n"
+        "            . '<span class=\"iltarasti-yhteys is-online\" id=\"iltarasti-yhteys\"'\n"
+        "            . ' role=\"img\" data-online=\"Palvelin ok\" data-offline=\"Ei verkkoa\"'\n"
+        "            . ' title=\"Palvelin ok\" aria-label=\"Palvelin ok\"></span></span>';\n"
+        "        echo '</div></div>';"
+    )
+    uusi_tila = """        $tilaLuvut = ['maastossa' => 0, 'esitykset' => 0];
+        $tilaHallinta = false;
+        if ($kuoriKilpailuId > 0 && $pdo instanceof PDO) {
+            if (!function_exists('iltarastiTilanneLuvut')) {
+                require_once __DIR__ . '/iltarasti_esitys.php';
+            }
+            $tilaLuvut = iltarastiTilanneLuvut($pdo, ['id' => $kuoriKilpailuId]);
+            if ($kirjautunut && function_exists('haeKilpailu') && function_exists('voiHallitaKilpailua')) {
+                $vkTila = haeKilpailu($pdo, $kuoriKilpailuId);
+                $tilaHallinta = $vkTila && voiHallitaKilpailua($vkTila);
+            }
+        }
+        $maastoNro = (int) ($tilaLuvut['maastossa'] ?? 0);
+        $esitysNro = (int) ($tilaLuvut['esitykset'] ?? 0);
+        echo '<span class="iltarasti-tila-rivi" id="iltarasti-tila">';
+        echo '<span class="iltarasti-yhteys-rivi">'
+            . '<span class="iltarasti-yhteys-selite" aria-hidden="true">Palvelin</span>'
+            . '<span class="iltarasti-yhteys is-online" id="iltarasti-yhteys"'
+            . ' role="img" data-online="Palvelin ok" data-offline="Ei verkkoa"'
+            . ' title="Palvelin ok" aria-label="Palvelin ok"></span></span>';
+        echo ($tilaHallinta
+            ? '<a href="/public/kilpailijat.php?kilpailu_id=' . (int) $kuoriKilpailuId . '"'
+            : '<span')
+            . ' class="iltarasti-tila-luku' . ($maastoNro ? '' : ' is-tyhja') . '" id="iltarasti-maastossa">'
+            . 'Maastossa <span class="iltarasti-tila-nro">' . $maastoNro . '</span>'
+            . ($tilaHallinta ? '</a>' : '</span>');
+        if ($tilaHallinta) {
+            echo '<a href="/public/iltarasti_esitykset.php?kilpailu_id=' . (int) $kuoriKilpailuId . '"'
+                . ' class="iltarasti-tila-luku is-esitys' . ($esitysNro ? '' : ' is-tyhja') . '" id="iltarasti-esitykset">'
+                . 'Esitys <span class="iltarasti-tila-nro">' . $esitysNro . '</span></a>';
+        }
+        echo '</span>';
+        echo '</div></div>';"""
+    if "id=\"iltarasti-tila\"" not in txt and "id='iltarasti-tila'" not in txt:
+        txt, _ = sub(txt, vanha_tila, uusi_tila, pakko=True)
     if "iltarasti_kuori.css" not in txt:
         txt, _ = sub(
             txt,
@@ -222,7 +265,7 @@ def patch_layout():
             pakko=True,
         )
     else:
-        for vanha_v in ("20261112si", "20261112pallo", "20261112selite"):
+        for vanha_v in ("20261112si", "20261112pallo", "20261112selite", "20261112esitys"):
             txt = txt.replace("iltarasti_kuori.css?v=" + vanha_v, "iltarasti_kuori.css?v=" + VER)
     write_if(p, txt, orig)
 
@@ -244,6 +287,22 @@ def patch_nav():
 """
     if ">Automaatti</a>" not in txt:
         txt, _ = sub(txt, vanha, uusi, pakko=True)
+    if ">Esitykset</a>" not in txt:
+        txt, _ = sub(
+            txt,
+            """            echo '<a href="' . htmlspecialchars($kioskiUrl('osanottajat')) . '"'
+                . ($active === 'kilpailijat' ? ' class="active"' : '')
+                . '>Osanottajat</a>';
+""",
+            """            echo '<a href="' . htmlspecialchars($kioskiUrl('osanottajat')) . '"'
+                . ($active === 'kilpailijat' ? ' class="active"' : '')
+                . '>Osanottajat</a>';
+            echo '<a href="' . htmlspecialchars($kioskiUrl('esitykset')) . '"'
+                . ($active === 'esitykset' ? ' class="active"' : '')
+                . '>Esitykset</a>';
+""",
+            pakko=True,
+        )
     write_if(p, txt, orig)
 
 
@@ -273,6 +332,16 @@ def patch_iltarasti():
         default => '/public/iltarastit.php',"""
     if "'automaatti' =>" not in txt:
         txt, _ = sub(txt, vanha, uusi, pakko=True)
+    if "'esitykset' =>" not in txt:
+        txt, _ = sub(
+            txt,
+            "'automaatti' => '/public/automaatti.php?kilpailu_id=' . (int) $kilpailuId,\n"
+            "        default => '/public/iltarastit.php',",
+            "'automaatti' => '/public/automaatti.php?kilpailu_id=' . (int) $kilpailuId,\n"
+            "        'esitykset' => '/public/iltarasti_esitykset.php?kilpailu_id=' . (int) $kilpailuId,\n"
+            "        default => '/public/iltarastit.php',",
+            pakko=True,
+        )
     txt, _ = sub(
         txt,
         "'tulokset' => '/public/iltarasti_tulokset.php',",
@@ -493,10 +562,17 @@ def cache_bust():
         ("jahonline-app-v15", "jahonline-app-v19"),
         ("jahonline-app-v16", "jahonline-app-v19"),
         ("jahonline-app-v17", "jahonline-app-v19"),
-        ("jahonline-app-v18", "jahonline-app-v22"),
-        ("jahonline-app-v19", "jahonline-app-v22"),
-        ("jahonline-app-v20", "jahonline-app-v22"),
-        ("jahonline-app-v21", "jahonline-app-v22"),
+        ("jah-pwa.js?v=20261112selite", "jah-pwa.js?v=" + VER),
+        ("emit_lukija.js?v=20261112selite", "emit_lukija.js?v=" + VER),
+        ("emit_lukija.css?v=20261112selite", "emit_lukija.css?v=" + VER),
+        ("sw-jahonline.js?v=20261112selite", "sw-jahonline.js?v=" + VER),
+        ("iltarasti_kuori.css?v=20261112selite", "iltarasti_kuori.css?v=" + VER),
+        ("20261112selite", VER),
+        ("jahonline-app-v18", "jahonline-app-v23"),
+        ("jahonline-app-v19", "jahonline-app-v23"),
+        ("jahonline-app-v20", "jahonline-app-v23"),
+        ("jahonline-app-v21", "jahonline-app-v23"),
+        ("jahonline-app-v22", "jahonline-app-v23"),
     ]
     n = 0
     for root in [DEST / "public", DEST / "admin", DEST / "includes", DEST / "assets"]:

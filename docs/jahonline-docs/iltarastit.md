@@ -158,13 +158,16 @@ Lähetys noudattaa EResults Liten rajapintaa:
 
 ## Avattu tapahtuma
 
-Koko ikkuna (`iltarastiKuori`). Ylhäällä hamburger, tapahtuman nimi ja
-selite **Palvelin** sekä yhteyden pallo (vihreä = ok, punainen = ei verkkoa).
+Koko ikkuna (`iltarastiKuori`). Ylhäällä hamburger, tapahtuman nimi,
+**Maastossa**-luku, kirjautuneelle **Esitys**-luku sekä selite **Palvelin**
+ja yhteyden pallo (vihreä = ok, punainen = ei verkkoa). Luvut päivittyvät
+muutaman sekunnin välein.
 
 Hamburger:
 
 - Tapahtuman asetukset (nimi, paikka, **pakollinen päivä**, Rastilippu-yhdistäminen, radat)
 - Osanottajat
+- Esitykset (pikalista: Hyväksy / Hyl / Kesk / vaihda rata)
 - Tulospalvelu (oletusavaus)
 - Tulokset (seuranta upotettuna: rata ylhäällä, välilehdet
   **Tulokset** / **Rastiväliajat** kuten Pirilän julkisissa tuloksissa).
@@ -312,7 +315,19 @@ laskee leimat ja väliajat uudestaan ja merkitsee `T`/`E`.
 Osanottajasivun avaus tarkistaa samalla kaikki maastossa olevat, joilla
 on jo `emit_leimat`, joten vanha luku ei jää *Maastossa*.
 Maastossa olevan voi merkitä pois ilman leimauskorttia. Lisäys on
-tulospalvelun sisäänluvussa. Yhdistetyssä illassa sivun yläosassa on
+tulospalvelun sisäänluvussa.
+Yläpalkin **Maastossa** näyttää saman luvun kaikilla kuoren sivuilla
+(myös julkisissa tuloksissa).
+
+## Esitykset
+
+Hamburger → **Esitykset** (ja yläpalkin **Esitys**-luku) avaa pikalistan
+henkilöistä, joiden `keskhyl` on `E`. Korttia ei tarvitse lukea uudelleen.
+Jokaisella rivillä on nimi, rata, aika, puuttuvat/väärät rastit sekä
+napit **Hyväksy**, **Hyl**, **Kesk**. Jos leimat täsmäävät tasan yhteen
+toiseen rataan, näkyy **Vaihda: [radan nimi]**. Päätös tallentuu heti
+(`iltarastiAsetaPaatos` / `iltarastiVaihdaRata`), ja yläpalkin luvut
+päivittyvät. Sivu on `/public/iltarasti_esitykset.php`. Yhdistetyssä illassa sivun yläosassa on
 **Rastilipun ilmoittautuneet** (nimi, seura, kortti, maksu, kirjattu /
 ei vielä kirjattu). **Päivitä Rastilipusta** hakee listan uudelleen.
 
@@ -333,6 +348,11 @@ ei vielä kirjattu). **Päivitä Rastilipusta** hakee listan uudelleen.
 | `includes/rastilippu.php` | API-asiakas, salaus, tapahtumalistan välimuisti, tulosten taustalähetys, ilmoittautuneiden haku |
 | `cron/rastilippu_lahetys.php` | Jonon purku minuutittain (epäonnistuneen taustalähetyksen uusinta) |
 | `includes/iltarasti.php` | Tapahtuma, Rastilippu-yhdistäminen, rata↔sarja, päätös, nimellä kirjaus |
+| `includes/iltarasti_esitys.php` | Maastossa-/esitysluvut ja esitysten pikalista |
+| `admin/iltarasti_esitykset.php` | Esitysten pikalista (Hyväksy/Hyl/Kesk/vaihda rata) |
+| `public/iltarasti_esitykset.php` | Julkinen kääre esityssivulle |
+| `api/iltarasti_tila.php` | Yläpalkin Maastossa- ja Esitys-luvut |
+| `api/iltarasti_esitys.php` | Esityksen päätös JSON-rajapinta |
 | `includes/emit_henkilot.php` | Emit-kortin pysyvät nimet ja seurat; ehdotus lähtijäksi |
 | `includes/iltarasti_henkilot_sivu.php` | Osanottajat |
 | `admin/iltarastit.php` | Hub: avain (pääkäyttäjä), Rastilippu-valinta, paikallinen luonti, tunnukset |

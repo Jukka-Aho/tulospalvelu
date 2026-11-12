@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 HOST="${JAHONLINE_HOST:-root@46.225.174.104}"
 DEST="${JAHONLINE_DEST:-/var/www/jahonline}"
-VER="20261112selite"
+VER="20261112esitys"
 KEY="${JAHONLINE_SSH_KEY:-$HOME/.ssh/hetzner_key}"
 SSH=(ssh -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new)
 SCP=(scp -q -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new)
@@ -13,12 +13,13 @@ if [ -f "$KEY" ]; then
   SCP+=(-i "$KEY")
 fi
 
-"${SSH[@]}" "$HOST" "mkdir -p '$DEST/assets/js' '$DEST/assets/css' '$DEST/api' '$DEST/public' '$DEST/deploy/bak-kioski-$VER'"
+"${SSH[@]}" "$HOST" "mkdir -p '$DEST/assets/js' '$DEST/assets/css' '$DEST/api' '$DEST/public' '$DEST/admin' '$DEST/includes' '$DEST/deploy/bak-kioski-$VER'"
 "${SSH[@]}" "$HOST" "cp -a '$DEST/assets/js/emit_lukija.js' '$DEST/assets/js/seuranta.js' '$DEST/assets/js/jah-pwa.js' '$DEST/assets/css/emit_lukija.css' '$DEST/assets/css/live_board.css' '$DEST/assets/css/iltarasti_kuori.css' '$DEST/sw-jahonline.js' '$DEST/public/emit_lukija.php' '$DEST/public/index.php' '$DEST/public/kilpailu.php' '$DEST/public/seuranta.php' '$DEST/admin/iltarasti_tulokset.php' '$DEST/includes/layout.php' '$DEST/includes/admin_nav.php' '$DEST/includes/helpers.php' '$DEST/includes/iltarasti.php' '$DEST/includes/tulospalvelu.php' '$DEST/deploy/bak-kioski-$VER/' 2>/dev/null || true"
 "${SCP[@]}" \
   "$ROOT/jahonline/assets/js/emit_lukija.js" \
   "$ROOT/jahonline/assets/js/seuranta.js" \
   "$ROOT/jahonline/assets/js/jah-pwa.js" \
+  "$ROOT/jahonline/assets/js/iltarasti_esitykset.js" \
   "$ROOT/jahonline/assets/js/si_proto.js" \
   "$ROOT/jahonline/assets/js/emit_proto.js" \
   "$ROOT/jahonline/assets/js/usb_sarja.js" \
@@ -29,9 +30,16 @@ fi
   "$ROOT/jahonline/assets/css/live_board.css" \
   "$ROOT/jahonline/assets/css/iltarasti_kuori.css" \
   "$HOST:$DEST/assets/css/"
-"${SCP[@]}" "$ROOT/jahonline/api/yhteys.php" "$HOST:$DEST/api/yhteys.php"
+"${SCP[@]}" \
+  "$ROOT/jahonline/api/yhteys.php" \
+  "$ROOT/jahonline/api/iltarasti_tila.php" \
+  "$ROOT/jahonline/api/iltarasti_esitys.php" \
+  "$HOST:$DEST/api/"
+"${SCP[@]}" "$ROOT/jahonline/includes/iltarasti_esitys.php" "$HOST:$DEST/includes/"
+"${SCP[@]}" "$ROOT/jahonline/admin/iltarasti_esitykset.php" "$HOST:$DEST/admin/"
+"${SCP[@]}" "$ROOT/jahonline/public/iltarasti_esitykset.php" "$HOST:$DEST/public/"
 "${SCP[@]}" "$ROOT/jahonline/sw-jahonline.js" "$HOST:$DEST/"
 "${SCP[@]}" "$ROOT/jahonline/public/automaatti.php" "$HOST:$DEST/public/automaatti.php"
 "${SCP[@]}" "$ROOT/jahonline/patch_automaatti_sivu.py" "$HOST:/tmp/patch_automaatti_sivu.py"
-"${SSH[@]}" "$HOST" "python3 /tmp/patch_automaatti_sivu.py; chown www-data:www-data '$DEST/public/automaatti.php' '$DEST/api/yhteys.php' '$DEST/assets/css/iltarasti_kuori.css'"
+"${SSH[@]}" "$HOST" "python3 /tmp/patch_automaatti_sivu.py; chown www-data:www-data '$DEST/public/automaatti.php' '$DEST/public/iltarasti_esitykset.php' '$DEST/admin/iltarasti_esitykset.php' '$DEST/api/yhteys.php' '$DEST/api/iltarasti_tila.php' '$DEST/api/iltarasti_esitys.php' '$DEST/includes/iltarasti_esitys.php' '$DEST/assets/js/iltarasti_esitykset.js' '$DEST/assets/css/iltarasti_kuori.css'"
 echo "valmis $VER"

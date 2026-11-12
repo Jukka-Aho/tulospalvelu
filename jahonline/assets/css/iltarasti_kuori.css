@@ -57,3 +57,121 @@ body.emit-automaatti-sivu .site-topbar .emit-automaatti-palvelin.is-offline {
     background: #ef4444;
     box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.4);
 }
+
+body.iltarasti-kuori .site-topbar .iltarasti-tila-rivi,
+body.emit-automaatti-sivu .site-topbar .iltarasti-tila-rivi {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.5rem;
+    justify-content: flex-end;
+}
+
+body.iltarasti-kuori .site-topbar .iltarasti-tila-luku,
+body.emit-automaatti-sivu .site-topbar .iltarasti-tila-luku {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.28rem;
+    font-family: "Barlow Condensed", system-ui, sans-serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    line-height: 1.1;
+    color: var(--text);
+    text-decoration: none;
+    white-space: nowrap;
+    padding: 0.2rem 0.45rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--text) 8%, var(--card, #fff));
+}
+
+body.iltarasti-kuori .site-topbar a.iltarasti-tila-luku:hover,
+body.emit-automaatti-sivu .site-topbar a.iltarasti-tila-luku:hover {
+    text-decoration: none;
+    background: color-mix(in srgb, var(--text) 14%, var(--card, #fff));
+}
+
+body.iltarasti-kuori .site-topbar .iltarasti-tila-luku .iltarasti-tila-nro,
+body.emit-automaatti-sivu .site-topbar .iltarasti-tila-luku .iltarasti-tila-nro {
+    font-size: 1rem;
+    font-weight: 800;
+}
+
+body.iltarasti-kuori .site-topbar .iltarasti-tila-luku.is-esitys:not(.is-tyhja),
+body.emit-automaatti-sivu .site-topbar .iltarasti-tila-luku.is-esitys:not(.is-tyhja) {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+body.iltarasti-kuori .site-topbar .iltarasti-tila-luku.is-tyhja,
+body.emit-automaatti-sivu .site-topbar .iltarasti-tila-luku.is-tyhja {
+    opacity: 0.72;
+}
+
+body.iltarasti-esitykset-sivu .esitys-lista {
+    list-style: none;
+    margin: 0.8rem 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+}
+
+body.iltarasti-esitykset-sivu .esitys-kortti {
+    background: var(--card, #fff);
+    border: 1px solid var(--border, #d9d0c0);
+    border-radius: 0.55rem;
+    padding: 0.75rem 0.85rem;
+}
+
+body.iltarasti-esitykset-sivu .esitys-yla {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.7rem;
+    align-items: baseline;
+}
+
+body.iltarasti-esitykset-sivu .esitys-nimi {
+    font-size: 1.15rem;
+}
+
+body.iltarasti-esitykset-sivu .esitys-seura,
+body.iltarasti-esitykset-sivu .esitys-meta {
+    color: var(--muted, #6b6458);
+    font-size: 0.92rem;
+}
+
+body.iltarasti-esitykset-sivu .esitys-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.8rem;
+    margin-top: 0.15rem;
+}
+
+body.iltarasti-esitykset-sivu .esitys-leimat {
+    margin: 0.4rem 0 0.55rem;
+    font-weight: 650;
+}
+
+body.iltarasti-esitykset-sivu .esitys-toimet {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    align-items: center;
+}
+
+body.iltarasti-esitykset-sivu .esitys-lomake {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+
+body.iltarasti-esitykset-sivu .esitys-ok {
+    background: #166534;
+    color: #fff;
+}
+
+body.iltarasti-esitykset-sivu .esitys-tyhja {
+    margin-top: 1rem;
+    font-weight: 650;
+}

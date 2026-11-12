@@ -10,6 +10,7 @@ JAH = os.path.join(ROOT, "jahonline")
 EMIT_JS = os.path.join(JAH, "assets/js/emit_lukija.js")
 SI_JS = os.path.join(JAH, "assets/js/si_proto.js")
 SEURANTA_JS = os.path.join(JAH, "assets/js/seuranta.js")
+ESITYS_JS = os.path.join(JAH, "assets/js/iltarasti_esitykset.js")
 EMIT_CSS = os.path.join(JAH, "assets/css/emit_lukija.css")
 BOARD_CSS = os.path.join(JAH, "assets/css/live_board.css")
 SW = os.path.join(JAH, "sw-jahonline.js")
@@ -24,13 +25,21 @@ def read(path):
 
 def test_tiedostot():
     KUORI_CSS = os.path.join(JAH, "assets/css/iltarasti_kuori.css")
-    for p in (EMIT_JS, SI_JS, SEURANTA_JS, EMIT_CSS, BOARD_CSS, KUORI_CSS, SW, PWA):
+    for p in (EMIT_JS, SI_JS, SEURANTA_JS, ESITYS_JS, EMIT_CSS, BOARD_CSS, KUORI_CSS, SW, PWA):
+        assert os.path.isfile(p), p
+    for p in (
+        os.path.join(JAH, "includes/iltarasti_esitys.php"),
+        os.path.join(JAH, "api/iltarasti_tila.php"),
+        os.path.join(JAH, "api/iltarasti_esitys.php"),
+        os.path.join(JAH, "admin/iltarasti_esitykset.php"),
+        os.path.join(JAH, "public/iltarasti_esitykset.php"),
+    ):
         assert os.path.isfile(p), p
     print("ok tiedostot")
 
 
 def test_js_syntax():
-    for p in (EMIT_JS, SI_JS, SEURANTA_JS, PWA, SW):
+    for p in (EMIT_JS, SI_JS, SEURANTA_JS, ESITYS_JS, PWA, SW):
         subprocess.check_call(["node", "--check", p])
     print("ok js syntax")
 
@@ -77,8 +86,8 @@ def test_automaatti_lahde():
     pwa = read(PWA)
     assert "automaatti.php" in pwa
     sw = read(SW)
-    assert "jahonline-app-v22" in sw
-    assert "20261112selite" in sw
+    assert "jahonline-app-v23" in sw
+    assert "20261112esitys" in sw
     assert "si_proto.js" in sw
     assert "iltarasti_kuori.css" in sw
     pwa = read(PWA)
@@ -86,12 +95,18 @@ def test_automaatti_lahde():
     assert "varmistaYhteysSelite" in pwa
     assert "onIltarastiKuori" in pwa
     assert "/api/yhteys.php" in pwa
+    assert "paivitaTilaLuvut" in pwa
+    assert "/api/iltarasti_tila.php" in pwa
+    assert "iltarasti-maastossa" in pwa
+    assert "iltarasti-esitykset" in pwa
+    assert "iltarasti-tila" in js
     assert os.path.isfile(os.path.join(JAH, "api/yhteys.php"))
     kuori = read(os.path.join(JAH, "assets/css/iltarasti_kuori.css"))
     assert "border-radius: 50%" in kuori
     assert "#22c55e" in kuori
     assert "#ef4444" in kuori
     assert "iltarasti-yhteys-selite" in kuori
+    assert "iltarasti-tila-luku" in kuori
     assert "iltarasti-yhteys-rivi" in pwa
     assert "iltarasti-yhteys-rivi" in js
     assert "CP210xSerialPort" in read(os.path.join(JAH, "assets/js/usb_sarja.js"))
@@ -314,6 +329,35 @@ def test_valiajat_karki():
     print("ok valiajat karki")
 
 
+def test_esitys_lahde():
+    inc = read(os.path.join(JAH, "includes/iltarasti_esitys.php"))
+    for pala in (
+        "function iltarastiTilanneLuvut",
+        "function iltarastiHaeEsitykset",
+        "function iltarastiEsitysKasittele",
+        "iltarastiAsetaPaatos",
+        "iltarastiVaihdaRata",
+        "iltarastiArvaaRata",
+        "leimaTarkistaRata",
+    ):
+        assert pala in inc, pala
+    sivu = read(os.path.join(JAH, "admin/iltarasti_esitykset.php"))
+    assert "Hyväksy" in sivu
+    assert 'value="H"' in sivu
+    assert 'value="K"' in sivu
+    assert "vaihda_rata" in sivu
+    js = read(ESITYS_JS)
+    assert "/api/iltarasti_esitys.php" in js
+    assert "iltarasti-maastossa" in js
+    tila = read(os.path.join(JAH, "api/iltarasti_tila.php"))
+    assert "iltarastiTilanneLuvut" in tila
+    assert "esitykset" in tila
+    kuori = read(os.path.join(JAH, "assets/css/iltarasti_kuori.css"))
+    assert "iltarasti-tila-luku" in kuori
+    assert "esitys-kortti" in kuori
+    print("ok esitys lahde")
+
+
 def test_docs():
     docs = read(os.path.join(ROOT, "docs/jahonline-docs/iltarastit.md"))
     assert "Automaatti" in docs
@@ -322,14 +366,22 @@ def test_docs():
     assert "SportIdent" in docs
     assert "pallo" in docs
     assert "Palvelin" in docs
+    assert "Esitykset" in docs
+    assert "Maastossa" in docs
+    assert "Hyväksy" in docs
     deploy = read(os.path.join(JAH, "deploy.sh"))
-    assert "20261112selite" in deploy
+    assert "20261112esitys" in deploy
     assert "iltarasti_kuori.css" in deploy
     assert "yhteys.php" in deploy
+    assert "iltarasti_tila.php" in deploy
+    assert "iltarasti_esitys.php" in deploy
     patch = read(os.path.join(JAH, "patch_automaatti_sivu.py"))
     assert "def patch_layout" in patch
     assert "iltarasti_kuori.css" in patch
     assert "iltarasti-yhteys-selite" in patch
+    assert "iltarasti-tila" in patch
+    assert ">Esitykset</a>" in patch
+    assert "'esitykset' =>" in patch
     assert "def patch_index" in patch
     assert "def patch_kilpailu" in patch
     assert "def patch_seuranta" in patch
@@ -349,6 +401,7 @@ def main():
     test_automaatti_malli_puhe()
     test_si_proto()
     test_valiajat_karki()
+    test_esitys_lahde()
     test_docs()
     print("kaikki ok")
 

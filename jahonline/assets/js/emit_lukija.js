@@ -1692,7 +1692,10 @@
             net.setAttribute('aria-label', net.getAttribute('title'));
             net.classList.add('emit-automaatti-palvelin');
             net.textContent = '';
-            if (net.parentNode && net.parentNode.classList
+            var tila = document.getElementById('iltarasti-tila');
+            if (tila) {
+                netRivi = tila;
+            } else if (net.parentNode && net.parentNode.classList
                 && net.parentNode.classList.contains('iltarasti-yhteys-rivi')) {
                 netRivi = net.parentNode;
             }

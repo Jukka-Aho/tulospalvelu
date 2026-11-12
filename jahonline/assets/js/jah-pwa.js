@@ -100,7 +100,12 @@
         selite.textContent = 'Palvelin';
         rivi.appendChild(selite);
         rivi.appendChild(el);
-        toimet.insertBefore(rivi, toimet.firstChild);
+        var tila = document.getElementById('iltarasti-tila');
+        if (tila) {
+            tila.insertBefore(rivi, tila.firstChild);
+        } else {
+            toimet.insertBefore(rivi, toimet.firstChild);
+        }
         return el;
     }
 
@@ -117,6 +122,123 @@
         el.setAttribute('aria-label', teksti);
         el.classList.toggle('is-online', online);
         el.classList.toggle('is-offline', !online);
+    }
+
+    function kuoriKilpailuId() {
+        var n = 0;
+        try {
+            n = parseInt((document.body && document.body.getAttribute('data-jah-kilpailu')) || '0', 10) || 0;
+        } catch (e) {}
+        return n;
+    }
+
+    function varmistaTilaRivi() {
+        var tila = document.getElementById('iltarasti-tila');
+        if (tila) {
+            return tila;
+        }
+        var yht = document.getElementById('iltarasti-yhteys');
+        var toimet = document.querySelector('.site-topbar-actions');
+        if (!toimet) {
+            return null;
+        }
+        tila = document.createElement('span');
+        tila.id = 'iltarasti-tila';
+        tila.className = 'iltarasti-tila-rivi';
+        var yhtRivi = yht && yht.parentNode && yht.parentNode.classList
+            && yht.parentNode.classList.contains('iltarasti-yhteys-rivi')
+            ? yht.parentNode
+            : yht;
+        if (yhtRivi && yhtRivi.parentNode === toimet) {
+            toimet.insertBefore(tila, yhtRivi);
+            tila.appendChild(yhtRivi);
+        } else {
+            toimet.insertBefore(tila, toimet.firstChild);
+            if (yhtRivi) {
+                tila.appendChild(yhtRivi);
+            }
+        }
+        return tila;
+    }
+
+    function varmistaTilaLuku(id, luokka, otsikko, href) {
+        var el = document.getElementById(id);
+        if (el) {
+            return el;
+        }
+        var tila = varmistaTilaRivi();
+        if (!tila) {
+            return null;
+        }
+        el = document.createElement(href ? 'a' : 'span');
+        el.id = id;
+        el.className = 'iltarasti-tila-luku' + (luokka ? ' ' + luokka : '');
+        if (href) {
+            el.href = href;
+        }
+        el.appendChild(document.createTextNode(otsikko + ' '));
+        var nro = document.createElement('span');
+        nro.className = 'iltarasti-tila-nro';
+        nro.textContent = '–';
+        el.appendChild(nro);
+        tila.appendChild(el);
+        return el;
+    }
+
+    function asetaTilaNro(id, n) {
+        var el = document.getElementById(id);
+        if (!el || n == null) {
+            return;
+        }
+        var nro = el.querySelector('.iltarasti-tila-nro');
+        if (nro) {
+            nro.textContent = String(n);
+        }
+        el.classList.toggle('is-tyhja', !n);
+        el.hidden = false;
+    }
+
+    var tilaHaku = 0;
+    function paivitaTilaLuvut() {
+        if (!onIltarastiKuori()) {
+            return;
+        }
+        var kid = kuoriKilpailuId();
+        if (!kid || navigator.onLine === false) {
+            return;
+        }
+        var nro = ++tilaHaku;
+        fetch('/api/iltarasti_tila.php?kilpailu_id=' + kid + '&t=' + Date.now(), {
+            cache: 'no-store',
+            credentials: 'same-origin'
+        }).then(function (res) {
+            return res.json();
+        }).then(function (d) {
+            if (nro !== tilaHaku || !d || !d.ok) {
+                return;
+            }
+            varmistaTilaLuku(
+                'iltarasti-maastossa',
+                '',
+                'Maastossa',
+                d.esitykset != null ? '/public/kilpailijat.php?kilpailu_id=' + kid : ''
+            );
+            asetaTilaNro('iltarasti-maastossa', d.maastossa);
+            if (d.esitykset != null) {
+                varmistaTilaLuku(
+                    'iltarasti-esitykset',
+                    'is-esitys',
+                    'Esitys',
+                    '/public/iltarasti_esitykset.php?kilpailu_id=' + kid
+                );
+                asetaTilaNro('iltarasti-esitykset', d.esitykset);
+            } else {
+                var es = document.getElementById('iltarasti-esitykset');
+                if (es) {
+                    es.hidden = true;
+                }
+            }
+        }).catch(function () {});
     }
 
     var yhteysHaku = 0;
@@ -164,6 +286,7 @@
         }
         merkitseYhteys(true);
         kokeilePalvelin();
+        paivitaTilaLuvut();
     }
     paivitaYhteys();
     window.addEventListener('online', paivitaYhteys);
@@ -178,6 +301,7 @@
             return;
         }
         kokeilePalvelin();
+        paivitaTilaLuvut();
     }, 20000);
 
     function iltarastiOfflineSallittu(href) {
@@ -254,8 +378,8 @@
     }
 
     var AUTO = /\/(ahoauto|autot|ohjaus|scenic)(\/|$)/;
-    var SW = '/sw-jahonline.js?v=20261112selite';
-    var CACHE = 'jahonline-app-v22';
+    var SW = '/sw-jahonline.js?v=20261112esitys';
+    var CACHE = 'jahonline-app-v23';
 
     function iltarastiPrefetchUrlit() {
         var urls = {};
