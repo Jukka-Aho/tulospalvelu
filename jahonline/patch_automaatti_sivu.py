@@ -3,7 +3,7 @@
 from pathlib import Path
 
 DEST = Path("/var/www/jahonline")
-VER = "20261112asema"
+VER = "20261112si"
 
 
 def sub(txt, a, b, pakko=False):
@@ -32,6 +32,8 @@ def patch_emit_lukija():
     txt, _ = sub(txt, "$emitCssV = '20261111pwa';", "$emitCssV = '%s';" % VER)
     txt, _ = sub(txt, "$emitCssV = '20261111net';", "$emitCssV = '%s';" % VER)
     txt, _ = sub(txt, "$emitCssV = '20261111graf';", "$emitCssV = '%s';" % VER)
+    txt, _ = sub(txt, "$emitCssV = '20261112asema';", "$emitCssV = '%s';" % VER)
+    txt, _ = sub(txt, "$emitCssV = '20261112si';", "$emitCssV = '%s';" % VER)
     txt, _ = sub(
         txt,
         "emit_lukija.js?v=20261111auto",
@@ -64,23 +66,65 @@ def patch_emit_lukija():
     )
     txt, _ = sub(
         txt,
+        "emit_lukija.js?v=20261112asema",
+        "emit_lukija.js?v=" + VER,
+    )
+    txt, _ = sub(
+        txt,
+        "emit_lukija.css?v=20261112asema",
+        "emit_lukija.css?v=" + VER,
+    )
+    txt, _ = sub(
+        txt,
         "if (window.JAH_EMIT_VERSIO === 'puhe2') {",
-        "if (window.JAH_EMIT_VERSIO === 'automaatti2') {",
+        "if (window.JAH_EMIT_VERSIO === 'automaatti3') {",
     )
     txt, _ = sub(
         txt,
         "if (window.JAH_EMIT_VERSIO === 'automaatti1') {",
+        "if (window.JAH_EMIT_VERSIO === 'automaatti3') {",
+    )
+    txt, _ = sub(
+        txt,
         "if (window.JAH_EMIT_VERSIO === 'automaatti2') {",
+        "if (window.JAH_EMIT_VERSIO === 'automaatti3') {",
     )
     txt, _ = sub(
         txt,
         "if (sessionStorage.getItem('jah-emit-puhe2')) {",
+        "if (sessionStorage.getItem('jah-emit-automaatti3')) {",
+    )
+    txt, _ = sub(
+        txt,
         "if (sessionStorage.getItem('jah-emit-automaatti2')) {",
+        "if (sessionStorage.getItem('jah-emit-automaatti3')) {",
     )
     txt, _ = sub(
         txt,
         "sessionStorage.setItem('jah-emit-puhe2', '1');",
+        "sessionStorage.setItem('jah-emit-automaatti3', '1');",
+    )
+    txt, _ = sub(
+        txt,
         "sessionStorage.setItem('jah-emit-automaatti2', '1');",
+        "sessionStorage.setItem('jah-emit-automaatti3', '1');",
+    )
+    if "si_proto.js" not in txt:
+        txt, _ = sub(
+            txt,
+            '<script src="../assets/js/emit_lukija.js',
+            '<script src="../assets/js/si_proto.js?v=' + VER + '"></script>\n<script src="../assets/js/emit_lukija.js',
+            pakko=True,
+        )
+    txt, _ = sub(
+        txt,
+        "usb_sarja_boot.js?v=20261015puhe",
+        "usb_sarja_boot.js?v=" + VER,
+    )
+    txt, _ = sub(
+        txt,
+        "usb_sarja_boot.js?v=20261112asema",
+        "usb_sarja_boot.js?v=" + VER,
     )
     merkk = "asetaValittuKilpailu($kilpailu_id);"
     lisays = """asetaValittuKilpailu($kilpailu_id);
@@ -176,6 +220,10 @@ def cache_bust():
         ("emit_lukija.js?v=20261111pwa", "emit_lukija.js?v=" + VER),
         ("emit_lukija.js?v=20261111net", "emit_lukija.js?v=" + VER),
         ("emit_lukija.js?v=20261111graf", "emit_lukija.js?v=" + VER),
+        ("emit_lukija.js?v=20261112asema", "emit_lukija.js?v=" + VER),
+        ("si_proto.js?v=20261112asema", "si_proto.js?v=" + VER),
+        ("usb_sarja_boot.js?v=20261015puhe", "usb_sarja_boot.js?v=" + VER),
+        ("usb_sarja.js?v=20261015puhe", "usb_sarja.js?v=" + VER),
         ("emit_lukija.css?v=20261111auto", "emit_lukija.css?v=" + VER),
         ("emit_lukija.css?v=20261111kioski", "emit_lukija.css?v=" + VER),
         ("emit_lukija.css?v=20261111yhdista", "emit_lukija.css?v=" + VER),
@@ -194,6 +242,13 @@ def cache_bust():
         ("live_board.css?v=20261111pwa", "live_board.css?v=" + VER),
         ("live_board.css?v=20261111net", "live_board.css?v=" + VER),
         ("live_board.css?v=20261111graf", "live_board.css?v=" + VER),
+        ("live_board.css?v=20261112asema", "live_board.css?v=" + VER),
+        ("emit_lukija.css?v=20261112asema", "emit_lukija.css?v=" + VER),
+        ("seuranta.js?v=20261112asema", "seuranta.js?v=" + VER),
+        ("jah-pwa.js?v=20261112asema", "jah-pwa.js?v=" + VER),
+        ("sw-jahonline.js?v=20261112asema", "sw-jahonline.js?v=" + VER),
+        ("TULOSPALVELU_ASSET_V = '20261112asema'", "TULOSPALVELU_ASSET_V = '%s'" % VER),
+        ("$emitCssV = '20261112asema'", "$emitCssV = '%s'" % VER),
         ("jah-pwa.js?v=20261111auto", "jah-pwa.js?v=" + VER),
         ("jah-pwa.js?v=20261111kioski", "jah-pwa.js?v=" + VER),
         ("jah-pwa.js?v=20261111yhdista", "jah-pwa.js?v=" + VER),
@@ -223,7 +278,8 @@ def cache_bust():
         ("jahonline-app-v15", "jahonline-app-v19"),
         ("jahonline-app-v16", "jahonline-app-v19"),
         ("jahonline-app-v17", "jahonline-app-v19"),
-        ("jahonline-app-v18", "jahonline-app-v19"),
+        ("jahonline-app-v18", "jahonline-app-v20"),
+        ("jahonline-app-v19", "jahonline-app-v20"),
     ]
     n = 0
     for root in [DEST / "public", DEST / "admin", DEST / "includes", DEST / "assets"]:

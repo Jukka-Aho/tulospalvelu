@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 HOST="${JAHONLINE_HOST:-root@46.225.174.104}"
 DEST="${JAHONLINE_DEST:-/var/www/jahonline}"
-VER="20261112asema"
+VER="20261112si"
 KEY="${JAHONLINE_SSH_KEY:-$HOME/.ssh/hetzner_key}"
 SSH=(ssh -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new)
 SCP=(scp -q -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new)
@@ -19,6 +19,10 @@ fi
   "$ROOT/jahonline/assets/js/emit_lukija.js" \
   "$ROOT/jahonline/assets/js/seuranta.js" \
   "$ROOT/jahonline/assets/js/jah-pwa.js" \
+  "$ROOT/jahonline/assets/js/si_proto.js" \
+  "$ROOT/jahonline/assets/js/emit_proto.js" \
+  "$ROOT/jahonline/assets/js/usb_sarja.js" \
+  "$ROOT/jahonline/assets/js/usb_sarja_boot.js" \
   "$HOST:$DEST/assets/js/"
 "${SCP[@]}" \
   "$ROOT/jahonline/assets/css/emit_lukija.css" \

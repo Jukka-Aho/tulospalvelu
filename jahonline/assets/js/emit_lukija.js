@@ -1,9 +1,17 @@
 (function () {
     'use strict';
-    window.JAH_EMIT_VERSIO = 'automaatti2';
+    window.JAH_EMIT_VERSIO = 'automaatti3';
 
     var proto = window.JahEmitProto;
+    var siProto = window.JahSiProto;
     var cfg = window.JAH_EMIT || { kilpailuId: 0, sarjoja: 0 };
+    var lukijaTyyppi = 'emit';
+    try {
+        if (localStorage.getItem('jah-lukija-tyyppi') === 'si') {
+            lukijaTyyppi = 'si';
+        }
+    } catch (eTyyppi) { /* */ }
+    var siKone = null;
     var kioski = !!cfg.kioski;
     var kioskiAjastin = null;
     var moodi = 'lahto';
@@ -236,6 +244,27 @@
         }
         lokiin('VASTAAN ' + bytes.length + ' tavua  ' + hex.join(' ') + (bytes.length > n ? ' …' : ''));
         lokiin('teksti: ' + teksti);
+    }
+
+    function onkoSportIdent() {
+        return lukijaTyyppi === 'si';
+    }
+
+    function asetaLukijaTyyppi(tyyppi) {
+        lukijaTyyppi = tyyppi === 'si' ? 'si' : 'emit';
+        try {
+            localStorage.setItem('jah-lukija-tyyppi', lukijaTyyppi);
+        } catch (e) { /* */ }
+        paivitaTyyppiNapit();
+        if (typeof paivitaAutomaattiYhteys === 'function') {
+            paivitaAutomaattiYhteys();
+        }
+    }
+
+    function paivitaTyyppiNapit() {
+        document.querySelectorAll('.emit-lukija-tyyppi').forEach(function (btn) {
+            btn.classList.toggle('is-valittu', btn.getAttribute('data-tyyppi') === lukijaTyyppi);
+        });
     }
 
     function usbLaskuri() {
@@ -1700,6 +1729,15 @@
             + '<div class="emit-automaatti-tulos" id="emit-automaatti-tulos" hidden></div>';
         document.body.appendChild(el);
         el.addEventListener('click', function (ev) {
+            var tyyppiNappi = ev.target && ev.target.closest
+                ? ev.target.closest('.emit-lukija-tyyppi')
+                : null;
+            if (tyyppiNappi) {
+                ev.preventDefault();
+                ev.stopPropagation();
+                asetaLukijaTyyppi(tyyppiNappi.getAttribute('data-tyyppi'));
+                return;
+            }
             var nappi = ev.target && ev.target.closest
                 ? ev.target.closest('#emit-automaatti-yhdista, #emit-automaatti-katkaise')
                 : null;
@@ -1748,11 +1786,17 @@
                 + 'Katkaise yhteys</button>';
             return;
         }
-        el.innerHTML = '<button type="button" class="emit-automaatti-yhdista" id="emit-automaatti-yhdista">'
-            + 'Yhdistä Emit-lukija</button>'
+        el.innerHTML = '<div class="emit-lukija-tyypit" role="group" aria-label="Lukijan tyyppi">'
+            + '<button type="button" class="emit-lukija-tyyppi' + (lukijaTyyppi === 'emit' ? ' is-valittu' : '') + '" data-tyyppi="emit">Emit</button>'
+            + '<button type="button" class="emit-lukija-tyyppi' + (lukijaTyyppi === 'si' ? ' is-valittu' : '') + '" data-tyyppi="si">SportIdent</button>'
+            + '</div>'
+            + '<button type="button" class="emit-automaatti-yhdista" id="emit-automaatti-yhdista">'
+            + 'Yhdistä lukija</button>'
             + '<div class="emit-automaatti-yhteys-ohje">'
             + (usbLukijaSaatavilla()
-                ? 'Valitse listasta USB Serial'
+                ? (onkoSportIdent()
+                    ? 'Valitse SportIdent USB-lukija (BSM7/BSM8) ja lue kortti lukumoodissa.'
+                    : 'Valitse listasta USB Serial')
                 : 'Paina Yhdistä. Jos lista ei aukea, avaa sivu Chromessa.')
             + '</div>';
     }
@@ -2487,10 +2531,11 @@
         viimeBadge = sanoma.badge;
         viimeAika = nyt;
         nayttiKortin = true;
+        var korttiSana = (sanoma.lahde === 'si' || onkoSportIdent()) ? 'Kortti' : 'Emit';
         if (laiteEl) {
-            laiteEl.textContent = 'Emit ' + sanoma.badge;
+            laiteEl.textContent = korttiSana + ' ' + sanoma.badge;
         }
-        var html = '<strong>Emit ' + escapeHtml(String(sanoma.badge)) + '</strong>';
+        var html = '<strong>' + korttiSana + ' ' + escapeHtml(String(sanoma.badge)) + '</strong>';
         if (sanoma.viikko) {
             html += '<br><span class="muted">viikko ' + escapeHtml(String(sanoma.viikko))
                 + (sanoma.vuosi ? '/' + escapeHtml(String(sanoma.vuosi)) : '') + '</span>';
@@ -2522,6 +2567,16 @@
     }
 
     function tilaLuettu(sanoma) {
+        if (onkoSportIdent() || (sanoma && sanoma.laite === 'SportIdent')) {
+            saatiinTila = true;
+            if (laiteEl) {
+                laiteEl.textContent = 'SportIdent' + (sanoma.koodi ? ' asema ' + sanoma.koodi : '');
+            }
+            if (!nayttiKortin) {
+                naytaTulos('ok', 'SportIdent-lukija vastaa. Näytä kortti.');
+            }
+            return;
+        }
         var osat = [];
         if (sanoma.laite) {
             osat.push(sanoma.laite);
@@ -2591,6 +2646,27 @@
         return kirjoitusJono;
     }
 
+    function kirjoitaTavut(bytes) {
+        kirjoitusJono = kirjoitusJono.then(function () {
+            return kirjoitaTavutNyt(bytes);
+        }).catch(function (e) {
+            lokiin('SI-lähetys epäonnistui' + (e && e.message ? ': ' + e.message : ''));
+        });
+        return kirjoitusJono;
+    }
+
+    async function kirjoitaTavutNyt(bytes) {
+        if (!portti || !portti.writable || !bytes || !bytes.length) {
+            return;
+        }
+        var writer = portti.writable.getWriter();
+        try {
+            await writer.write(bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes));
+        } finally {
+            writer.releaseLock();
+        }
+    }
+
     async function kirjoitaNyt(teksti) {
         if (!portti || !portti.writable) {
             return;
@@ -2610,6 +2686,26 @@
     }
 
     async function valmistelu() {
+        if (onkoSportIdent()) {
+            await odota(600);
+            if (!auki || !siKone) {
+                return;
+            }
+            var ok = await siKone.aloita();
+            if (!ok) {
+                lokiin('Kokeillaan SportIdent 4800 baudia');
+                try {
+                    await asetaLinja(4800, 1);
+                } catch (eSi) { /* */ }
+                ok = await siKone.aloita();
+            }
+            if (!ok) {
+                naytaTulos('varoitus', 'SportIdent-asema ei vastannut heti. Pidä asema lukumoodissa (Read SI-Cards) ja näytä kortti.');
+            } else if (!nayttiKortin) {
+                naytaTulos('ok', 'SportIdent yhdistetty. Näytä kortti.');
+            }
+            return;
+        }
         if (ftdiKaytossa()) {
             return;
         }
@@ -2643,6 +2739,10 @@
         }
         if (puskuri) {
             puskuri.tavut = (puskuri.tavut || 0) + bytes.length;
+        }
+        if (onkoSportIdent() && siKone) {
+            siKone.syota(bytes);
+            return;
         }
         kerays.push(bytes);
         var kertynyt = 0;
@@ -2971,6 +3071,11 @@
         var ep = portti.inEndpoint_.endpointNumber;
         var maxPkt = portti.maxPacketSize_ || 64;
         await herataFtdi();
+        if (onkoSportIdent()) {
+            await asetaLinja(38400, 1);
+            await tyhjennaVastaanotto(dev, ep);
+            naytaTulos('ok', 'SportIdent: kuunnellaan 38400 baudia. Näytä kortti.');
+        } else {
         var linjat = [
             { baud: 9600, stop: 2 },
             { baud: 115200, stop: 2 },
@@ -3006,6 +3111,7 @@
                     + linja.baud + ', ' + linja.stop + ' stop-bittiä.<br><span class="muted">'
                     + nayteHex(data) + '</span>');
             }
+        }
         }
         if (!auki) {
             return;
@@ -3130,6 +3236,7 @@
     async function yhdista() {
         if (auki) {
             auki = false;
+            siKone = null;
             try { await portti.close(); } catch (e) { /* suljettu */ }
             portti = null;
             asetaYhteys('Lukija katkaistu');
@@ -3138,16 +3245,27 @@
         }
         avaaAani();
         try {
+            if (onkoSportIdent() && !siProto) {
+                throw new Error('SportIdent-ohjelma ei latautunut. Päivitä sivu.');
+            }
             portti = await valitsePortti();
-            nykyStop = 2;
+            var si = onkoSportIdent();
+            nykyStop = si ? 1 : 2;
+            var baudAvaus = si ? 38400 : 9600;
             var baudValinta = document.getElementById('baud');
             if (baudValinta) {
-                baudValinta.value = '9600';
+                if (si && !Array.prototype.some.call(baudValinta.options, function (o) { return o.value === '38400'; })) {
+                    var opt = document.createElement('option');
+                    opt.value = '38400';
+                    opt.textContent = 'SportIdent 38400';
+                    baudValinta.appendChild(opt);
+                }
+                baudValinta.value = String(baudAvaus);
             }
             await portti.open({
-                baudRate: 9600,
+                baudRate: baudAvaus,
                 dataBits: 8,
-                stopBits: 2,
+                stopBits: si ? 1 : 2,
                 parity: 'none',
                 bufferSize: 255
             });
@@ -3164,6 +3282,15 @@
             nollaTavuja = 0;
             loytyiMerkkeja = false;
             puskuri = proto.luoPuskuri();
+            siKone = si ? siProto.luoLukija({
+                kirjoita: kirjoitaTavut,
+                onKortti: korttiLuettu,
+                onTila: tilaLuettu,
+                onVirhe: function (err) {
+                    naytaTulos('varoitus', escapeHtml(err && err.message ? err.message : String(err)));
+                },
+                loki: lokiin
+            }) : null;
             asetaYhteys(kioski ? 'Lukija yhdistetty' : 'USB yhdistetty — lue kortti');
             if (laiteEl && !cfg.iltarasti) {
                 laiteEl.textContent = 'Kuunnellaan lukijaa…';
@@ -3196,11 +3323,42 @@
         }
     }
 
+    function varmistaYlaTyyppi() {
+        var yla = document.querySelector('.emit-yhteys');
+        if (!yla || yla.querySelector('.emit-lukija-tyypit')) {
+            return;
+        }
+        var wrap = document.createElement('div');
+        wrap.className = 'emit-lukija-tyypit';
+        wrap.setAttribute('role', 'group');
+        wrap.setAttribute('aria-label', 'Lukijan tyyppi');
+        wrap.innerHTML = '<button type="button" class="emit-lukija-tyyppi" data-tyyppi="emit">Emit</button>'
+            + '<button type="button" class="emit-lukija-tyyppi" data-tyyppi="si">SportIdent</button>';
+        var yhd = document.getElementById('yhdista');
+        if (yhd && yhd.parentNode === yla) {
+            yla.insertBefore(wrap, yhd);
+        } else {
+            yla.insertBefore(wrap, yla.firstChild);
+        }
+        paivitaTyyppiNapit();
+    }
+
+    document.addEventListener('click', function (ev) {
+        var btn = ev.target && ev.target.closest ? ev.target.closest('.emit-lukija-tyyppi') : null;
+        if (!btn || btn.closest('#emit-automaatti')) {
+            return;
+        }
+        ev.preventDefault();
+        asetaLukijaTyyppi(btn.getAttribute('data-tyyppi'));
+    });
+
     if (cfg.automaattiSivu) {
         document.body.classList.add('emit-automaatti-sivu', 'is-automaatti-moodi');
         siirraAutomaattiYlapalkkiin();
     }
     lisaaAutomaattiNappi();
+    varmistaYlaTyyppi();
+    paivitaTyyppiNapit();
     document.querySelectorAll('.emit-moodit .emit-moodi').forEach(function (btn) {
         btn.addEventListener('click', function () {
             asetaMoodi(btn.getAttribute('data-moodi'));

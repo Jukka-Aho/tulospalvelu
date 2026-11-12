@@ -8,6 +8,7 @@ import sys
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 JAH = os.path.join(ROOT, "jahonline")
 EMIT_JS = os.path.join(JAH, "assets/js/emit_lukija.js")
+SI_JS = os.path.join(JAH, "assets/js/si_proto.js")
 SEURANTA_JS = os.path.join(JAH, "assets/js/seuranta.js")
 EMIT_CSS = os.path.join(JAH, "assets/css/emit_lukija.css")
 BOARD_CSS = os.path.join(JAH, "assets/css/live_board.css")
@@ -22,13 +23,13 @@ def read(path):
 
 
 def test_tiedostot():
-    for p in (EMIT_JS, SEURANTA_JS, EMIT_CSS, BOARD_CSS, SW, PWA):
+    for p in (EMIT_JS, SI_JS, SEURANTA_JS, EMIT_CSS, BOARD_CSS, SW, PWA):
         assert os.path.isfile(p), p
     print("ok tiedostot")
 
 
 def test_js_syntax():
-    for p in (EMIT_JS, SEURANTA_JS, PWA, SW):
+    for p in (EMIT_JS, SI_JS, SEURANTA_JS, PWA, SW):
         subprocess.check_call(["node", "--check", p])
     print("ok js syntax")
 
@@ -50,7 +51,9 @@ def test_automaatti_lahde():
         "emit-automaatti-sivu",
         "Automaatti",
         "emit-automaatti-yhdista",
-        "Yhdistä Emit-lukija",
+        "Yhdistä lukija",
+        "SportIdent",
+        "function asetaLukijaTyyppi",
         "function usbLukijaSaatavilla",
         "function naytaAutomaattiVirhe",
         "function siirraAutomaattiYlapalkkiin",
@@ -58,20 +61,25 @@ def test_automaatti_lahde():
         "function odotaJahUsbSerial",
         "Palvelin ok",
         "Ei verkkoa",
-        "automaatti2",
+        "automaatti3",
+        "JahSiProto",
+        "kirjoitaTavut",
     ):
         assert pala in js, pala
     assert "emit-automaatti-nimi" in css
     assert "is-automaatti-moodi" in css
     assert "emit-automaatti-sivu" in css
     assert "emit-automaatti-yhdista" in css
+    assert "emit-lukija-tyyppi" in css
     assert "Hylkäysesitys" in js
     assert os.path.isfile(os.path.join(JAH, "public/automaatti.php"))
     pwa = read(PWA)
     assert "automaatti.php" in pwa
     sw = read(SW)
-    assert "jahonline-app-v19" in sw
-    assert "20261112asema" in sw
+    assert "jahonline-app-v20" in sw
+    assert "20261112si" in sw
+    assert "si_proto.js" in sw
+    assert "CP210xSerialPort" in read(os.path.join(JAH, "assets/js/usb_sarja.js"))
     print("ok automaatti lahde")
 
 
@@ -83,7 +91,8 @@ def test_grafiikka_lahde():
         "function piirraVaGrafiikka",
         "function mukavaMaxEro",
         "function oletusValitut",
-        "Kilpailijat kaaviossa",
+        "function sidoVaTaulukkoValinnat",
+        "lb-va-rivi-valinta",
         "Kärki 5",
         "lb-va-grafiikka",
         "Tilanne rasteilla",
@@ -98,6 +107,9 @@ def test_grafiikka_lahde():
     assert ".lb-va-valinta" in css
     assert ".lb-va-kaavio-wrap" in css
     assert ".lb-va-selite--nimet" in css
+    assert ".lb-va-rivi-valinta" in css
+    assert "pan-x pan-y" in css
+    assert "Kilpailijat kaaviossa" not in js
     print("ok grafiikka lahde")
 
 
@@ -228,6 +240,42 @@ def parse_aika_py(txt):
     return None
 
 
+def test_si_proto():
+    script = r"""
+const si = require('./jahonline/assets/js/si_proto.js');
+function hex(a){return Array.from(a).map(x=>x.toString(16).padStart(2,'0')).join(' ');}
+const crc = si.crc16([0xF0, 0x01, 0x4D]);
+if (crc[0]!==0x6d || crc[1]!==0x0a) throw new Error('crc SET_MS '+hex(crc));
+const crc2 = si.crc16([0xF1, 0x00]);
+if (crc2[0]!==0xf1 || crc2[1]!==0x00) throw new Error('crc GET_MS');
+const crc3 = si.crc16([0x83, 0x02, 0x00, 0x80]);
+if (crc3[0]!==0xbf || crc3[1]!==0x17) throw new Error('crc GET_SYS');
+if (si.dekoodaaKorttinro(0,0,0x30,0x39)!==12345) throw new Error('cn 12345');
+if (si.dekoodaaKorttinro(0,2,0x03,0x21)!==200801) throw new Error('cn 200801');
+if (si.korttityyppi(12345)!=='SI5') throw new Error('tyyppi5');
+if (si.korttityyppi(8500000)!=='SI10') throw new Error('tyyppi10');
+const data = new Uint8Array(128);
+data[4]=0x30; data[5]=0x39; data[6]=0;
+data[19]=0x0e; data[20]=0x10; // start 3600
+data[23]=3; // next punch index -> 2 punches
+data[32]=0; // extra
+data[33]=31; data[34]=0x0e; data[35]=0x74; // 31 @ 3700
+data[36]=32; data[37]=0x0e; data[38]=0x7e; // 32 @ 3710
+const kortti = si.puraKortti(data, 'SI5');
+if (kortti.badge!==12345) throw new Error('badge '+kortti.badge);
+if (kortti.lahde!=='si') throw new Error('lahde');
+const nolla = kortti.leimat.find(l=>l.koodi===0);
+if (!nolla || nolla.kello_sec<3600) throw new Error('nolla '+JSON.stringify(nolla));
+if (!kortti.leimat.some(l=>l.koodi===31)) throw new Error('rasti 31');
+const keh = si.rakennaKomento(0xF0, [0x4D], true);
+if (keh[0]!==0xff || keh[1]!==0x02 || keh[keh.length-1]!==0x03) throw new Error('kehys');
+console.log('ok si_proto');
+"""
+    out = subprocess.check_output(["node", "-e", script], cwd=ROOT, text=True)
+    assert "ok si_proto" in out
+    print("ok si proto")
+
+
 def test_valiajat_karki():
     html = read(FIXTURE)
     assert "lb-main--valiajat" in html
@@ -256,6 +304,7 @@ def test_docs():
     assert "Automaatti" in docs
     assert "Hylkäysesitys" in docs
     assert "Tilanne rasteilla" in docs or "rastitilanne" in docs.lower() or "grafiikka" in docs
+    assert "SportIdent" in docs
     print("ok docs")
 
 
@@ -267,6 +316,7 @@ def main():
     test_parse_aika_txt()
     test_mukava_max_ero()
     test_automaatti_malli_puhe()
+    test_si_proto()
     test_valiajat_karki()
     test_docs()
     print("kaikki ok")

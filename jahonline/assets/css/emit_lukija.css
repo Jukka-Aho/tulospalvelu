@@ -79,6 +79,30 @@
     font-weight: 600;
 }
 
+.emit-lukija-tyypit {
+    display: flex;
+    gap: 0.4rem;
+    margin: 0.45rem 0 0.55rem;
+}
+
+.emit-lukija-tyyppi {
+    flex: 1;
+    min-height: 2.4rem;
+    border: 1px solid var(--input-border, #64748b);
+    background: var(--card, transparent);
+    color: inherit;
+    border-radius: 0.5rem;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.emit-lukija-tyyppi.is-valittu {
+    background: var(--primary, #0b3d2e);
+    color: var(--on-primary, #fff);
+    border-color: transparent;
+}
+
 .emit-lukija-page .emit-leimat-otsikko {
     margin: 0.15rem 0 0.2rem;
     font-family: "Barlow", system-ui, sans-serif;
@@ -939,6 +963,24 @@ body.emit-automaatti-sivu .emit-automaatti {
     margin-top: 0.8rem;
     font-size: 1.05rem;
     color: #64748b;
+}
+
+.emit-automaatti .emit-lukija-tyypit {
+    justify-content: center;
+    margin: 1rem auto 0;
+    max-width: 22rem;
+}
+
+.emit-automaatti .emit-lukija-tyyppi {
+    background: rgba(255, 255, 255, 0.06);
+    color: #e2e8f0;
+    border-color: #475569;
+}
+
+.emit-automaatti .emit-lukija-tyyppi.is-valittu {
+    background: #16a34a;
+    color: #fff;
+    border-color: #16a34a;
 }
 
 .emit-automaatti-yhdista {

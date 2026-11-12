@@ -1069,7 +1069,7 @@ body.seuranta-page .lb-main--tulokset .lb-rivi:not(.has-va) .lb-nimi {
  */
 .lb-rivi.has-va {
   /* Nimisarakkeen leveys: riittää tyypilliselle nimelle, ei turhaa tyhjää VÄ:n eteen */
-  --lb-va-name: 11.5rem;
+  --lb-va-name: 12.8rem;
   --lb-va-col: 5.85rem;
   width: max-content;
   max-width: none;
@@ -1641,6 +1641,34 @@ body.seuranta-page .lb-main--tulokset .lb-rivi.lb-viesti-rivi .lb-nimi-paa {
   width: 100%;
   max-width: 100%;
   overflow: visible;
+  display: grid;
+  grid-template-columns: 1.2rem minmax(0, 1fr);
+  column-gap: 0.3rem;
+  align-items: center;
+}
+
+.lb-va-rivi-valinta {
+  grid-row: 1 / span 2;
+  align-self: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.2rem;
+  height: 1.25rem;
+  margin: 0;
+  cursor: pointer;
+}
+
+.lb-va-rivi-valinta input {
+  width: 1.1rem;
+  height: 1.1rem;
+  margin: 0;
+  accent-color: var(--primary, #2563eb);
+}
+
+.lb-rivi.has-va .lb-nimi-paa,
+.lb-rivi.has-va .lb-nimi-meta {
+  grid-column: 2;
 }
 
 .lb-rivi.has-va .lb-nimi-paa {
@@ -1787,23 +1815,23 @@ body.seuranta-page .lb-main--tulokset .lb-rivi.lb-viesti-rivi .lb-nimi-paa {
     max-width: 100%;
   }
 
-  /* Rastiväliajat: ikkuna sisällön levyinen ja keskitetty */
+  /* Rastiväliajat: sivun levyinen, taulukko vierii vaakaan paneelissa */
   body.seuranta-page .lb-main--valiajat {
-    width: max-content;
+    width: 100%;
     max-width: 100%;
     margin-inline: auto;
-    align-self: center;
+    align-self: stretch;
     flex: 0 1 auto;
     box-sizing: border-box;
   }
 
   body.seuranta-page .lb-main--valiajat .lb-paneeli {
-    width: max-content;
+    width: 100%;
     max-width: 100%;
   }
 
   body.seuranta-page .lb-main--valiajat .lb-scroll {
-    width: max-content;
+    width: 100%;
     max-width: 100%;
   }
 
@@ -1957,7 +1985,7 @@ body.seuranta-page .lb-main--tulokset .lb-rivi.lb-viesti-rivi .lb-nimi-paa {
    * Lyh-sarake (0) pakollinen — ilman sitä Ero/Sija menevät sekaisin.
    */
   .lb-rivi.has-va {
-    --lb-va-name: 9.5rem;
+    --lb-va-name: 10.8rem;
     --lb-va-col: 5.1rem;
     width: max-content;
     max-width: none;
@@ -4045,7 +4073,7 @@ body.tulospalvelu-page .table-scroll {
 .lb-va-kaavio-wrap {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-  touch-action: pan-x;
+  touch-action: pan-x pan-y;
   margin-top: 0.25rem;
 }
 

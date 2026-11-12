@@ -338,26 +338,9 @@
         return { nayta: nayta, maxEro: mukavaMaxEro(maxEro) };
     }
 
-    function rakennaValinta(data, valitut, avain, paneeli) {
+    function rakennaValinta(data, avain, paneeli) {
         var wrap = document.createElement('div');
         wrap.className = 'lb-va-valinta';
-        var n = 0;
-        Object.keys(valitut).forEach(function (k) {
-            if (valitut[k]) {
-                n += 1;
-            }
-        });
-        var auki = document.createElement('button');
-        auki.type = 'button';
-        auki.className = 'lb-va-valinta-auki';
-        auki.textContent = 'Kilpailijat kaaviossa (' + n + ')';
-        var lista = document.createElement('div');
-        lista.className = 'lb-va-valinta-lista';
-        lista.hidden = true;
-        auki.addEventListener('click', function () {
-            lista.hidden = !lista.hidden;
-            auki.classList.toggle('is-auki', !lista.hidden);
-        });
         var toiminnot = document.createElement('div');
         toiminnot.className = 'lb-va-valinta-toiminnot';
         function nappi(txt, fn) {
@@ -368,58 +351,81 @@
             b.addEventListener('click', function (ev) {
                 ev.preventDefault();
                 fn();
-                vaValinnat[avain] = valitut;
                 piirraVaGrafiikka(paneeli, data);
             });
             return b;
         }
         toiminnot.appendChild(nappi('Kärki 5', function () {
-            valitut = oletusValitut(data.henkilot);
+            vaValinnat[avain] = oletusValitut(data.henkilot);
         }));
         toiminnot.appendChild(nappi('Kaikki', function () {
-            valitut = {};
+            var kaikki = {};
             (data.henkilot || []).forEach(function (h) {
-                valitut[henkiloAvain(h)] = true;
+                kaikki[henkiloAvain(h)] = true;
             });
+            vaValinnat[avain] = kaikki;
         }));
-        lista.appendChild(toiminnot);
-        (data.henkilot || []).forEach(function (h) {
-            var key = henkiloAvain(h);
-            var lab = document.createElement('label');
-            lab.className = 'lb-va-valinta-rivi';
-            var cb = document.createElement('input');
-            cb.type = 'checkbox';
-            cb.checked = !!valitut[key];
-            if (cb.checked) {
-                cb.setAttribute('checked', '');
-            }
-            cb.addEventListener('change', function () {
-                if (cb.checked) {
-                    valitut[key] = true;
-                } else {
-                    delete valitut[key];
-                }
-                var jaa = Object.keys(valitut).some(function (k) { return valitut[k]; });
-                if (!jaa) {
-                    valitut = oletusValitut(data.henkilot);
-                }
-                vaValinnat[avain] = valitut;
-                piirraVaGrafiikka(paneeli, data);
-            });
-            lab.appendChild(cb);
-            lab.appendChild(document.createTextNode(
-                (h.sija ? h.sija + '. ' : '') + (h.nimi || '')
-            ));
-            lista.appendChild(lab);
-        });
-        wrap.appendChild(auki);
-        wrap.appendChild(lista);
+        wrap.appendChild(toiminnot);
         return wrap;
+    }
+
+    function sidoVaTaulukkoValinnat(paneeli, data, valitut, avain) {
+        var headNimi = paneeli.querySelector('.lb-rivi.has-va.lb-head .lb-nimi');
+        if (headNimi && !headNimi.querySelector('.lb-va-rivi-valinta')) {
+            var sp = document.createElement('span');
+            sp.className = 'lb-va-rivi-valinta lb-va-rivi-valinta--ots';
+            sp.setAttribute('aria-hidden', 'true');
+            headNimi.insertBefore(sp, headNimi.firstChild);
+        }
+        var rivit = paneeli.querySelectorAll('.lb-rivi.has-va:not(.lb-head)');
+        var henkilot = data.henkilot || [];
+        rivit.forEach(function (rivi, i) {
+            var h = henkilot[i];
+            if (!h) {
+                return;
+            }
+            var key = henkiloAvain(h);
+            var nimi = rivi.querySelector('.lb-nimi');
+            if (!nimi) {
+                return;
+            }
+            var lab = rivi.querySelector('.lb-va-rivi-valinta');
+            var cb;
+            if (!lab) {
+                lab = document.createElement('label');
+                lab.className = 'lb-va-rivi-valinta';
+                lab.title = 'Näytä kaaviossa';
+                cb = document.createElement('input');
+                cb.type = 'checkbox';
+                cb.addEventListener('click', function (ev) {
+                    ev.stopPropagation();
+                });
+                cb.addEventListener('change', function () {
+                    var nyt = vaValinnat[avain] || {};
+                    if (cb.checked) {
+                        nyt[key] = true;
+                    } else {
+                        delete nyt[key];
+                    }
+                    if (!Object.keys(nyt).some(function (k) { return nyt[k]; })) {
+                        nyt = oletusValitut(data.henkilot);
+                    }
+                    vaValinnat[avain] = nyt;
+                    piirraVaGrafiikka(paneeli, data);
+                });
+                lab.appendChild(cb);
+                nimi.insertBefore(lab, nimi.firstChild);
+            } else {
+                cb = lab.querySelector('input');
+            }
+            if (cb) {
+                cb.checked = !!valitut[key];
+            }
+        });
     }
 
     function piirraVaGrafiikka(paneeli, data) {
         var vanha = paneeli.querySelector('.lb-va-grafiikka');
-        var listaOliAuki = !!(vanha && vanha.querySelector('.lb-va-valinta-lista') && !vanha.querySelector('.lb-va-valinta-lista').hidden);
         if (vanha) {
             vanha.remove();
         }
@@ -444,17 +450,8 @@
         otsG.className = 'lb-va-grafiikka-ots';
         otsG.textContent = 'Tilanne rasteilla';
         wrap.appendChild(otsG);
-        wrap.appendChild(rakennaValinta(data, valitut, avain, paneeli));
-        if (listaOliAuki) {
-            var lista = wrap.querySelector('.lb-va-valinta-lista');
-            var aukiBtn = wrap.querySelector('.lb-va-valinta-auki');
-            if (lista) {
-                lista.hidden = false;
-            }
-            if (aukiBtn) {
-                aukiBtn.classList.add('is-auki');
-            }
-        }
+        wrap.appendChild(rakennaValinta(data, avain, paneeli));
+        sidoVaTaulukkoValinnat(paneeli, data, valitut, avain);
 
         var kapea = onkoKapea();
         var nR = data.rastit.length;

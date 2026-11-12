@@ -167,7 +167,7 @@ Hamburger:
   **Tulokset** / **Rastiväliajat** kuten Pirilän julkisissa tuloksissa).
   Kilpailunumeroita ei näytetä (iltarastissa tunnistetaan nimellä).
   Rastiväliajoissa on rastitilanne-grafiikka: skaala valittujen kilpailijoiden
-  mukaan (oletus kärki 5), valinta *Kilpailijat kaaviossa*.
+  mukaan (oletus kärki 5), valintarasti nimen edessä.
 
 Vaihda tapahtuma palauttaa hubiin.
 
@@ -235,9 +235,11 @@ kaatuu, leimat silti merkitsevät Esityksen. Esitys tallennetaan
 **Automaatti** (Navisport-tyylinen maalinäyttö) avautuu hamburgerista
 omaksi kioskisivuksi (`/public/automaatti.php`), koko näytölle ilman
 sisäänluvun ja leimantarkastuksen välilehtiä. Yläpalkissa on palvelimen verkkotila (**Palvelin ok** / **Ei verkkoa**),
-kaiutin ja **Yhdistä lukija** (sama USB-yhteys kuin sisäänluvussa). Ruudussa on lisäksi iso **Yhdistä Emit-lukija**; Chromen
-USB-valikosta valitaan USB Serial. Yhdistämisen jälkeen odotusnäyttö
-pyytää lukemaan kortin.
+kaiutin ja **Yhdistä lukija** (sama USB-yhteys kuin sisäänluvussa). Ruudussa valitaan
+**Emit** tai **SportIdent** ja iso **Yhdistä lukija**. Chromen USB-valikosta
+valitaan USB Serial (Emit) tai SPORTident BSM7/BSM8. SportIdent-asema pidetään
+lukumoodissa (*Read SI-Cards*), 38400 baudia. Yhdistämisen jälkeen odotusnäyttö
+pyytää lukemaan kortin. SI-kortin lähtöleima tallentuu nollaleimaksi (koodi 0).
 Kortin luku käsitellään maalina. Ruutuun tulee isoina henkilön nimi,
 tulosaika ja sijoitus (1.–3. mitalivärein) tai vaihtoehtoisesti
 **Hylkäysesitys** puuttuvine rasteineen. Tuntematon kortti näyttää
@@ -285,9 +287,10 @@ uudelleenlaskentaa. Uudelleenlaskenta tekee saman kirjoituksen uudestaan
 jos rata tai leimat muuttuvat.
 
 Rastiväliajat-välilehdellä taulukon yläpuolella on viivakaavio erosta
-kärkeen (WinSplits/Navisport). Puhelimessa kaavio vierii vaakaan eikä
-kutistu, viivat ovat paksumpia, ja nimet näkyvät väriselitteessä.
-Grafiikka piirtyy uudelleen live-päivityksessä.
+kärkeen (WinSplits/Navisport). Kilpailija valitaan rastilla nimen edessä
+taulukossa; *Kärki 5* / *Kaikki* on kaavion yläpuolella. Puhelimessa kaavio
+vierii vaakaan eikä kutistu, viivat ovat paksumpia, ja nimet näkyvät
+väriselitteessä. Grafiikka piirtyy uudelleen live-päivityksessä.
 
 ## Osanottajat
 
