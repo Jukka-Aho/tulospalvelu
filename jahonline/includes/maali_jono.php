@@ -568,6 +568,7 @@ function maaliJonoLisaaLeima(PDO $pdo, int $kilpailu_id, string $maaliaika, ?str
             $laite !== null ? substr($laite, 0, 100) : null,
         ]);
         $id = (int) $pdo->lastInsertId();
+        maaliJonoJarjestaAvoimetLeimatAjalla($pdo, $kilpailu_id);
 
         $tila = yhdistaMaalijono($pdo, $kilpailu_id);
         if ($ownTx) {
@@ -579,6 +580,23 @@ function maaliJonoLisaaLeima(PDO $pdo, int $kilpailu_id, string $maaliaika, ?str
         }
         $tila['leima_id'] = $id;
         $tila['maaliaika'] = $norm;
+        if ($laite && stripos($laite, 'nappi') !== false) {
+            $toinen = $pdo->prepare("
+                SELECT laite FROM maali_leimat
+                WHERE kilpailu_id = ?
+                  AND id != ?
+                  AND laite IS NOT NULL
+                  AND laite LIKE '%nappi%'
+                  AND laite != ?
+                  AND luotu >= (NOW() - INTERVAL 90 SECOND)
+                ORDER BY id DESC
+                LIMIT 1
+            ");
+            $toinen->execute([$kilpailu_id, $id, substr($laite, 0, 100)]);
+            if ($toinen->fetchColumn()) {
+                $tila['varoitus'] = 'Toinen Maalinappi kirjasi juuri. Käytä vain yhtä nappia — kaksi laitetta hajottaa sijat.';
+            }
+        }
         maaliJonoAuditLataa();
         if (function_exists('ajanottoAuditKirjaa')) {
             ajanottoAuditKirjaa($pdo, $kilpailu_id, 'leima_lisays', [
@@ -611,7 +629,7 @@ function maaliJonoPeruViimeinenLeima(PDO $pdo, int $kilpailu_id): array
             SELECT id, maaliaika
             FROM maali_leimat
             WHERE kilpailu_id = ?
-            ORDER BY maaliaika DESC, id DESC
+            ORDER BY id DESC
             LIMIT 1
             FOR UPDATE
         ');
@@ -715,31 +733,79 @@ function maaliJonoPoistaLeima(PDO $pdo, int $kilpailu_id, int $id): array
 }
 
 /**
- * Seuraava leiman jarjestys: täytä ensimmäinen aukko (esim. poiston jälkeen),
- * muuten max+1. Sama logiikka kuin numeroilla → parit pysyvät kohdakkain.
+ * Seuraava leiman jarjestys: aina max+1, ei keskiaukkoa.
+ * Ylimääräinen nappi ei saa hypätä poistettuun sijaaan ja varastaa myöhempää paria.
+ * Numerot täyttävät aukot edelleen (väärä bib pois → seuraava numero paikalleen).
  */
 function maaliJonoSeuraavaLeimaJarjestys(PDO $pdo, int $kilpailu_id): int
 {
-    $stmt = $pdo->prepare('SELECT jarjestys FROM maali_leimat WHERE kilpailu_id = ?');
+    $stmt = $pdo->prepare('SELECT COALESCE(MAX(jarjestys), 0) FROM maali_leimat WHERE kilpailu_id = ?');
     $stmt->execute([$kilpailu_id]);
-    $kaytossa = [];
-    foreach ($stmt->fetchAll(PDO::FETCH_COLUMN) as $j) {
-        $kaytossa[(int) $j] = true;
+
+    return (int) $stmt->fetchColumn() + 1;
+}
+
+/**
+ * Järjestä parittomat leimat kellon mukaan vapaisiin sijoihin.
+ * Lukitut (ajat_id) pysyvät. Kaksi offline-nappia ehtii näin oikeaan aikajärjestykseen
+ * ennen kuin numeroita on yhdistetty.
+ */
+function maaliJonoJarjestaAvoimetLeimatAjalla(PDO $pdo, int $kilpailu_id): void
+{
+    $stmt = $pdo->prepare('
+        SELECT id, jarjestys, maaliaika, ajat_id
+        FROM maali_leimat
+        WHERE kilpailu_id = ?
+        FOR UPDATE
+    ');
+    $stmt->execute([$kilpailu_id]);
+    $rivit = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    if (count($rivit) < 2) {
+        return;
     }
 
-    $stmt = $pdo->prepare('SELECT COUNT(*) FROM maali_jononumerot WHERE kilpailu_id = ?');
-    $stmt->execute([$kilpailu_id]);
-    $nroLkm = (int) $stmt->fetchColumn();
-
-    $maxLeima = $kaytossa === [] ? 0 : max(array_keys($kaytossa));
-    $raja = max($nroLkm, $maxLeima);
-    for ($i = 1; $i <= $raja; $i++) {
-        if (!isset($kaytossa[$i])) {
-            return $i;
+    $avoimet = [];
+    foreach ($rivit as $r) {
+        if (empty($r['ajat_id'])) {
+            $avoimet[] = $r;
         }
     }
+    if (count($avoimet) < 2) {
+        return;
+    }
 
-    return $raja + 1;
+    $sijat = array_map(static fn(array $r): int => (int) $r['jarjestys'], $avoimet);
+    sort($sijat, SORT_NUMERIC);
+
+    usort($avoimet, static function (array $a, array $b): int {
+        $c = strcmp((string) $a['maaliaika'], (string) $b['maaliaika']);
+        if ($c !== 0) {
+            return $c;
+        }
+
+        return ((int) $a['id']) <=> ((int) $b['id']);
+    });
+
+    $uudet = [];
+    $muuttui = false;
+    foreach ($avoimet as $idx => $r) {
+        $uusi = $sijat[$idx];
+        $uudet[] = [$uusi, (int) $r['id']];
+        if ($uusi !== (int) $r['jarjestys']) {
+            $muuttui = true;
+        }
+    }
+    if (!$muuttui) {
+        return;
+    }
+
+    $upd = $pdo->prepare('UPDATE maali_leimat SET jarjestys = ? WHERE id = ? AND kilpailu_id = ?');
+    foreach ($avoimet as $r) {
+        $upd->execute([-(int) $r['id'], (int) $r['id'], $kilpailu_id]);
+    }
+    foreach ($uudet as $pari) {
+        $upd->execute([$pari[0], $pari[1], $kilpailu_id]);
+    }
 }
 
 /**

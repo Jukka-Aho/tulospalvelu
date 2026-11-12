@@ -694,7 +694,7 @@ if ('serviceWorker' in navigator) {
 }
 </script>
 <?php if ($is_jono): ?>
-<script src="../assets/js/maali_jono.js?v=20261112jono"></script>
+<script src="../assets/js/maali_jono.js?v=20261112jono2"></script>
 <?php endif; ?>
 
 <?php pageEnd(); ?>

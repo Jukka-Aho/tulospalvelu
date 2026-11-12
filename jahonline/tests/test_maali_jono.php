@@ -335,6 +335,55 @@ try {
     }
     assert_true($rivi99b && $rivi99b['tila'] === 'yhdistetty', 'jonorivi tila yhdistetty synkan jälkeen');
 
+    // Ylimääräinen leima ei täytä keskiaukkoa (ei varasta #22:n paikkaa)
+    $pdo->prepare('DELETE FROM ajat WHERE kilpailija_id IN (SELECT id FROM kilpailijat WHERE kilpailu_id = ?)')->execute([$kid]);
+    $pdo->prepare('DELETE FROM maali_leimat WHERE kilpailu_id = ?')->execute([$kid]);
+    $pdo->prepare('DELETE FROM maali_jononumerot WHERE kilpailu_id = ?')->execute([$kid]);
+    maaliJonoLisaaLeima($pdo, $kid, date('Y-m-d') . ' 15:00:00');
+    maaliJonoLisaaLeima($pdo, $kid, date('Y-m-d') . ' 15:01:00');
+    maaliJonoLisaaLeima($pdo, $kid, date('Y-m-d') . ' 15:02:00');
+    maaliJonoLisaaNumero($pdo, $kid, 11);
+    maaliJonoLisaaNumero($pdo, $kid, 22);
+    $tila = maaliJonoLisaaNumero($pdo, $kid, 33);
+    $keskiId = (int) $tila['rivit'][1]['leima_id'];
+    maaliJonoPoistaLeima($pdo, $kid, $keskiId);
+    $tila = maaliJonoLisaaLeima($pdo, $kid, date('Y-m-d') . ' 15:03:00');
+    $r22 = null;
+    $r33 = null;
+    $uusiLopussa = false;
+    foreach ($tila['rivit'] as $r) {
+        if ((int) ($r['numero'] ?? 0) === 22) {
+            $r22 = $r;
+        }
+        if ((int) ($r['numero'] ?? 0) === 33) {
+            $r33 = $r;
+        }
+        if (($r['tila'] ?? '') === 'odottaa_numeroa'
+            && str_contains((string) ($r['maaliaika'] ?? ''), '15:03:00')
+        ) {
+            $uusiLopussa = true;
+        }
+    }
+    assert_true($r22 && $r22['tila'] === 'odottaa_aikaa', 'aukon jälkeinen leima ei täytä #22:n paikkaa');
+    assert_true(
+        $r33 && $r33['tila'] === 'yhdistetty' && str_contains((string) $r33['maaliaika'], '15:02:00'),
+        '#33 säilyttää 15:02 ylimääräisen napin jälkeen'
+    );
+    assert_true($uusiLopussa, 'uusi leima menee jonon perään');
+
+    // Kaksi paritonta leimaa väärässä saapumisjärjestyksessä → järjestys kellon mukaan
+    $pdo->prepare('DELETE FROM ajat WHERE kilpailija_id IN (SELECT id FROM kilpailijat WHERE kilpailu_id = ?)')->execute([$kid]);
+    $pdo->prepare('DELETE FROM maali_leimat WHERE kilpailu_id = ?')->execute([$kid]);
+    $pdo->prepare('DELETE FROM maali_jononumerot WHERE kilpailu_id = ?')->execute([$kid]);
+    maaliJonoLisaaLeima($pdo, $kid, date('Y-m-d') . ' 16:00:02');
+    maaliJonoLisaaLeima($pdo, $kid, date('Y-m-d') . ' 16:00:01');
+    $tila = maaliJonoTila($pdo, $kid);
+    assert_true(
+        str_contains((string) ($tila['rivit'][0]['maaliaika'] ?? ''), '16:00:01')
+        && str_contains((string) ($tila['rivit'][1]['maaliaika'] ?? ''), '16:00:02'),
+        'parittomat leimat järjestetään kellon mukaan'
+    );
+
     echo $fail === 0 ? "\nKaikki testit OK\n" : "\n$fail testi(ä) epäonnistui\n";
 } catch (Throwable $e) {
     echo "FAIL poikkeus: " . $e->getMessage() . "\n" . $e->getTraceAsString() . "\n";

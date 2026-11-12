@@ -335,6 +335,10 @@
             naytaViesti('Tarkista konflikti / duplikaatti jonossa', 'virhe');
         }
         edellisetKonfliktit = konfliktit;
+        if (data.varoitus) {
+            naytaViesti(data.varoitus, 'varoitus');
+            soita('varoitus');
+        }
         tila = data;
         if (Array.isArray(data.maalissa_numerot)) {
             synkkaaMaalissaTila(data.maalissa_numerot);
