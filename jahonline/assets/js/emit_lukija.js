@@ -1,6 +1,6 @@
 (function () {
     'use strict';
-    window.JAH_EMIT_VERSIO = 'automaatti20';
+    window.JAH_EMIT_VERSIO = 'automaatti21';
 
     var proto = window.JahEmitProto;
     var siProto = window.JahSiProto;
@@ -19,6 +19,8 @@
     var auki = false;
     var lukijaKatkesi = false;
     var yhdistaKaynnissa = false;
+    var yhdistaVahti = null;
+    var eiUsbPolyfill = false;
     var puskuri = proto.luoPuskuri();
     var viimeBadge = 0;
     var viimeAika = 0;
@@ -1939,7 +1941,7 @@
             }
             ev.preventDefault();
             ev.stopPropagation();
-            yhdista();
+            yhdista({});
         });
         el.addEventListener('dblclick', function (ev) {
             if (ev.target && ev.target.closest
@@ -3781,10 +3783,15 @@
             return 'Lukijaa ei valittu. Kytke USB-kaapeli ja paina Yhdistä.';
         }
         if (nimi === 'SecurityError' || nimi === 'NotAllowedError') {
-            return 'Selain ei saanut USB-lupaa. Avaa sivu Chromessa ja salli laitteen käyttö.';
+            return 'Selain ei avannut USB-ikkunaa. Paina Yhdistä uudelleen Chromessa tai Edgessä ja salli lukija.';
         }
         if (/claimInterface|Unable to claim|access denied|device is busy/i.test(viesti)) {
-            return 'Puhelin piti lukijan itsellään. Irrota kaapeli, kytke uudelleen ja valitse Chrome, jos puhelin kysyy millä sovelluksella laite avataan.';
+            return onPuhelin()
+                ? 'Puhelin piti lukijan itsellään. Irrota kaapeli, kytke uudelleen ja valitse Chrome, jos puhelin kysyy millä sovelluksella laite avataan.'
+                : 'Windows pitää lukijaa itsellään. Irrota kaapeli, kytke uudelleen ja paina Yhdistä. Jos laite näkyy COM-porttina, valitse se listasta.';
+        }
+        if (/user gesture|Must be handling/i.test(viesti)) {
+            return 'Selain ei avannut USB-ikkunaa. Paina Yhdistä uudelleen.';
         }
         return 'USB-yhteys ei auennut. ' + viesti;
     }
@@ -3824,14 +3831,39 @@
         { usbVendorId: 0x27AC }
     ];
 
+    function yhdistaKohde(ev) {
+        return !!(ev && ev.target && ev.target.closest
+            && ev.target.closest('#yhdista, #emit-automaatti-yhdista, #lukija-yhteys'));
+    }
+
+    async function usbPolyfillPortti(opts) {
+        if (!navigator.usb) {
+            throw new Error(onPuhelin()
+                ? 'Puhelimessa lukija avataan Chromella.'
+                : 'Tämä selain ei avaa USB-sarjaporttia. Käytä Chromea tai Edgeä.');
+        }
+        if (window.JahUsbSerial) {
+            return window.JahUsbSerial.requestPort(opts);
+        }
+        var serial = await odotaJahUsbSerial();
+        return serial.requestPort(opts);
+    }
+
     async function valitsePortti() {
         var opts = { filters: USB_SARJA_SUODATTIMET };
-        if (onPuhelin()) {
-            if (!navigator.usb) {
-                throw new Error('Puhelimessa lukija avataan Chromella.');
+        if (!eiUsbPolyfill && navigator.usb && (onPuhelin() || window.JahUsbSerial)) {
+            try {
+                return await usbPolyfillPortti(opts);
+            } catch (eUsb) {
+                if (!navigator.serial || onPuhelin()) {
+                    throw eUsb;
+                }
+                if (eUsb && eUsb.name !== 'NotFoundError' && eUsb.name !== 'SecurityError') {
+                    throw eUsb;
+                }
             }
-            var serial = window.JahUsbSerial || await odotaJahUsbSerial();
-            return serial.requestPort(opts);
+        } else if (onPuhelin()) {
+            throw new Error('Puhelimessa lukija avataan Chromella.');
         }
         if (navigator.serial) {
             try {
@@ -3843,8 +3875,8 @@
                 throw eSuod;
             }
         }
-        if (window.JahUsbSerial && navigator.usb) {
-            return window.JahUsbSerial.requestPort(opts);
+        if (navigator.usb) {
+            return usbPolyfillPortti(opts);
         }
         throw new Error('Tämä selain ei avaa USB-sarjaporttia. Käytä Chromea tai Edgeä.');
     }
@@ -3934,7 +3966,7 @@
                     return serialValittu;
                 }
             }
-            if (window.JahUsbSerial && navigator.usb) {
+            if (!eiUsbPolyfill && window.JahUsbSerial && navigator.usb) {
                 var polyPortit = await window.JahUsbSerial.getPorts();
                 var polyValittu = valitseSallittuPortti(polyPortit);
                 if (polyValittu) {
@@ -4007,12 +4039,40 @@
         }
     }
 
+    function vapautaYhdistaminen() {
+        yhdistaKaynnissa = false;
+        if (yhdistaVahti) {
+            clearTimeout(yhdistaVahti);
+            yhdistaVahti = null;
+        }
+    }
+
+    function naytaYhdistetaan() {
+        if (yhdistaBtn && !auki) {
+            yhdistaBtn.textContent = 'Yhdistetään…';
+        }
+        var autoBtn = document.getElementById('emit-automaatti-yhdista');
+        if (autoBtn) {
+            autoBtn.textContent = 'Yhdistetään…';
+        }
+        var ots = document.getElementById('emit-automaatti-ots');
+        if (onkoAutomaatti() && ots && !auki) {
+            ots.textContent = 'Yhdistetään';
+        } else if (!cfg.iltarasti) {
+            asetaYhteys('Yhdistetään lukijaa…');
+        }
+    }
+
     async function yhdista(opts) {
         var hiljainen = !!(opts && opts.hiljainen);
         if (yhdistaKaynnissa) {
             return;
         }
         yhdistaKaynnissa = true;
+        yhdistaVahti = setTimeout(function () {
+            yhdistaKaynnissa = false;
+            yhdistaVahti = null;
+        }, 20000);
         try {
             if (auki) {
                 if (hiljainen) {
@@ -4028,9 +4088,8 @@
                 paivitaNapit();
                 return;
             }
-            avaaAani();
             if (!hiljainen) {
-                avaaPuhe();
+                naytaYhdistetaan();
             }
             if (onkoSportIdent() && !siProto) {
                 throw new Error('SportIdent-ohjelma ei latautunut. Päivitä sivu.');
@@ -4058,13 +4117,35 @@
                 }
                 baudValinta.value = String(baudAvaus);
             }
-            await portti.open({
+            var avaus = {
                 baudRate: baudAvaus,
                 dataBits: 8,
                 stopBits: si ? 1 : 2,
                 parity: 'none',
                 bufferSize: 255
-            });
+            };
+            try {
+                await portti.open(avaus);
+            } catch (eOpen) {
+                var openViesti = eOpen && eOpen.message ? String(eOpen.message) : '';
+                if (onPuhelin() || !navigator.serial
+                        || !/claimInterface|Unable to claim|access denied|device is busy/i.test(openViesti)) {
+                    throw eOpen;
+                }
+                eiUsbPolyfill = true;
+                try { portti.close(); } catch (eSuljeUsb) { /* */ }
+                var sarjaPortti = valitseSallittuPortti(
+                    await navigator.serial.getPorts()
+                );
+                if (!sarjaPortti && !hiljainen) {
+                    sarjaPortti = await navigator.serial.requestPort({ filters: USB_SARJA_SUODATTIMET });
+                }
+                if (!sarjaPortti) {
+                    throw eOpen;
+                }
+                portti = sarjaPortti;
+                await portti.open(avaus);
+            }
             if (portti.setSignals) {
                 try {
                     await portti.setSignals({ dataTerminalReady: true, requestToSend: true });
@@ -4072,6 +4153,10 @@
             }
             auki = true;
             lukijaKatkesi = false;
+            avaaAani();
+            if (!hiljainen) {
+                avaaPuhe();
+            }
             talletaLukijaLaite(portti);
             koodiKorjattu = false;
             moodiKorjattu = false;
@@ -4125,7 +4210,7 @@
                 soitaAani('virhe');
             }
         } finally {
-            yhdistaKaynnissa = false;
+            vapautaYhdistaminen();
         }
     }
 
@@ -4265,10 +4350,14 @@
     }
 
     if (yhdistaBtn) {
-        yhdistaBtn.addEventListener('click', yhdista);
+        yhdistaBtn.addEventListener('click', function () {
+            yhdista({});
+        });
     }
     if (lukijaIkoni) {
-        lukijaIkoni.addEventListener('click', yhdista);
+        lukijaIkoni.addEventListener('click', function () {
+            yhdista({});
+        });
     }
 
     var kasinForm = document.getElementById('kasin-form');
@@ -4453,7 +4542,10 @@
     if (typeof window.jahWakeLockRefresh === 'function') {
         window.jahWakeLockRefresh();
     }
-    document.addEventListener('pointerdown', function () {
+    document.addEventListener('pointerdown', function (ev) {
+        if (yhdistaKohde(ev)) {
+            return;
+        }
         avaaAani();
         avaaPuhe();
     }, { passive: true });
