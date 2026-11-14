@@ -1,6 +1,6 @@
 (function () {
     'use strict';
-    window.JAH_EMIT_VERSIO = 'automaatti21';
+    window.JAH_EMIT_VERSIO = 'automaatti22';
 
     var proto = window.JahEmitProto;
     var siProto = window.JahSiProto;
@@ -1071,6 +1071,15 @@
         if (typeof paivitaAutomaattiYhteys === 'function') {
             paivitaAutomaattiYhteys();
         }
+        ilmoitaKuoriUsb();
+    }
+
+    function ilmoitaKuoriUsb() {
+        try {
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({ type: 'jah-lukija', usb: !!auki }, location.origin);
+            }
+        } catch (eKuoriUsb) { /* */ }
     }
 
     function leimaRiviHtml(l, nroPakko) {
@@ -1941,7 +1950,7 @@
             }
             ev.preventDefault();
             ev.stopPropagation();
-            yhdista({});
+            yhdistaNapista();
         });
         el.addEventListener('dblclick', function (ev) {
             if (ev.target && ev.target.closest
@@ -3836,6 +3845,32 @@
             && ev.target.closest('#yhdista, #emit-automaatti-yhdista, #lukija-yhteys'));
     }
 
+    function pyydaPorttiHetissa() {
+        var opts = { filters: USB_SARJA_SUODATTIMET };
+        try {
+            if (!eiUsbPolyfill && navigator.usb && window.JahUsbSerial) {
+                return window.JahUsbSerial.requestPort(opts);
+            }
+            if (navigator.serial) {
+                return navigator.serial.requestPort(opts);
+            }
+            if (navigator.usb && window.JahUsbSerial) {
+                return window.JahUsbSerial.requestPort(opts);
+            }
+        } catch (eHetissa) {
+            return Promise.reject(eHetissa);
+        }
+        return Promise.reject(new Error('Tämä selain ei avaa USB-sarjaporttia. Käytä Chromea tai Edgeä.'));
+    }
+
+    function yhdistaNapista() {
+        var lupaus = null;
+        if (!auki) {
+            lupaus = pyydaPorttiHetissa();
+        }
+        yhdista({ porttiLupaus: lupaus });
+    }
+
     async function usbPolyfillPortti(opts) {
         if (!navigator.usb) {
             throw new Error(onPuhelin()
@@ -4094,9 +4129,13 @@
             if (onkoSportIdent() && !siProto) {
                 throw new Error('SportIdent-ohjelma ei latautunut. Päivitä sivu.');
             }
-            portti = await haeSallittuPortti();
-            if (!portti && !hiljainen) {
-                portti = await valitsePortti();
+            if (opts && opts.porttiLupaus) {
+                portti = await opts.porttiLupaus;
+            } else {
+                portti = await haeSallittuPortti();
+                if (!portti && !hiljainen) {
+                    portti = await valitsePortti();
+                }
             }
             if (!portti) {
                 if (hiljainen) {
@@ -4350,14 +4389,10 @@
     }
 
     if (yhdistaBtn) {
-        yhdistaBtn.addEventListener('click', function () {
-            yhdista({});
-        });
+        yhdistaBtn.addEventListener('click', yhdistaNapista);
     }
     if (lukijaIkoni) {
-        lukijaIkoni.addEventListener('click', function () {
-            yhdista({});
-        });
+        lukijaIkoni.addEventListener('click', yhdistaNapista);
     }
 
     var kasinForm = document.getElementById('kasin-form');
@@ -4596,6 +4631,16 @@
             asetaMoodi('lahto');
             siirraPuheYlapalkkiin();
             paivitaNapit();
+        } else if (ev.data.toiminto === 'kuori-usb') {
+            document.body.classList.add('emit-kuori-usb');
+        } else if (ev.data.toiminto === 'usb-valmis') {
+            yhdista({ hiljainen: true }).then(function () {
+                if (!auki) {
+                    setTimeout(function () {
+                        yhdista({ hiljainen: true }).catch(function () { /* */ });
+                    }, 250);
+                }
+            }).catch(function () { /* */ });
         }
     });
 

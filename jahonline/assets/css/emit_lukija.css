@@ -684,6 +684,12 @@ body.iltarasti-kuori.emit-iltarasti #emit-tarkistus .emit-leimat-otsikko,
     animation: emit-lukija-irti-vilkku 1.4s ease-in-out infinite;
 }
 
+body.emit-kuori-usb #yhdista,
+body.emit-kuori-usb #emit-automaatti-yhdista {
+    visibility: hidden;
+    pointer-events: none;
+}
+
 @keyframes emit-lukija-irti-vilkku {
     0%, 100% { filter: brightness(1); }
     50% { filter: brightness(1.18); }

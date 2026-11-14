@@ -103,6 +103,18 @@ body.emit-automaatti-sivu .site-topbar .iltarasti-tila-luku.is-esitys:not(.is-ty
     color: #991b1b;
 }
 
+body.iltarasti-kuori .site-topbar .iltarasti-tila-luku.is-rastilippu.is-ok,
+body.emit-automaatti-sivu .site-topbar .iltarasti-tila-luku.is-rastilippu.is-ok {
+    background: #dcfce7;
+    color: #166534;
+}
+
+body.iltarasti-kuori .site-topbar .iltarasti-tila-luku.is-rastilippu.is-virhe,
+body.emit-automaatti-sivu .site-topbar .iltarasti-tila-luku.is-rastilippu.is-virhe {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
 body.iltarasti-kuori .site-topbar .iltarasti-tila-luku.is-tyhja,
 body.emit-automaatti-sivu .site-topbar .iltarasti-tila-luku.is-tyhja {
     opacity: 0.72;
@@ -174,4 +186,138 @@ body.iltarasti-esitykset-sivu .esitys-ok {
 body.iltarasti-esitykset-sivu .esitys-tyhja {
     margin-top: 1rem;
     font-weight: 650;
+}
+
+html:has(body.jah-kuori-kehys),
+body.jah-kuori-kehys {
+    margin: 0;
+    height: 100%;
+    height: 100dvh;
+    overflow: hidden;
+    background: #eef2f5;
+}
+
+html[data-theme="dark"]:has(body.jah-kuori-kehys),
+html[data-theme="dark"] body.jah-kuori-kehys,
+body.jah-kuori-kehys.is-automaatti-kuori,
+html:has(body.jah-kuori-kehys.is-automaatti-kuori) {
+    background: #071018;
+}
+
+.jah-kuori-kehys-iframe {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    background: #eef2f5;
+}
+
+html[data-theme="dark"] .jah-kuori-kehys-iframe,
+body.jah-kuori-kehys.is-automaatti-kuori .jah-kuori-kehys-iframe {
+    background: #071018;
+}
+
+#jah-kuori-lukija {
+    z-index: 1;
+}
+
+#jah-kuori-sivu {
+    z-index: 2;
+}
+
+/* Android: visibility:hidden + pointer-events:none ei estä iframea
+   syömästä kosketuksia. display:none ottaa sen pois hit-testistä. */
+body.is-lukija-nakyva #jah-kuori-sivu,
+#jah-kuori-sivu:not([src]) {
+    display: none !important;
+    visibility: hidden;
+    pointer-events: none;
+    z-index: 0;
+}
+
+body.is-lukija-nakyva #jah-kuori-lukija {
+    z-index: 3;
+    pointer-events: auto;
+    opacity: 1;
+}
+
+#jah-kuori-lukija.is-tausta {
+    opacity: 0;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.jah-kuori-usb {
+    display: none;
+    position: fixed;
+    left: 50%;
+    top: 56%;
+    z-index: 20;
+    transform: translate(-50%, 0);
+    min-height: 3.6rem;
+    padding: 0.75rem 1.7rem;
+    border: 0;
+    border-radius: 0.75rem;
+    background: #16a34a;
+    color: #fff;
+    font-family: inherit;
+    font-size: clamp(1.25rem, 4.4vw, 1.9rem);
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    box-shadow: 0 4px 0 #166534;
+}
+
+body.is-lukija-nakyva.is-kuori-usb .jah-kuori-usb {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+body.is-lukija-nakyva.is-kuori-usb:not(.is-automaatti-kuori) .jah-kuori-usb {
+    top: 4.55rem;
+    right: 0.7rem;
+    left: auto;
+    transform: none;
+    min-height: 2.85rem;
+    padding: 0.4rem 0.9rem;
+    font-size: 1rem;
+}
+
+.jah-kuori-usb:active {
+    transform: translate(-50%, 2px);
+    box-shadow: 0 2px 0 #166534;
+}
+
+body.is-lukija-nakyva.is-kuori-usb:not(.is-automaatti-kuori) .jah-kuori-usb:active {
+    transform: translateY(2px);
+}
+
+.jah-kuori-usb-virhe {
+    display: none;
+    position: fixed;
+    left: 50%;
+    top: calc(56% + 4.4rem);
+    z-index: 21;
+    transform: translate(-50%, 0);
+    margin: 0;
+    max-width: 28rem;
+    color: #fecaca;
+    font-size: 1.05rem;
+    line-height: 1.35;
+    text-align: center;
+    text-shadow: 0 1px 8px #071018;
+}
+
+body.is-lukija-nakyva.is-kuori-usb .jah-kuori-usb-virhe:not([hidden]) {
+    display: block;
+}
+
+body.is-lukija-nakyva.is-kuori-usb:not(.is-automaatti-kuori) .jah-kuori-usb-virhe:not([hidden]) {
+    top: 8rem;
+    right: 0.7rem;
+    left: auto;
+    transform: none;
+    text-align: right;
 }
