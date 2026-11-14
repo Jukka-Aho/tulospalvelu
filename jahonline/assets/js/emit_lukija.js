@@ -1,6 +1,6 @@
 (function () {
     'use strict';
-    window.JAH_EMIT_VERSIO = 'automaatti22';
+    window.JAH_EMIT_VERSIO = 'automaatti23';
 
     var proto = window.JahEmitProto;
     var siProto = window.JahSiProto;
@@ -3871,6 +3871,76 @@
         yhdista({ porttiLupaus: lupaus });
     }
 
+    function kuoriUsbPortti(laite) {
+        if (!laite) {
+            return null;
+        }
+        if (laite.vendorId != null && window.JahUsbSerial
+                && typeof window.JahUsbSerial.portFromDevice === 'function') {
+            return window.JahUsbSerial.portFromDevice(laite);
+        }
+        if (typeof laite.open === 'function' && typeof laite.getInfo === 'function') {
+            return laite;
+        }
+        return null;
+    }
+
+    async function avaaKuoriUsb() {
+        var lupaus = null;
+        try {
+            var annettu = window.JahKuoriUsbLaite;
+            window.JahKuoriUsbLaite = null;
+            if (navigator.usb && window.JahUsbSerial
+                    && typeof window.JahUsbSerial.portFromDevice === 'function') {
+                var devices = [];
+                try {
+                    devices = await navigator.usb.getDevices();
+                } catch (eDev) { /* */ }
+                var d = null;
+                var i;
+                if (annettu && annettu.vendorId != null && devices.length) {
+                    for (i = 0; i < devices.length; i++) {
+                        if (devices[i].vendorId === annettu.vendorId
+                                && devices[i].productId === annettu.productId) {
+                            d = devices[i];
+                            break;
+                        }
+                    }
+                }
+                if (!d && devices.length) {
+                    d = devices[devices.length - 1];
+                }
+                if (!d && annettu && annettu.vendorId != null) {
+                    d = annettu;
+                }
+                if (d) {
+                    lupaus = Promise.resolve(window.JahUsbSerial.portFromDevice(d));
+                }
+            }
+            if (!lupaus) {
+                var kuoriP = kuoriUsbPortti(annettu);
+                if (kuoriP) {
+                    lupaus = Promise.resolve(kuoriP);
+                }
+            }
+            if (!lupaus) {
+                var tunnettu = await haeSallittuPortti();
+                if (tunnettu) {
+                    lupaus = Promise.resolve(tunnettu);
+                }
+            }
+            if (!lupaus) {
+                throw new Error('Lukijaa ei saatu auki. Paina Yhdistä uudelleen ja valitse laite.');
+            }
+        } catch (eAvaus) {
+            naytaTulos('virhe', usbVirhe(eAvaus));
+            soitaAani('virhe');
+            paivitaNapit();
+            return;
+        }
+        yhdista({ porttiLupaus: lupaus });
+    }
+
     async function usbPolyfillPortti(opts) {
         if (!navigator.usb) {
             throw new Error(onPuhelin()
@@ -4173,12 +4243,14 @@
                 }
                 eiUsbPolyfill = true;
                 try { portti.close(); } catch (eSuljeUsb) { /* */ }
+                try {
+                    if (window.parent && window.parent !== window) {
+                        window.parent.postMessage({ type: 'jah-lukija', usb: false, kaytaSarja: true }, location.origin);
+                    }
+                } catch (eSarjaViesti) { /* */ }
                 var sarjaPortti = valitseSallittuPortti(
                     await navigator.serial.getPorts()
                 );
-                if (!sarjaPortti && !hiljainen) {
-                    sarjaPortti = await navigator.serial.requestPort({ filters: USB_SARJA_SUODATTIMET });
-                }
                 if (!sarjaPortti) {
                     throw eOpen;
                 }
@@ -4634,13 +4706,7 @@
         } else if (ev.data.toiminto === 'kuori-usb') {
             document.body.classList.add('emit-kuori-usb');
         } else if (ev.data.toiminto === 'usb-valmis') {
-            yhdista({ hiljainen: true }).then(function () {
-                if (!auki) {
-                    setTimeout(function () {
-                        yhdista({ hiljainen: true }).catch(function () { /* */ });
-                    }, 250);
-                }
-            }).catch(function () { /* */ });
+            avaaKuoriUsb();
         }
     });
 

@@ -1017,6 +1017,10 @@ class Serial {
         const device = await navigator.usb.requestDevice({ filters: usbFilters });
         return createPort(device, polyfillOptions);
     }
+    portFromDevice(device, polyfillOptions) {
+        polyfillOptions = { ...kDefaultPolyfillOptions, ...polyfillOptions };
+        return createPort(device, polyfillOptions);
+    }
     async getPorts(polyfillOptions) {
         polyfillOptions = { ...kDefaultPolyfillOptions, ...polyfillOptions };
         const devices = await navigator.usb.getDevices();
