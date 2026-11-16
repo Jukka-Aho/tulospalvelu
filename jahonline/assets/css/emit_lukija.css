@@ -881,16 +881,40 @@ body.emit-automaatti-sivu .theme-toggle {
     display: none !important;
 }
 
-/* Tulospalvelu: teema ja ääni pysyvät oikeassa yläkulmassa, eivät kääriydy. */
+/* Tulospalvelu: hamburger vasemmalla, teema ja ääni oikealla — eivät kääriydy. */
 body.iltarasti-kuori.emit-iltarasti:not(.emit-automaatti-sivu) .site-topbar {
     position: relative;
     flex-wrap: nowrap;
+    padding-left: 3.4rem;
     padding-right: 6.5rem;
+}
+
+body.iltarasti-kuori.emit-iltarasti:not(.emit-automaatti-sivu) .site-topbar-left {
+    overflow: visible;
+    min-width: 0;
 }
 
 body.iltarasti-kuori.emit-iltarasti:not(.emit-automaatti-sivu) .site-topbar-actions {
     flex-wrap: nowrap;
     min-width: 0;
+}
+
+body.iltarasti-kuori.emit-iltarasti:not(.emit-automaatti-sivu) .site-topbar .admin-menu-toggle {
+    position: absolute;
+    left: 0.45rem;
+    top: calc(0.4rem + env(safe-area-inset-top, 0px));
+    z-index: 91;
+    width: 2.4rem;
+    height: 2.4rem;
+    min-width: 2.4rem;
+    min-height: 2.4rem;
+    max-width: none;
+    padding: 0;
+    margin: 0;
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 body.iltarasti-kuori.emit-iltarasti:not(.emit-automaatti-sivu) .site-topbar .theme-toggle,

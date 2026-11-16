@@ -399,7 +399,7 @@ function pageEnd()
     }
 
     if (!$embed) {
-        echo '<script src="/assets/js/jah-pwa.js?v=20261116viesti"></script>';
+        echo '<script src="/assets/js/jah-pwa.js?v=20261116hamp"></script>';
         jahPageLoaderFoot();
     }
     echo '</body></html>';

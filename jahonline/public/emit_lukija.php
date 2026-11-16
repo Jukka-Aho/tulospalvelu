@@ -152,7 +152,7 @@ if ($iltarasti && function_exists('rastilippuKilpailuYhdistetty') && rastilippuK
     $rlIlmoTeksti = trim((string) ($kilpailu['rastilippu_ilmo_viesti'] ?? ''));
 }
 
-$emitCssV = '20261116viesti';
+$emitCssV = '20261116hamp';
 $extraHead = '<meta name="mobile-web-app-capable" content="yes">'
     . '<meta name="apple-mobile-web-app-capable" content="yes">'
     . '<meta name="theme-color" content="#0b3d2e">'

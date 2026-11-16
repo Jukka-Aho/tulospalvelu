@@ -19,7 +19,7 @@ $php = file_get_contents(__DIR__ . '/../public/emit_lukija.php');
 str_contains($php, 'viesti_lukija.php') || fail('emit ohjaa viestisivulle');
 str_contains($php, "viesti:") || fail('JAH_EMIT.viesti');
 str_contains($php, 'emit_lukija.js?v=20261116viesti') || fail('js cache');
-str_contains($php, "\$emitCssV = '20261116viesti'") || fail('css cache');
+str_contains($php, "\$emitCssV = '20261116hamp'") || fail('css cache');
 str_contains($php, 'automaatti24') || fail('js versio');
 str_contains($php, 'Vaihto / maali') || fail('vaihto nappi');
 str_contains($php, 'usb_sarja_boot.js') || fail('sama usb');
@@ -45,7 +45,7 @@ str_contains($help, "'viesti_lukija'") || fail('julkinenLinkit viesti');
 
 $sw = file_get_contents(__DIR__ . '/../sw-jahonline.js');
 str_contains($sw, 'viesti_lukija.php') || fail('pwa viestisivu');
-str_contains($sw, 'jahonline-app-v56') || fail('pwa cache');
+str_contains($sw, 'jahonline-app-v57') || fail('pwa cache');
 
 require_once __DIR__ . '/../includes/emit_lukija_logiikka.php';
 $n = emitLukijaViestiNaytto([

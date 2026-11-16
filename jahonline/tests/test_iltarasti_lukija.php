@@ -22,7 +22,7 @@ $kehysJs = file_get_contents(__DIR__ . '/../assets/js/iltarasti_kuori_kehys.js')
 str_contains($php, 'Luetaanko lähteväksi vai pois maastosta?') || fail('kysy pois maastosta');
 str_contains($php, "'Pois maastosta'") || fail('nappi pois maastosta');
 str_contains($php, 'emit_lukija.js?v=20261116viesti') || fail('js cache');
-str_contains($php, "\$emitCssV = '20261116viesti'") || fail('css napit cache');
+str_contains($php, "\$emitCssV = '20261116hamp'") || fail('css napit cache');
 str_contains($php, 'emit_proto.js?v=20261114tyhja') || fail('proto cache');
 str_contains($php, 'automaatti24') || fail('js versio');
 str_contains($emitSrc, '$automaattiLuku && in_array($moodi, [\'lue\', \'maali\'], true)') || fail('php automaatti loytaa valmiin tuloksen');
@@ -63,6 +63,8 @@ str_contains($cssLukija, 'emit-automaatti-koodi') || fail('css koodi chip');
 str_contains($cssLukija, 'emit-automaatti-koodi-nro') || fail('css puuttuva nro');
 str_contains($cssLukija, '.emit-automaatti-koodit') && str_contains($cssLukija, 'flex-direction: column') || fail('css puuttuvat allekkain');
 str_contains($cssLukija, 'body.emit-automaatti-sivu .theme-toggle') || fail('css piilottaa teeman automaatissa');
+str_contains($cssLukija, 'body.iltarasti-kuori.emit-iltarasti:not(.emit-automaatti-sivu) .site-topbar .admin-menu-toggle') || fail('css hamburger vasemmalle');
+str_contains($cssLukija, 'body.iltarasti-kuori.emit-iltarasti:not(.emit-automaatti-sivu) .site-topbar-left') || fail('css hamburger ei leikkaudu');
 str_contains($cssLukija, 'body.iltarasti-kuori.emit-iltarasti:not(.emit-automaatti-sivu) .site-topbar .theme-toggle') || fail('css teema oikealle');
 str_contains($cssLukija, 'body.iltarasti-kuori.emit-iltarasti:not(.emit-automaatti-sivu) .site-topbar .emit-automaatti-puhe') || fail('css aani oikealle');
 str_contains($js, 'function siirraPuheYlapalkkiin') || fail('js aani tulospalveluun');
