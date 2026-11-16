@@ -38,7 +38,10 @@ str_contains($users, 'Lisäominaisuus') || fail('users lisa');
 
 $tili = file_get_contents(__DIR__ . '/../includes/tili.php');
 str_contains($tili, 'function tiliKayttajaViestiPaalla') || fail('tili viesti fn');
+str_contains($tili, 'function tiliSeuraViestiPaalla') || fail('tili seura viesti');
 str_contains($tili, 'viesti_kilpailu') || fail('tili sarake');
+$seurat = file_get_contents(__DIR__ . '/../admin/seurat.php');
+str_contains($seurat, 'name="viesti_kilpailu"') || fail('admin seura viesti');
 
 $luo = file_get_contents(__DIR__ . '/../includes/iltarasti.php');
 str_contains($luo, 'string $tyyppi = \'henkilokohtainen\'') || fail('luo tyyppi');

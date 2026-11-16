@@ -361,6 +361,7 @@ function tiliVarmistaSeuraPalvelut(PDO $pdo): void
         }
     }
     $uusiLiit = tiliVarmistaSarake($pdo, 'seurat', 'rastilippu_liitanta', 'TINYINT(1) NOT NULL DEFAULT 0');
+    tiliVarmistaSarake($pdo, 'seurat', 'viesti_kilpailu', 'TINYINT(1) NOT NULL DEFAULT 0');
     tiliVarmistaSarake($pdo, 'seurat', 'laskutus_email', 'VARCHAR(255) NULL');
     tiliVarmistaSarake($pdo, 'seurat', 'ei_laskutusta', 'TINYINT(1) NOT NULL DEFAULT 0');
     if ($uusiLiit) {
@@ -431,6 +432,31 @@ function tiliSeuraRastilippuPaalla(array $seura): bool
     }
 
     return (int) $seura['rastilippu_liitanta'] === 1;
+}
+
+function tiliSeuraViestiPaalla(array $seura): bool
+{
+    if (!tiliSeuraPalveluPaalla($seura, 'iltarastit')) {
+        return false;
+    }
+    if (!array_key_exists('viesti_kilpailu', $seura)) {
+        return false;
+    }
+
+    return (int) $seura['viesti_kilpailu'] === 1;
+}
+
+function tiliTallennaSeuraViesti(PDO $pdo, int $seuraId, bool $paalla): void
+{
+    tiliVarmistaTaulut($pdo);
+    if ($seuraId < 1) {
+        throw new RuntimeException('Seura puuttuu.');
+    }
+    if ($paalla && !tiliSeuraSallii($pdo, $seuraId, 'iltarastit')) {
+        throw new RuntimeException('Viestikilpailu edellyttää Iltarastit-palvelua.');
+    }
+    $pdo->prepare('UPDATE seurat SET viesti_kilpailu = ? WHERE id = ?')
+        ->execute([$paalla ? 1 : 0, $seuraId]);
 }
 
 function tiliSeuraSalliiRastilipun(PDO $pdo, int $seuraId): bool
@@ -940,6 +966,7 @@ function tiliKirjauduSessioon(array $user, ?array $seura = null, ?array $jasenys
             $_SESSION['seura_palvelu_kilpailut'],
             $_SESSION['seura_palvelu_iltarastit'],
             $_SESSION['seura_rastilippu_liitanta'],
+            $_SESSION['seura_viesti_kilpailu'],
             $_SESSION['seura_kisa_valikot'],
             $_SESSION['seura_iltarasti_oikeus']
         );
@@ -1213,7 +1240,8 @@ function tiliLataaKayttajaSessioon(PDO $pdo): void
             $_SESSION['seura_palvelu_gps'],
             $_SESSION['seura_palvelu_kilpailut'],
             $_SESSION['seura_palvelu_iltarastit'],
-            $_SESSION['seura_rastilippu_liitanta']
+            $_SESSION['seura_rastilippu_liitanta'],
+            $_SESSION['seura_viesti_kilpailu']
         );
     }
 }
@@ -1224,6 +1252,7 @@ function tiliTallennaSessioSeuraPalvelut(array $seura): void
     $_SESSION['seura_palvelu_kilpailut'] = tiliSeuraPalveluPaalla($seura, 'kilpailut') ? 1 : 0;
     $_SESSION['seura_palvelu_iltarastit'] = tiliSeuraPalveluPaalla($seura, 'iltarastit') ? 1 : 0;
     $_SESSION['seura_rastilippu_liitanta'] = tiliSeuraRastilippuPaalla($seura) ? 1 : 0;
+    $_SESSION['seura_viesti_kilpailu'] = tiliSeuraViestiPaalla($seura) ? 1 : 0;
 }
 
 function tiliTallennaSessioViesti(array $user): void
@@ -1235,6 +1264,9 @@ function tiliTallennaSessioViesti(array $user): void
 function tiliKayttajaViestiPaalla(?array $user = null): bool
 {
     if (function_exists('onAdmin') && onAdmin()) {
+        return true;
+    }
+    if (!empty($_SESSION['seura_viesti_kilpailu'])) {
         return true;
     }
     if ($user !== null) {

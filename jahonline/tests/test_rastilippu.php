@@ -750,6 +750,9 @@ tiliSeuraVainIltarastit(['palvelu_gps' => 1, 'palvelu_kilpailut' => 0, 'palvelu_
 tiliSeuraRastilippuPaalla(['palvelu_iltarastit' => 1, 'rastilippu_liitanta' => 1]) || fail('liitanta paalla');
 tiliSeuraRastilippuPaalla(['palvelu_iltarastit' => 1, 'rastilippu_liitanta' => 0]) && fail('liitanta kiinni');
 tiliSeuraRastilippuPaalla(['palvelu_iltarastit' => 0, 'rastilippu_liitanta' => 1]) && fail('liitanta ilman iltarasteja');
+tiliSeuraViestiPaalla(['palvelu_iltarastit' => 1, 'viesti_kilpailu' => 1]) || fail('viesti paalla');
+tiliSeuraViestiPaalla(['palvelu_iltarastit' => 1, 'viesti_kilpailu' => 0]) && fail('viesti kiinni');
+tiliSeuraViestiPaalla(['palvelu_iltarastit' => 0, 'viesti_kilpailu' => 1]) && fail('viesti ilman iltarasteja');
 ok('seura palvelut');
 
 $seuraSivu = file_get_contents(__DIR__ . '/../admin/seurat.php');
@@ -757,6 +760,8 @@ str_contains($seuraSivu, 'Seurojen hallinta') || fail('seurat otsikko');
 str_contains($seuraSivu, 'palvelu_gps') || fail('seurat gps');
 str_contains($seuraSivu, 'palvelu_kilpailut') || fail('seurat kilpailut');
 str_contains($seuraSivu, 'palvelu_iltarastit') || fail('seurat iltarastit');
+str_contains($seuraSivu, 'name="viesti_kilpailu"') || fail('seurat viesti');
+str_contains($seuraSivu, 'tiliTallennaSeuraViesti') || fail('seurat tallenna viesti');
 str_contains($seuraSivu, 'tiliRastilippuLaskutus') || fail('seurat rastilippu lasku');
 str_contains($seuraSivu, 'tiliRastilippuLaskutusKaikki') || fail('seurat vuosilasku');
 str_contains($seuraSivu, 'laskutus_email') || fail('seurat laskutusposti');
