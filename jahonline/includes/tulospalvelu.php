@@ -5,6 +5,9 @@
  */
 
 require_once __DIR__ . '/helpers.php';
+if (is_readable(__DIR__ . '/ilmo_arvonta.php')) {
+    require_once __DIR__ . '/ilmo_arvonta.php';
+}
 
 /** Cache-bust live_board.css / style.css -päivityksille. */
 const TULOSPALVELU_ASSET_V = '20261112esitys';
@@ -114,6 +117,17 @@ function tulospalveluYla(array $kilpailu, array $linkit, string $sivuOtsikko, ar
             'href' => $linkit['ilmoittautuneet'] ?? 'ilmoittautuneet.php',
             'label' => 'Ilmoittautuneet',
         ];
+        $naytaArvonta = $aktiivinen === 'arvonta';
+        if (!$naytaArvonta && $pdoNav instanceof PDO && function_exists('ilmoArvontaOnKierroksia')) {
+            $naytaArvonta = ilmoArvontaOnKierroksia($pdoNav, $kilpailuId);
+        }
+        if ($naytaArvonta) {
+            $nav[] = [
+                'key' => 'arvonta',
+                'href' => $linkit['arvonta'] ?? 'arvonta.php',
+                'label' => 'Arvonta',
+            ];
+        }
     }
 
     // IOF XML vain valmiissa kisassa
@@ -127,6 +141,20 @@ function tulospalveluYla(array $kilpailu, array $linkit, string $sivuOtsikko, ar
             'download' => true,
             'title' => 'Lataa tulokset IOF XML 3.0 -muodossa',
         ];
+    }
+    if (
+        $kilpailuId > 0
+        && is_readable(__DIR__ . '/ssl_tulokset.php')
+    ) {
+        require_once __DIR__ . '/ssl_tulokset.php';
+        if (function_exists('sslTuloksetSallittu') && sslTuloksetSallittu($kilpailu)) {
+            $nav[] = [
+                'key' => 'ssl',
+                'href' => 'tulokset_ssl.php?kilpailu_id=' . $kilpailuId,
+                'label' => 'SSL',
+                'title' => 'Lataa tulokset SSL-muodossa liitolle (10 € / kisa)',
+            ];
+        }
     }
 
     echo '<div class="lb">';

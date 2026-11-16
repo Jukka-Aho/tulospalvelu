@@ -262,6 +262,7 @@ if ($onOnline) {
       }
       var params = new URLSearchParams(loc.search);
       params.delete('embed');
+      params.delete('teema');
       params.set('osio', 'online');
       if (!params.get('kilpailu_id')) return;
       var next = 'kilpailu.php?' + params.toString();
@@ -309,6 +310,9 @@ tulospalveluYla($kilpailu, $linkit, 'Kilpailu', [
       if ($naytaIlmoLomake && $ilmoAukiNyt) {
           $hubLinkit[] = ['href' => $linkit['ilmoittautuminen'], 'label' => 'Ilmoittautuminen', 'primary' => true];
           $hubLinkit[] = ['href' => $linkit['ilmoittautuneet'], 'label' => 'Ilmoittautuneet', 'primary' => false];
+          if (function_exists('ilmoArvontaOnKierroksia') && ilmoArvontaOnKierroksia($pdo, (int) $kilpailu_id)) {
+              $hubLinkit[] = ['href' => $linkit['arvonta'], 'label' => 'Arvonta', 'primary' => false];
+          }
           if ($kilpailija_lkm > 0) {
               $hubLinkit[] = ['href' => $linkit['lahtolista'], 'label' => 'Lähtöajat', 'primary' => false];
           }
@@ -358,6 +362,9 @@ tulospalveluYla($kilpailu, $linkit, 'Kilpailu', [
           if ($naytaIlmo) {
               $hubLinkit[] = ['href' => $linkit['ilmoittautuneet'], 'label' => 'Ilmoittautuneet', 'primary' => false];
           }
+          if (function_exists('ilmoArvontaOnKierroksia') && ilmoArvontaOnKierroksia($pdo, (int) $kilpailu_id)) {
+              $hubLinkit[] = ['href' => $linkit['arvonta'], 'label' => 'Arvonta', 'primary' => false];
+          }
       }
       if (($kilpailu['tila'] ?? '') === 'valmis') {
           $hubLinkit[] = [
@@ -367,6 +374,17 @@ tulospalveluYla($kilpailu, $linkit, 'Kilpailu', [
               'download' => true,
               'title' => 'Lataa tulokset IOF XML 3.0 -muodossa',
           ];
+      }
+      if (is_readable(__DIR__ . '/../includes/ssl_tulokset.php')) {
+          require_once __DIR__ . '/../includes/ssl_tulokset.php';
+          if (function_exists('sslTuloksetSallittu') && sslTuloksetSallittu($kilpailu)) {
+              $hubLinkit[] = [
+                  'href' => 'tulokset_ssl.php?kilpailu_id=' . (int) $kilpailu_id,
+                  'label' => 'Lataa SSL-tulokset',
+                  'primary' => false,
+                  'title' => 'Lataa tulokset SSL-muodossa liitolle (10 € / kisa)',
+              ];
+          }
       }
       $ohjePalat = [];
       foreach ($hubLinkit as $hl) {

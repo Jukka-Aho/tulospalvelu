@@ -114,17 +114,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$laskutusVuosi = (int) ($_GET['vuosi'] ?? tiliLaskutusVuosi());
-$nytVuosi = tiliLaskutusVuosi();
-if ($laskutusVuosi < 2020 || $laskutusVuosi > $nytVuosi + 1) {
-    $laskutusVuosi = $nytVuosi;
+$nytKk = tiliLaskutusKuukausi();
+$laskutusKk = (string) ($_GET['kk'] ?? $nytKk);
+if (!preg_match('/^\d{4}-\d{2}$/', $laskutusKk)) {
+    $laskutusKk = $nytKk;
 }
-$laskut = tiliRastilippuLaskutusKaikki($pdo, $laskutusVuosi);
+$laskut = tiliKuukausiLaskutusKaikki($pdo, $laskutusKk);
 $laskuSumma = 0.0;
-$laskuTapahtumat = 0;
+$laskuRastilippu = 0;
+$laskuSsl = 0;
 foreach ($laskut as $rivi) {
     $laskuSumma += (float) $rivi['summa_euro'];
-    $laskuTapahtumat += (int) $rivi['yhdistettyja'];
+    $laskuRastilippu += (int) ($rivi['rastilippu_lkm'] ?? 0);
+    $laskuSsl += (int) ($rivi['ssl_lkm'] ?? 0);
 }
 
 $paketit = $pdo->query('SELECT * FROM paketit WHERE aktiivinen = 1 ORDER BY jarjestys, id')->fetchAll(PDO::FETCH_ASSOC);
@@ -179,7 +181,7 @@ if ($hasLayout) {
     $sid = (int) $s['id'];
     $gpsKk = tiliSeuranTapahtumatKuussa($pdo, $sid);
     $kisat = tiliSeuranKilpailuLkm($pdo, $sid);
-    $rl = tiliRastilippuLaskutus($pdo, $sid, $laskutusVuosi);
+    $rl = tiliRastilippuLaskutus($pdo, $sid, $laskutusKk);
     $maxKk = (int) ($s['max_tapahtumat_kk'] ?? 0);
     $csrf = function_exists('csrfKentta') ? csrfKentta() : '';
     ?>
@@ -250,7 +252,7 @@ if ($hasLayout) {
                             <input type="checkbox" name="ei_laskutusta" value="1"<?= tiliSeuraEiLaskutusta($s) ? ' checked' : '' ?>>
                             Ei laskutusta
                         </label>
-                        <span class="muted">· Iltarastien Rastilippu-liitännästä ei kerry laskua tälle seuralle</span>
+                        <span class="muted">· Rastilippu-liitännästä ja SSL-latauksista ei kerry laskua tälle seuralle</span>
                     </p>
                     <p style="margin:0.35rem 0">
                         <label>Laskutussähköposti
@@ -314,33 +316,37 @@ if ($hasLayout) {
 <?php if (!$valittuSeura): ?>
 
 <div class="public-card">
-    <h2>Rastilippu-laskutus <?= (int) $laskutusVuosi ?></h2>
+    <h2>Laskutus <?= htmlspecialchars(tiliLaskutusKuukausiTeksti($laskutusKk)) ?></h2>
     <p class="muted">
-        <?= htmlspecialchars(tiliEuroTeksti(tiliRastilippuHintaEuro())) ?>/tapahtuma ·
-        laskutetaan vuosittain seuran laskutussähköpostiin.
-        Yhteensä <?= (int) $laskuTapahtumat ?> tapahtumaa ·
+        Rastilippu <?= htmlspecialchars(tiliEuroTeksti(tiliRastilippuHintaEuro())) ?>/tapahtuma ·
+        SSL-tulokset <?= htmlspecialchars(tiliEuroTeksti(tiliSslHintaEuro())) ?>/kisa ·
+        laskutus kuukausittain seuran laskutussähköpostiin.
+        Yhteensä <?= (int) $laskuRastilippu ?> Rastilippu-tapahtumaa ·
+        <?= (int) $laskuSsl ?> SSL-latausta ·
         <?= htmlspecialchars(tiliEuroTeksti($laskuSumma)) ?>.
         Seurat, joille on merkitty ei laskutusta, eivät näy tässä listassa.
     </p>
     <p>
-        <?php for ($y = $nytVuosi; $y >= $nytVuosi - 3; $y--): ?>
-            <?php if ($y === $laskutusVuosi): ?>
-                <strong><?= $y ?></strong>
-            <?php else: ?>
-                <a href="seurat.php?vuosi=<?= $y ?>"><?= $y ?></a>
-            <?php endif; ?>
-            <?= $y > $nytVuosi - 3 ? ' · ' : '' ?>
-        <?php endfor; ?>
+        <a href="seurat.php?kk=<?= htmlspecialchars(tiliLaskutusKuukausiSiirra($laskutusKk, -1)) ?>">← edellinen</a>
+        ·
+        <?php if ($laskutusKk === $nytKk): ?>
+            <strong><?= htmlspecialchars(tiliLaskutusKuukausiTeksti($laskutusKk)) ?></strong>
+        <?php else: ?>
+            <a href="seurat.php?kk=<?= htmlspecialchars($nytKk) ?>">nykyinen kuukausi</a>
+        <?php endif; ?>
+        <?php if ($laskutusKk < $nytKk): ?>
+            · <a href="seurat.php?kk=<?= htmlspecialchars(tiliLaskutusKuukausiSiirra($laskutusKk, 1)) ?>">seuraava →</a>
+        <?php endif; ?>
     </p>
     <?php if (!$laskut): ?>
-        <p class="muted">Ei liitäntöjä eikä yhdistettyjä tapahtumia tälle vuodelle.</p>
+        <p class="muted">Ei laskutettavia tapahtumia tälle kuukaudelle.</p>
     <?php else: ?>
         <table border="1" cellpadding="8" cellspacing="0" style="width:100%;border-collapse:collapse">
             <tr>
                 <th>Seura</th>
                 <th>Laskutussähköposti</th>
-                <th>Liitäntä</th>
-                <th>Tapahtumia</th>
+                <th>Rastilippu</th>
+                <th>SSL</th>
                 <th>Summa</th>
             </tr>
             <?php foreach ($laskut as $rivi): ?>
@@ -353,8 +359,8 @@ if ($hasLayout) {
                             <span class="error">puuttuu</span>
                         <?php endif; ?>
                     </td>
-                    <td><?= !empty($rivi['liitanta']) ? 'päällä' : 'ei' ?></td>
-                    <td><?= (int) $rivi['yhdistettyja'] ?></td>
+                    <td><?= (int) ($rivi['rastilippu_lkm'] ?? 0) ?></td>
+                    <td><?= (int) ($rivi['ssl_lkm'] ?? 0) ?></td>
                     <td><?= htmlspecialchars(tiliEuroTeksti((float) $rivi['summa_euro'])) ?></td>
                 </tr>
             <?php endforeach; ?>

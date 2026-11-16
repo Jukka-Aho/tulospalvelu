@@ -380,7 +380,7 @@ pageStart('Omat tapahtumat', [
             <p class="muted">
                 IRMA/Rastilippu-liitäntä on valinnainen lisäominaisuus henkilökohtaisissa tapahtumissa
                 (<?= htmlspecialchars(function_exists('tiliEuroTeksti') ? tiliEuroTeksti(tiliRastilippuHintaEuro()) : '5,00 €') ?>/tapahtuma,
-                laskutus vuosittain). Ota se käyttöön oman seuran tiedoissa.
+                laskutus kuukausittain). Ota se käyttöön oman seuran tiedoissa.
             </p>
             <p><a href="/admin/oma_seura.php">Oma seura →</a></p>
         </div>

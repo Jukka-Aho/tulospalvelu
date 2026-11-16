@@ -271,7 +271,7 @@ pageStart('Asetukset', iltarastiKuoriOpts($pdo, $kilpailu, 'asetukset'));
                 </option>
             <?php endforeach; ?>
         </select>
-            <p class="muted">Voit yhdistää paikallisen tapahtuman Rastilippuun myöhemmin (<?= htmlspecialchars(function_exists('tiliEuroTeksti') ? tiliEuroTeksti(tiliRastilippuHintaEuro()) : '5,00 €') ?>/yhdistetty tapahtuma, laskutus vuosittain). Nimi ja päivä säilyvät. Radat, ajat ja väliajat päivitetään Rastilippuun automaattisesti taustalla.</p>
+            <p class="muted">Voit yhdistää paikallisen tapahtuman Rastilippuun myöhemmin (<?= htmlspecialchars(function_exists('tiliEuroTeksti') ? tiliEuroTeksti(tiliRastilippuHintaEuro()) : '5,00 €') ?>/yhdistetty tapahtuma, laskutus kuukausittain). Nimi ja päivä säilyvät. Radat, ajat ja väliajat päivitetään Rastilippuun automaattisesti taustalla.</p>
         <?php
         $rlTila = function_exists('rastilippuLahetysTilaTeksti') ? rastilippuLahetysTilaTeksti($kilpailu) : '';
         if ($rlTila !== ''):
@@ -285,7 +285,7 @@ pageStart('Asetukset', iltarastiKuoriOpts($pdo, $kilpailu, 'asetukset'));
             <p class="muted"><?= htmlspecialchars($rlIlmo) ?></p>
         <?php endif; ?>
     <?php elseif ($voiYhdistaaOikeus && $voiAvaimen && !$liitanta): ?>
-        <p class="muted">Ota IRMA/Rastilippu-liitäntä käyttöön <a href="oma_seura.php">oman seuran tiedoissa</a> (<?= htmlspecialchars(function_exists('tiliEuroTeksti') ? tiliEuroTeksti(tiliRastilippuHintaEuro()) : '5,00 €') ?>/tapahtuma, laskutus vuosittain).</p>
+        <p class="muted">Ota IRMA/Rastilippu-liitäntä käyttöön <a href="oma_seura.php">oman seuran tiedoissa</a> (<?= htmlspecialchars(function_exists('tiliEuroTeksti') ? tiliEuroTeksti(tiliRastilippuHintaEuro()) : '5,00 €') ?>/tapahtuma, laskutus kuukausittain).</p>
     <?php elseif ($voiYhdistaa && $voiAvaimen): ?>
         <p class="muted">Lisää Rastilippu-avain hubissa, jos haluat yhdistää tämän illan kuntotapahtumaan.</p>
     <?php elseif ($voiYhdistaa): ?>

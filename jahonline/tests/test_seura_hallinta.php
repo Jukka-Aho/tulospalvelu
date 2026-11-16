@@ -315,12 +315,12 @@ try {
     } catch (Throwable $e) {
         fail('iltarasti lasku kisa: ' . $e->getMessage());
     }
-    $lasku = tiliRastilippuLaskutus($pdo, $seuraA, tiliLaskutusVuosi());
+    $lasku = tiliRastilippuLaskutus($pdo, $seuraA, tiliLaskutusKuukausi());
     (int) $lasku['yhdistettyja'] >= 1 || fail('lasku tapahtuma');
     abs((float) $lasku['summa_euro'] - 5.0) < 0.01 || fail('lasku 5e');
     empty($lasku['ei_laskutusta']) || fail('lasku ei viela ohitettu');
     $loytyi = false;
-    foreach (tiliRastilippuLaskutusKaikki($pdo, tiliLaskutusVuosi()) as $rivi) {
+    foreach (tiliRastilippuLaskutusKaikki($pdo, tiliLaskutusKuukausi()) as $rivi) {
         if ((int) $rivi['seura_id'] === $seuraA) {
             $loytyi = true;
             break;
@@ -328,11 +328,11 @@ try {
     }
     $loytyi || fail('laskurivi ennen ohitusta');
     tiliTallennaSeuraEiLaskutusta($pdo, $seuraA, true);
-    $lasku = tiliRastilippuLaskutus($pdo, $seuraA, tiliLaskutusVuosi());
+    $lasku = tiliRastilippuLaskutus($pdo, $seuraA, tiliLaskutusKuukausi());
     !empty($lasku['ei_laskutusta']) || fail('ei laskutusta lippu');
     abs((float) $lasku['summa_euro']) < 0.01 || fail('summa nolla ei laskutusta');
     (int) $lasku['yhdistettyja'] >= 1 || fail('tapahtumat näkyvät silti');
-    foreach (tiliRastilippuLaskutusKaikki($pdo, tiliLaskutusVuosi()) as $rivi) {
+    foreach (tiliRastilippuLaskutusKaikki($pdo, tiliLaskutusKuukausi()) as $rivi) {
         if ((int) $rivi['seura_id'] === $seuraA) {
             fail('ei laskurivia ei-laskutettavalle');
         }

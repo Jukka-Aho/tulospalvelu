@@ -113,6 +113,12 @@ function adminShell($active, $pdo = null)
             echo '<a href="' . htmlspecialchars($kioskiUrl('tulokset')) . '"'
                 . ($active === 'tulokset' || $active === 'valiajat' ? ' class="active"' : '')
                 . '>Tulokset</a>';
+            $onViestiKuori = function_exists('onkoViestiKilpailu') && onkoViestiKilpailu($kilpailu);
+            if (!$onViestiKuori) {
+                echo '<a href="/public/tulokset_ssl.php?kilpailu_id=' . (int) $kid . '"'
+                    . ($active === 'ssl' ? ' class="active"' : '')
+                    . '>SSL-tulokset</a>';
+            }
             if ($active !== 'iltarastit') {
                 echo '<a class="iltarasti-kioski-sulje" href="' . htmlspecialchars($kioskiUrl('hub')) . '">Sulje tapahtuma</a>';
             }

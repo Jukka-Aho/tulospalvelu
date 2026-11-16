@@ -474,12 +474,12 @@ if ($hasLayout) {
             <p class="muted">
                 Valinnainen lisäominaisuus. Maksaa
                 <strong><?= htmlspecialchars(tiliEuroTeksti(tiliRastilippuHintaEuro())) ?>/tapahtuma</strong>
-                ja laskutetaan vuosittain tätä varten annettuun laskutussähköpostiin.
+                ja laskutetaan kuukausittain tätä varten annettuun laskutussähköpostiin.
             </p>
             <?php if ($rl): ?>
                 <p><?= htmlspecialchars($rl['teksti']) ?></p>
                 <?php if ($rl['liitanta'] && $rl['laskutus_email'] === '' && empty($rl['ei_laskutusta'])): ?>
-                    <p class="notice">Lisää laskutussähköposti, jotta vuosittainen lasku voidaan lähettää.</p>
+                    <p class="notice">Lisää laskutussähköposti, jotta kuukausittainen lasku voidaan lähettää.</p>
                 <?php endif; ?>
             <?php endif; ?>
             <form method="post">
@@ -496,10 +496,22 @@ if ($hasLayout) {
                            style="width:100%;max-width:320px;padding:8px" autocomplete="email"
                            placeholder="laskutus@seura.fi">
                 </label>
-                <p class="muted">Pakollinen, kun liitäntä on päällä. Lasku lähetetään tähän osoitteeseen kerran vuodessa.</p>
+                <p class="muted">Pakollinen, kun liitäntä on päällä. Lasku lähetetään tähän osoitteeseen kerran kuukaudessa.</p>
                 <br>
                 <button type="submit">Tallenna liitäntä</button>
             </form>
+        </div>
+    <?php endif; ?>
+
+    <?php if ($voiHallita && ($kisatPaalla || $illatPaalla)): ?>
+        <div class="public-card" style="margin-top:1rem">
+            <h3>SSL-tulokset liitolle</h3>
+            <p class="muted">
+                Henkilökohtaisen tapahtuman tulokset voi ladata SSL-muodossa (Suomen Suunnistusliitto).
+                Ensimmäinen lataus kisasta maksaa
+                <strong><?= htmlspecialchars(function_exists('tiliSslHintaEuro') ? tiliEuroTeksti(tiliSslHintaEuro()) : '10,00 €') ?>/kisa</strong>
+                ja laskutetaan kuukausittain samaan laskutussähköpostiin.
+            </p>
         </div>
     <?php endif; ?>
 

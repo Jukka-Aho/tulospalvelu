@@ -4,7 +4,8 @@
  * JAHOnline – seurat, palvelut, GPS-paketit ja oikeudet.
  *
  * Seurakohtaiset palvelut (erillään): GPS, kilpailut, iltarastit.
- * Rastilippu-liitäntä on valinnainen lisäominaisuus, 5 € / tapahtuma, laskutus vuosittain.
+ * Rastilippu-liitäntä on valinnainen lisäominaisuus, 5 € / tapahtuma, laskutus kuukausittain.
+ * SSL-tulostiedosto liitolle: 10 € / kisa, jossa latausta käytetään, laskutus kuukausittain.
  * GPS-paketit:
  * - ilmainen: GPS-luonti + seuranta vakioasetuksilla
  * - pro: asetukset, TV/iframe, ghost
@@ -314,24 +315,83 @@ function tiliSeuraPalveluOtsikko(string $palvelu): string
     return $palvelu;
 }
 
-/** Rastilippu-liitäntä: 5 € / yhdistetty tapahtuma, laskutus vuosittain. */
+/** Rastilippu-liitäntä: 5 € / yhdistetty tapahtuma, laskutus kuukausittain. */
 function tiliRastilippuHintaEuro(): float
 {
     return 5.0;
 }
 
-function tiliLaskutusVuosi(?string $nyt = null): int
+/** SSL-tulostiedosto liitolle: 10 € / kisa, jossa latausta käytetään. */
+function tiliSslHintaEuro(): float
+{
+    return 10.0;
+}
+
+function tiliLaskutusHetki(?string $nyt = null): DateTimeImmutable
 {
     $tz = new DateTimeZone('Europe/Helsinki');
     try {
-        $d = $nyt !== null && $nyt !== ''
+        return $nyt !== null && $nyt !== ''
             ? new DateTimeImmutable($nyt, $tz)
             : new DateTimeImmutable('now', $tz);
     } catch (Throwable $e) {
-        $d = new DateTimeImmutable('now', $tz);
+        return new DateTimeImmutable('now', $tz);
+    }
+}
+
+function tiliLaskutusVuosi(?string $nyt = null): int
+{
+    return (int) tiliLaskutusHetki($nyt)->format('Y');
+}
+
+/** Laskutusjakso muodossa YYYY-MM. */
+function tiliLaskutusKuukausi(?string $nyt = null): string
+{
+    return tiliLaskutusHetki($nyt)->format('Y-m');
+}
+
+function tiliLaskutusKuukausiTeksti(string $ym): string
+{
+    $nimet = [
+        1 => 'tammikuu', 2 => 'helmikuu', 3 => 'maaliskuu', 4 => 'huhtikuu',
+        5 => 'toukokuu', 6 => 'kesäkuu', 7 => 'heinäkuu', 8 => 'elokuu',
+        9 => 'syyskuu', 10 => 'lokakuu', 11 => 'marraskuu', 12 => 'joulukuu',
+    ];
+    if (!preg_match('/^(\d{4})-(\d{2})$/', $ym, $m)) {
+        $ym = tiliLaskutusKuukausi();
+        preg_match('/^(\d{4})-(\d{2})$/', $ym, $m);
+    }
+    $kk = (int) ($m[2] ?? 0);
+    $vuosi = (string) ($m[1] ?? '');
+
+    return ($nimet[$kk] ?? $ym) . ' ' . $vuosi;
+}
+
+function tiliLaskutusKuukausiSiirra(string $ym, int $delta): string
+{
+    if (!preg_match('/^(\d{4})-(\d{2})$/', $ym)) {
+        $ym = tiliLaskutusKuukausi();
+    }
+    try {
+        $d = new DateTimeImmutable($ym . '-01', new DateTimeZone('Europe/Helsinki'));
+        $d = $d->modify(($delta >= 0 ? '+' : '') . $delta . ' months');
+
+        return $d->format('Y-m');
+    } catch (Throwable $e) {
+        return tiliLaskutusKuukausi();
+    }
+}
+
+function tiliLaskutusKuukausiNormalisoi($jakso): string
+{
+    if (is_string($jakso) && preg_match('/^\d{4}-\d{2}$/', $jakso)) {
+        return $jakso;
+    }
+    if (is_int($jakso) && $jakso >= 2020 && $jakso <= 2100) {
+        return sprintf('%04d-01', $jakso);
     }
 
-    return (int) $d->format('Y');
+    return tiliLaskutusKuukausi();
 }
 
 function tiliEuroTeksti(float $euro): string
@@ -364,6 +424,7 @@ function tiliVarmistaSeuraPalvelut(PDO $pdo): void
     tiliVarmistaSarake($pdo, 'seurat', 'viesti_kilpailu', 'TINYINT(1) NOT NULL DEFAULT 0');
     tiliVarmistaSarake($pdo, 'seurat', 'laskutus_email', 'VARCHAR(255) NULL');
     tiliVarmistaSarake($pdo, 'seurat', 'ei_laskutusta', 'TINYINT(1) NOT NULL DEFAULT 0');
+    tiliVarmistaSarake($pdo, 'kilpailut', 'ssl_lataus_at', 'DATETIME NULL');
     tiliVarmistaSarake($pdo, 'seurat', 'logo', 'VARCHAR(255) NULL');
     if (is_readable(__DIR__ . '/seura_logo.php')) {
         require_once __DIR__ . '/seura_logo.php';
@@ -539,15 +600,16 @@ function tiliTallennaRastilippuLiitanta(PDO $pdo, int $seuraId, bool $paalla, ?s
     ')->execute([$paalla ? 1 : 0, $email !== '' ? $email : null, $seuraId]);
 }
 
-function tiliRastilippuTapahtumaLkm(PDO $pdo, int $seuraId, int $vuosi): int
+function tiliRastilippuTapahtumaLkm(PDO $pdo, int $seuraId, $jakso): int
 {
     if ($seuraId < 1) {
         return 0;
     }
+    $kuukausi = tiliLaskutusKuukausiNormalisoi($jakso);
     $ehdot = [
-        'AND YEAR(paiva) = ?',
-        'AND YEAR(COALESCE(paiva, luotu)) = ?',
-        'AND YEAR(COALESCE(paiva, NOW())) = ?',
+        'AND DATE_FORMAT(paiva, \'%Y-%m\') = ?',
+        'AND DATE_FORMAT(COALESCE(paiva, luotu), \'%Y-%m\') = ?',
+        'AND DATE_FORMAT(COALESCE(paiva, NOW()), \'%Y-%m\') = ?',
     ];
     foreach ($ehdot as $ehto) {
         try {
@@ -559,7 +621,7 @@ function tiliRastilippuTapahtumaLkm(PDO $pdo, int $seuraId, int $vuosi): int
                   AND rastilippu_event_id > 0
                   {$ehto}
             ");
-            $st->execute([$seuraId, $vuosi]);
+            $st->execute([$seuraId, $kuukausi]);
 
             return (int) $st->fetchColumn();
         } catch (Throwable $e) {
@@ -569,24 +631,54 @@ function tiliRastilippuTapahtumaLkm(PDO $pdo, int $seuraId, int $vuosi): int
     return 0;
 }
 
+function tiliSslTapahtumaLkm(PDO $pdo, int $seuraId, $jakso): int
+{
+    $kuukausi = tiliLaskutusKuukausiNormalisoi($jakso);
+    try {
+        if ($seuraId > 0) {
+            $st = $pdo->prepare("
+                SELECT COUNT(*) FROM kilpailut
+                WHERE seura_id = ?
+                  AND ssl_lataus_at IS NOT NULL
+                  AND DATE_FORMAT(ssl_lataus_at, '%Y-%m') = ?
+                  AND COALESCE(tyyppi, 'henkilokohtainen') <> 'viesti'
+            ");
+            $st->execute([$seuraId, $kuukausi]);
+        } else {
+            $st = $pdo->prepare("
+                SELECT COUNT(*) FROM kilpailut
+                WHERE (seura_id IS NULL OR seura_id = 0)
+                  AND ssl_lataus_at IS NOT NULL
+                  AND DATE_FORMAT(ssl_lataus_at, '%Y-%m') = ?
+                  AND COALESCE(tyyppi, 'henkilokohtainen') <> 'viesti'
+            ");
+            $st->execute([$kuukausi]);
+        }
+
+        return (int) $st->fetchColumn();
+    } catch (Throwable $e) {
+        return 0;
+    }
+}
+
 function tiliVaadiRastilippuLiitanta(PDO $pdo, int $seuraId): void
 {
     if (!tiliSeuraSalliiRastilipun($pdo, $seuraId)) {
         throw new RuntimeException(
             'IRMA/Rastilippu-liitäntä ei ole käytössä. Ota se käyttöön oman seuran tiedoissa ('
             . tiliEuroTeksti(tiliRastilippuHintaEuro())
-            . '/tapahtuma, laskutus vuosittain).'
+            . '/tapahtuma, laskutus kuukausittain).'
         );
     }
 }
 
 /**
- * @return array{vuosi:int,yhdistettyja:int,hinta_euro:float,summa_euro:float,laskutus_email:string,liitanta:bool,ei_laskutusta:bool,teksti:string}
+ * @return array{kuukausi:string,vuosi:int,yhdistettyja:int,hinta_euro:float,summa_euro:float,laskutus_email:string,liitanta:bool,ei_laskutusta:bool,teksti:string}
  */
-function tiliRastilippuLaskutus(PDO $pdo, int $seuraId, ?int $vuosi = null): array
+function tiliRastilippuLaskutus(PDO $pdo, int $seuraId, $jakso = null): array
 {
     $hinta = tiliRastilippuHintaEuro();
-    $vuosi = $vuosi ?? tiliLaskutusVuosi();
+    $kuukausi = tiliLaskutusKuukausiNormalisoi($jakso ?? tiliLaskutusKuukausi());
     $n = 0;
     $email = '';
     $liitanta = false;
@@ -601,16 +693,18 @@ function tiliRastilippuLaskutus(PDO $pdo, int $seuraId, ?int $vuosi = null): arr
             $eiLaskutusta = (int) ($r['ei_laskutusta'] ?? 0) === 1;
         } catch (Throwable $e) {
         }
-        $n = tiliRastilippuTapahtumaLkm($pdo, $seuraId, $vuosi);
+        $n = tiliRastilippuTapahtumaLkm($pdo, $seuraId, $kuukausi);
     }
     $summa = $eiLaskutusta ? 0.0 : $n * $hinta;
+    $jaksoTxt = tiliLaskutusKuukausiTeksti($kuukausi);
     $teksti = $eiLaskutusta
-        ? ('IRMA/Rastilippu, ei laskutusta · ' . $vuosi . ': ' . $n . ' tapahtumaa · ' . tiliEuroTeksti(0.0))
-        : ('IRMA/Rastilippu ' . tiliEuroTeksti($hinta) . '/tapahtuma, laskutus vuosittain'
-            . ' · ' . $vuosi . ': ' . $n . ' tapahtumaa · ' . tiliEuroTeksti($summa));
+        ? ('IRMA/Rastilippu, ei laskutusta · ' . $jaksoTxt . ': ' . $n . ' tapahtumaa · ' . tiliEuroTeksti(0.0))
+        : ('IRMA/Rastilippu ' . tiliEuroTeksti($hinta) . '/tapahtuma, laskutus kuukausittain'
+            . ' · ' . $jaksoTxt . ': ' . $n . ' tapahtumaa · ' . tiliEuroTeksti($summa));
 
     return [
-        'vuosi' => $vuosi,
+        'kuukausi' => $kuukausi,
+        'vuosi' => (int) substr($kuukausi, 0, 4),
         'yhdistettyja' => $n,
         'hinta_euro' => $hinta,
         'summa_euro' => $summa,
@@ -622,13 +716,77 @@ function tiliRastilippuLaskutus(PDO $pdo, int $seuraId, ?int $vuosi = null): arr
 }
 
 /**
+ * @return array{kuukausi:string,lkm:int,hinta_euro:float,summa_euro:float,laskutus_email:string,ei_laskutusta:bool,teksti:string}
+ */
+function tiliSslLaskutus(PDO $pdo, int $seuraId, $jakso = null): array
+{
+    $hinta = tiliSslHintaEuro();
+    $kuukausi = tiliLaskutusKuukausiNormalisoi($jakso ?? tiliLaskutusKuukausi());
+    $email = '';
+    $eiLaskutusta = false;
+    if ($seuraId > 0) {
+        try {
+            $st = $pdo->prepare('SELECT laskutus_email, ei_laskutusta FROM seurat WHERE id = ? LIMIT 1');
+            $st->execute([$seuraId]);
+            $r = $st->fetch(PDO::FETCH_ASSOC) ?: [];
+            $email = trim((string) ($r['laskutus_email'] ?? ''));
+            $eiLaskutusta = (int) ($r['ei_laskutusta'] ?? 0) === 1;
+        } catch (Throwable $e) {
+        }
+    }
+    $n = tiliSslTapahtumaLkm($pdo, $seuraId, $kuukausi);
+    $summa = $eiLaskutusta ? 0.0 : $n * $hinta;
+    $jaksoTxt = tiliLaskutusKuukausiTeksti($kuukausi);
+    $teksti = $eiLaskutusta
+        ? ('SSL-tulokset, ei laskutusta · ' . $jaksoTxt . ': ' . $n . ' kisaa · ' . tiliEuroTeksti(0.0))
+        : ('SSL-tulokset ' . tiliEuroTeksti($hinta) . '/kisa, laskutus kuukausittain'
+            . ' · ' . $jaksoTxt . ': ' . $n . ' kisaa · ' . tiliEuroTeksti($summa));
+
+    return [
+        'kuukausi' => $kuukausi,
+        'lkm' => $n,
+        'hinta_euro' => $hinta,
+        'summa_euro' => $summa,
+        'laskutus_email' => $email,
+        'ei_laskutusta' => $eiLaskutusta,
+        'teksti' => $teksti,
+    ];
+}
+
+/**
  * @return list<array<string,mixed>>
  */
-function tiliRastilippuLaskutusKaikki(PDO $pdo, ?int $vuosi = null): array
+function tiliRastilippuLaskutusKaikki(PDO $pdo, $jakso = null): array
+{
+    $kuukausi = tiliLaskutusKuukausiNormalisoi($jakso ?? tiliLaskutusKuukausi());
+    $ulos = [];
+    foreach (tiliKuukausiLaskutusKaikki($pdo, $kuukausi) as $rivi) {
+        if ((int) ($rivi['rastilippu_lkm'] ?? 0) < 1 && empty($rivi['liitanta'])) {
+            continue;
+        }
+        $ulos[] = [
+            'seura_id' => (int) ($rivi['seura_id'] ?? 0),
+            'nimi' => (string) ($rivi['nimi'] ?? ''),
+            'laskutus_email' => (string) ($rivi['laskutus_email'] ?? ''),
+            'liitanta' => !empty($rivi['liitanta']),
+            'vuosi' => (int) substr($kuukausi, 0, 4),
+            'kuukausi' => $kuukausi,
+            'yhdistettyja' => (int) ($rivi['rastilippu_lkm'] ?? 0),
+            'summa_euro' => (float) ($rivi['rastilippu_summa'] ?? 0),
+            'hinta_euro' => tiliRastilippuHintaEuro(),
+        ];
+    }
+
+    return $ulos;
+}
+
+/**
+ * @return list<array<string,mixed>>
+ */
+function tiliKuukausiLaskutusKaikki(PDO $pdo, $jakso = null): array
 {
     tiliVarmistaTaulut($pdo);
-    $vuosi = $vuosi ?? tiliLaskutusVuosi();
-    $hinta = tiliRastilippuHintaEuro();
+    $kuukausi = tiliLaskutusKuukausiNormalisoi($jakso ?? tiliLaskutusKuukausi());
     $ulos = [];
     try {
         $st = $pdo->query('
@@ -649,9 +807,10 @@ function tiliRastilippuLaskutusKaikki(PDO $pdo, ?int $vuosi = null): array
         if ((int) ($s['ei_laskutusta'] ?? 0) === 1) {
             continue;
         }
-        $l = tiliRastilippuLaskutus($pdo, $sid, $vuosi);
+        $rl = tiliRastilippuLaskutus($pdo, $sid, $kuukausi);
+        $ssl = tiliSslLaskutus($pdo, $sid, $kuukausi);
         $liitanta = (int) ($s['rastilippu_liitanta'] ?? 0) === 1;
-        if (!$liitanta && $l['yhdistettyja'] < 1) {
+        if (!$liitanta && $rl['yhdistettyja'] < 1 && $ssl['lkm'] < 1) {
             continue;
         }
         $ulos[] = [
@@ -659,10 +818,27 @@ function tiliRastilippuLaskutusKaikki(PDO $pdo, ?int $vuosi = null): array
             'nimi' => (string) ($s['nimi'] ?? ''),
             'laskutus_email' => trim((string) ($s['laskutus_email'] ?? '')),
             'liitanta' => $liitanta,
-            'vuosi' => $vuosi,
-            'yhdistettyja' => $l['yhdistettyja'],
-            'summa_euro' => $l['summa_euro'],
-            'hinta_euro' => $hinta,
+            'kuukausi' => $kuukausi,
+            'rastilippu_lkm' => $rl['yhdistettyja'],
+            'rastilippu_summa' => $rl['summa_euro'],
+            'ssl_lkm' => $ssl['lkm'],
+            'ssl_summa' => $ssl['summa_euro'],
+            'summa_euro' => (float) $rl['summa_euro'] + (float) $ssl['summa_euro'],
+        ];
+    }
+    $ilman = tiliSslLaskutus($pdo, 0, $kuukausi);
+    if ($ilman['lkm'] > 0) {
+        $ulos[] = [
+            'seura_id' => 0,
+            'nimi' => 'Ilman seuraa',
+            'laskutus_email' => '',
+            'liitanta' => false,
+            'kuukausi' => $kuukausi,
+            'rastilippu_lkm' => 0,
+            'rastilippu_summa' => 0.0,
+            'ssl_lkm' => $ilman['lkm'],
+            'ssl_summa' => $ilman['summa_euro'],
+            'summa_euro' => (float) $ilman['summa_euro'],
         ];
     }
 
