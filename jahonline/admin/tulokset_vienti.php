@@ -82,8 +82,8 @@ pageStart('Tulosten vienti', ['admin' => true, 'active' => 'vienti', 'pdo' => $p
 
 <p class="form-actions">
     <a class="btn kisa-btn-valitse" href="tulokset_vienti.php?fmt=iof">Lataa IOF XML 3.0</a>
-    <?php if (!$onViesti && function_exists('sslTuloksetSallittu') && sslTuloksetSallittu($kilpailu)): ?>
-        <a class="btn kisa-btn-valitse" href="/public/tulokset_ssl.php?kilpailu_id=<?= (int) $kilpailu_id ?>">Lataa SSL-tulokset</a>
+    <?php if (!$onViesti && function_exists('sslTuloksetNappiHtml')): ?>
+        <?php sslTuloksetNappiHtml($pdo, $kilpailu, 'btn kisa-btn-valitse'); ?>
     <?php endif; ?>
     <a class="btn-secondary" href="tulokset_vienti.php?fmt=csv">Lataa CSV</a>
     <button type="button" class="btn-secondary" onclick="window.print()">Tulosta / PDF</button>

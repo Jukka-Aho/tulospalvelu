@@ -29,6 +29,57 @@ function sslTuloksetSallittu(array $kilpailu): bool
     return function_exists('voiHallitaKilpailua') && voiHallitaKilpailua($kilpailu);
 }
 
+function sslTuloksetLaskutusOk(?PDO $pdo, array $kilpailu): bool
+{
+    if (!$pdo instanceof PDO) {
+        return false;
+    }
+    if (function_exists('tiliKilpailuLaskutuspostiOk')) {
+        return tiliKilpailuLaskutuspostiOk($pdo, $kilpailu);
+    }
+
+    return false;
+}
+
+function sslTuloksetKuoriLinkki(?PDO $pdo, array $kilpailu, int $kid, string $active = ''): void
+{
+    $ok = sslTuloksetLaskutusOk($pdo, $kilpailu);
+    if ($ok) {
+        echo '<a href="/public/tulokset_ssl.php?kilpailu_id=' . (int) $kid . '"'
+            . ($active === 'ssl' ? ' class="active"' : '')
+            . '>SSL-tulokset</a>';
+
+        return;
+    }
+    $puute = function_exists('tiliLaskutuspostiPuuttuuTeksti')
+        ? tiliLaskutuspostiPuuttuuTeksti()
+        : 'Laskutussähköposti puuttuu';
+    if (function_exists('tiliLaskutuspostiTyylit')) {
+        echo tiliLaskutuspostiTyylit();
+    }
+    echo '<span class="laskutusposti-esto" title="' . htmlspecialchars($puute) . '">SSL-tulokset</span>';
+    echo '<span class="muted" style="display:block;font-size:12px;padding:0 12px 6px">'
+        . htmlspecialchars($puute) . '</span>';
+}
+
+function sslTuloksetNappiHtml(?PDO $pdo, array $kilpailu, string $luokka = 'btn'): void
+{
+    if (!sslTuloksetSallittu($kilpailu)) {
+        return;
+    }
+    $ok = sslTuloksetLaskutusOk($pdo, $kilpailu);
+    $href = '/public/tulokset_ssl.php?kilpailu_id=' . (int) ($kilpailu['id'] ?? 0);
+    if ($ok) {
+        echo '<a class="' . htmlspecialchars($luokka) . '" href="' . htmlspecialchars($href) . '">Lataa SSL-tulokset</a>';
+
+        return;
+    }
+    if (function_exists('tiliLaskutuspostiEstettyNappi')) {
+        tiliLaskutuspostiEstettyNappi('Lataa SSL-tulokset', $luokka);
+        tiliLaskutuspostiHuomioHtml('Lisää se seuran asetuksiin.');
+    }
+}
+
 function sslTuloksetKaytetty(array $kilpailu): bool
 {
     return trim((string) ($kilpailu['ssl_lataus_at'] ?? '')) !== '';

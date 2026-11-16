@@ -27,6 +27,7 @@ function tulospalveluPageOpts(string $extraClass = ''): array
         'class' => $class,
         'extraHead' => '<link rel="stylesheet" href="/assets/css/live_board.css?v=' . $v . '">'
             . '<link rel="stylesheet" href="/assets/css/seura_kisavalikko.css?v=1">'
+            . (function_exists('tiliLaskutuspostiTyylit') ? tiliLaskutuspostiTyylit() : '')
             . '<link rel="manifest" href="/gps/manifest.php">'
             . '<meta name="theme-color" content="#0a0a0a">'
             . '<meta name="apple-mobile-web-app-capable" content="yes">'
@@ -148,11 +149,19 @@ function tulospalveluYla(array $kilpailu, array $linkit, string $sivuOtsikko, ar
     ) {
         require_once __DIR__ . '/ssl_tulokset.php';
         if (function_exists('sslTuloksetSallittu') && sslTuloksetSallittu($kilpailu)) {
+            $sslPostiOk = $pdoNav instanceof PDO
+                && function_exists('sslTuloksetLaskutusOk')
+                && sslTuloksetLaskutusOk($pdoNav, $kilpailu);
             $nav[] = [
                 'key' => 'ssl',
                 'href' => 'tulokset_ssl.php?kilpailu_id=' . $kilpailuId,
                 'label' => 'SSL',
-                'title' => 'Lataa tulokset SSL-muodossa liitolle (10 € / kisa)',
+                'disabled' => !$sslPostiOk,
+                'title' => $sslPostiOk
+                    ? 'Lataa tulokset SSL-muodossa liitolle (10 € / kisa)'
+                    : (function_exists('tiliLaskutuspostiPuuttuuTeksti')
+                        ? tiliLaskutuspostiPuuttuuTeksti()
+                        : 'Laskutussähköposti puuttuu'),
             ];
         }
     }
@@ -169,6 +178,12 @@ function tulospalveluYla(array $kilpailu, array $linkit, string $sivuOtsikko, ar
         }
         if (!empty($item['title'])) {
             $attrs .= ' title="' . htmlspecialchars((string) $item['title'], ENT_QUOTES, 'UTF-8') . '"';
+        }
+        if (!empty($item['disabled'])) {
+            echo '<span class="laskutusposti-esto"' . $attrs . ' aria-disabled="true">'
+                . htmlspecialchars((string) $item['label'], ENT_QUOTES, 'UTF-8') . '</span>';
+            echo '<span class="muted">' . htmlspecialchars((string) ($item['title'] ?? 'Laskutussähköposti puuttuu'), ENT_QUOTES, 'UTF-8') . '</span>';
+            continue;
         }
         echo '<a href="' . htmlspecialchars((string) $item['href'], ENT_QUOTES, 'UTF-8') . '"'
             . ($isActive ? ' class="is-active" aria-current="page"' : '')

@@ -37,7 +37,8 @@ $voiAvaimen = iltarastiVoiAvaimen();
 $voiYhdistaaOikeus = iltarastiVoiYhdistaa();
 $liitanta = $seuraId > 0 && function_exists('tiliSeuraSalliiRastilipun') && tiliSeuraSalliiRastilipun($pdo, $seuraId);
 $onViesti = function_exists('onkoViestiKilpailu') && onkoViestiKilpailu($kilpailu);
-$voiYhdistaa = $voiYhdistaaOikeus && $liitanta && !$onViesti;
+$postiOk = function_exists('tiliKilpailuLaskutuspostiOk') && tiliKilpailuLaskutuspostiOk($pdo, $kilpailu);
+$voiYhdistaa = $voiYhdistaaOikeus && $liitanta && !$onViesti && $postiOk;
 $viesti = trim((string) ($_GET['viesti'] ?? ''));
 $virhe = trim((string) ($_GET['virhe'] ?? ''));
 
@@ -284,6 +285,10 @@ pageStart('Asetukset', iltarastiKuoriOpts($pdo, $kilpailu, 'asetukset'));
             ?>
             <p class="muted"><?= htmlspecialchars($rlIlmo) ?></p>
         <?php endif; ?>
+    <?php elseif ($voiYhdistaaOikeus && $liitanta && !$onViesti && !$postiOk): ?>
+        <p class="muted">Rastilippu-tapahtuma</p>
+        <?php tiliLaskutuspostiEstettyNappi('Yhdistä Rastilippuun', 'btn-secondary'); ?>
+        <?php tiliLaskutuspostiHuomioHtml('Lisää se seuran asetuksiin, ennen kuin liitännän voi ottaa käyttöön.'); ?>
     <?php elseif ($voiYhdistaaOikeus && $voiAvaimen && !$liitanta): ?>
         <p class="muted">Ota IRMA/Rastilippu-liitäntä käyttöön <a href="oma_seura.php">oman seuran tiedoissa</a> (<?= htmlspecialchars(function_exists('tiliEuroTeksti') ? tiliEuroTeksti(tiliRastilippuHintaEuro()) : '5,00 €') ?>/tapahtuma, laskutus kuukausittain).</p>
     <?php elseif ($voiYhdistaa && $voiAvaimen): ?>

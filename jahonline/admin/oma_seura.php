@@ -370,7 +370,7 @@ CSS;
 
 $seuraTyylit = function_exists('seuraLogoTyylit') ? seuraLogoTyylit() : '';
 if ($hasLayout) {
-    pageStart('Oma seura', ['admin' => true, 'active' => 'oma_seura', 'pdo' => $pdo, 'extraHead' => $jasenTauluCss . $seuraTyylit]);
+    pageStart('Oma seura', ['admin' => true, 'active' => 'oma_seura', 'pdo' => $pdo, 'extraHead' => $jasenTauluCss . $seuraTyylit . (function_exists('tiliLaskutuspostiTyylit') ? tiliLaskutuspostiTyylit() : '')]);
 } else {
     echo '<!DOCTYPE html><html lang="fi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Oma seura</title><link rel="stylesheet" href="../assets/css/style.css"></head><body><div class="container">';
     echo '<p><a href="index.php">← Hallinta</a></p>';
@@ -476,30 +476,39 @@ if ($hasLayout) {
                 <strong><?= htmlspecialchars(tiliEuroTeksti(tiliRastilippuHintaEuro())) ?>/tapahtuma</strong>
                 ja laskutetaan kuukausittain tätä varten annettuun laskutussähköpostiin.
             </p>
-            <?php if ($rl): ?>
+            <?php
+            $postiOk = tiliSeuraLaskutuspostiOk($seura);
+            if ($rl): ?>
                 <p><?= htmlspecialchars($rl['teksti']) ?></p>
-                <?php if ($rl['liitanta'] && $rl['laskutus_email'] === '' && empty($rl['ei_laskutusta'])): ?>
-                    <p class="notice">Lisää laskutussähköposti, jotta kuukausittainen lasku voidaan lähettää.</p>
-                <?php endif; ?>
             <?php endif; ?>
             <form method="post">
                 <?= $csrfKentta ?>
                 <input type="hidden" name="toiminto" value="rastilippu_liitanta">
-                <p>
-                    <label>
-                        <input type="checkbox" name="rastilippu_liitanta" value="1"<?= tiliSeuraRastilippuPaalla($seura) ? ' checked' : '' ?>>
-                        Ota IRMA/Rastilippu-liitäntä käyttöön
-                    </label>
-                </p>
                 <label>Laskutussähköposti<br>
                     <input type="email" name="laskutus_email" value="<?= htmlspecialchars((string) ($seura['laskutus_email'] ?? '')) ?>"
                            style="width:100%;max-width:320px;padding:8px" autocomplete="email"
                            placeholder="laskutus@seura.fi">
                 </label>
-                <p class="muted">Pakollinen, kun liitäntä on päällä. Lasku lähetetään tähän osoitteeseen kerran kuukaudessa.</p>
+                <p class="muted">Pakollinen Rastilippu-liitännälle ja SSL-lataukselle. Lasku lähetetään tähän osoitteeseen kerran kuukaudessa.</p>
+                <?php if (!$postiOk): ?>
+                    <div id="laskutusposti-huom-liitanta">
+                        <?php tiliLaskutuspostiHuomioHtml('Lisää se alla, niin liitännän voi ottaa käyttöön.'); ?>
+                    </div>
+                <?php else: ?>
+                    <div id="laskutusposti-huom-liitanta" hidden>
+                        <?php tiliLaskutuspostiHuomioHtml('Lisää se alla, niin liitännän voi ottaa käyttöön.'); ?>
+                    </div>
+                <?php endif; ?>
+                <p>
+                    <label class="<?= $postiOk ? '' : 'laskutusposti-esto' ?>">
+                        <input type="checkbox" name="rastilippu_liitanta" value="1"<?= tiliSeuraRastilippuPaalla($seura) ? ' checked' : '' ?><?= $postiOk ? '' : ' disabled' ?>>
+                        Ota IRMA/Rastilippu-liitäntä käyttöön
+                    </label>
+                </p>
                 <br>
                 <button type="submit">Tallenna liitäntä</button>
             </form>
+            <?php tiliLaskutuspostiLiitantaJs(); ?>
         </div>
     <?php endif; ?>
 
@@ -512,6 +521,9 @@ if ($hasLayout) {
                 <strong><?= htmlspecialchars(function_exists('tiliSslHintaEuro') ? tiliEuroTeksti(tiliSslHintaEuro()) : '10,00 €') ?>/kisa</strong>
                 ja laskutetaan kuukausittain samaan laskutussähköpostiin.
             </p>
+            <?php if (!tiliSeuraLaskutuspostiOk($seura)): ?>
+                <?php tiliLaskutuspostiHuomioHtml('SSL-lataus on harmaana, kunnes sähköposti on tallennettu.'); ?>
+            <?php endif; ?>
         </div>
     <?php endif; ?>
 

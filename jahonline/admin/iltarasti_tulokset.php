@@ -50,7 +50,7 @@ pageStart('Tulokset', iltarastiKuoriOpts($pdo, $kilpailu, 'tulokset', 'iltarasti
 ?>
 <?php if ($naytaSsl): ?>
 <p class="form-actions" style="margin-bottom:0.75rem">
-    <a class="btn-secondary" href="/public/tulokset_ssl.php?kilpailu_id=<?= (int) $kilpailu['id'] ?>">Lataa SSL-tulokset</a>
+    <?php sslTuloksetNappiHtml($pdo, $kilpailu, 'btn-secondary'); ?>
 </p>
 <?php endif; ?>
 <iframe class="iltarasti-tulokset-iframe" src="<?= htmlspecialchars($src) ?>" title="Tulokset"></iframe>

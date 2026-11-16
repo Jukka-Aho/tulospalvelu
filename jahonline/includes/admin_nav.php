@@ -115,9 +115,12 @@ function adminShell($active, $pdo = null)
                 . '>Tulokset</a>';
             $onViestiKuori = function_exists('onkoViestiKilpailu') && onkoViestiKilpailu($kilpailu);
             if (!$onViestiKuori) {
-                echo '<a href="/public/tulokset_ssl.php?kilpailu_id=' . (int) $kid . '"'
-                    . ($active === 'ssl' ? ' class="active"' : '')
-                    . '>SSL-tulokset</a>';
+                if (is_readable(__DIR__ . '/ssl_tulokset.php')) {
+                    require_once __DIR__ . '/ssl_tulokset.php';
+                }
+                if (function_exists('sslTuloksetKuoriLinkki')) {
+                    sslTuloksetKuoriLinkki($pdo instanceof PDO ? $pdo : null, $kilpailu, (int) $kid, $active);
+                }
             }
             if ($active !== 'iltarastit') {
                 echo '<a class="iltarasti-kioski-sulje" href="' . htmlspecialchars($kioskiUrl('hub')) . '">Sulje tapahtuma</a>';

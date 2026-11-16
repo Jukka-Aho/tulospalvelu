@@ -74,22 +74,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'kilpailut' => !empty($_POST['palvelu_kilpailut']),
                 'iltarastit' => !empty($_POST['palvelu_iltarastit']),
             ]);
+            tiliTallennaSeuraEiLaskutusta(
+                $pdo,
+                $seuraId,
+                !empty($_POST['ei_laskutusta'])
+            );
             tiliTallennaRastilippuLiitanta(
                 $pdo,
                 $seuraId,
                 !empty($_POST['rastilippu_liitanta']),
-                (string) ($_POST['laskutus_email'] ?? ''),
-                false
+                (string) ($_POST['laskutus_email'] ?? '')
             );
             tiliTallennaSeuraViesti(
                 $pdo,
                 $seuraId,
                 !empty($_POST['palvelu_iltarastit']) && !empty($_POST['viesti_kilpailu'])
-            );
-            tiliTallennaSeuraEiLaskutusta(
-                $pdo,
-                $seuraId,
-                !empty($_POST['ei_laskutusta'])
             );
             seuratHallintaOhjaa($seuraId, 'Seuran palvelut tallennettu.');
         }
@@ -155,6 +154,7 @@ if ($valittuId > 0) {
 }
 
 $seuraTyylit = function_exists('seuraLogoTyylit') ? seuraLogoTyylit() : '';
+$seuraTyylit .= function_exists('tiliLaskutuspostiTyylit') ? tiliLaskutuspostiTyylit() : '';
 if ($hasLayout) {
     pageStart('Seurat', ['admin' => true, 'active' => 'seurat', 'pdo' => $pdo, 'extraHead' => $seuraTyylit]);
 } else {
@@ -240,9 +240,25 @@ if ($hasLayout) {
                         </label>
                         <span class="muted">· suunnistustapahtumassa henkilökohtainen tai viesti</span>
                     </p>
+                    <?php $postiOk = tiliSeuraLaskutuspostiOk($s); ?>
                     <p style="margin:0.35rem 0">
-                        <label>
-                            <input type="checkbox" name="rastilippu_liitanta" value="1"<?= tiliSeuraRastilippuPaalla($s) ? ' checked' : '' ?>>
+                        <label>Laskutussähköposti
+                            <input type="email" name="laskutus_email" value="<?= htmlspecialchars((string) ($s['laskutus_email'] ?? '')) ?>"
+                                   style="min-width:16rem;padding:6px" placeholder="laskutus@seura.fi">
+                        </label>
+                    </p>
+                    <?php if (!$postiOk): ?>
+                        <div id="laskutusposti-huom-liitanta">
+                            <?php tiliLaskutuspostiHuomioHtml('Lisää se, niin Rastilippu-liitännän voi ottaa käyttöön.'); ?>
+                        </div>
+                    <?php else: ?>
+                        <div id="laskutusposti-huom-liitanta" hidden>
+                            <?php tiliLaskutuspostiHuomioHtml('Lisää se, niin Rastilippu-liitännän voi ottaa käyttöön.'); ?>
+                        </div>
+                    <?php endif; ?>
+                    <p style="margin:0.35rem 0">
+                        <label class="<?= $postiOk ? '' : 'laskutusposti-esto' ?>">
+                            <input type="checkbox" name="rastilippu_liitanta" value="1"<?= tiliSeuraRastilippuPaalla($s) ? ' checked' : '' ?><?= $postiOk ? '' : ' disabled' ?>>
                             IRMA/Rastilippu-liitäntä
                         </label>
                         <span class="muted">· <?= htmlspecialchars($rl['teksti']) ?></span>
@@ -253,12 +269,6 @@ if ($hasLayout) {
                             Ei laskutusta
                         </label>
                         <span class="muted">· Rastilippu-liitännästä ja SSL-latauksista ei kerry laskua tälle seuralle</span>
-                    </p>
-                    <p style="margin:0.35rem 0">
-                        <label>Laskutussähköposti
-                            <input type="email" name="laskutus_email" value="<?= htmlspecialchars((string) ($s['laskutus_email'] ?? '')) ?>"
-                                   style="min-width:16rem;padding:6px" placeholder="laskutus@seura.fi">
-                        </label>
                     </p>
                 </fieldset>
                 <p>
@@ -274,6 +284,7 @@ if ($hasLayout) {
                     <button type="submit">Tallenna</button>
                 </p>
             </form>
+            <?php tiliLaskutuspostiLiitantaJs(); ?>
             <form method="post" style="margin:0">
                 <?= $csrf ?>
                 <input type="hidden" name="toiminto" value="tila">

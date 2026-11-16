@@ -378,11 +378,17 @@ tulospalveluYla($kilpailu, $linkit, 'Kilpailu', [
       if (is_readable(__DIR__ . '/../includes/ssl_tulokset.php')) {
           require_once __DIR__ . '/../includes/ssl_tulokset.php';
           if (function_exists('sslTuloksetSallittu') && sslTuloksetSallittu($kilpailu)) {
+              $sslPostiOk = function_exists('sslTuloksetLaskutusOk') && sslTuloksetLaskutusOk($pdo, $kilpailu);
               $hubLinkit[] = [
                   'href' => 'tulokset_ssl.php?kilpailu_id=' . (int) $kilpailu_id,
                   'label' => 'Lataa SSL-tulokset',
                   'primary' => false,
-                  'title' => 'Lataa tulokset SSL-muodossa liitolle (10 € / kisa)',
+                  'disabled' => !$sslPostiOk,
+                  'title' => $sslPostiOk
+                      ? 'Lataa tulokset SSL-muodossa liitolle (10 € / kisa)'
+                      : (function_exists('tiliLaskutuspostiPuuttuuTeksti')
+                          ? tiliLaskutuspostiPuuttuuTeksti()
+                          : 'Laskutussähköposti puuttuu'),
               ];
           }
       }
@@ -392,6 +398,10 @@ tulospalveluYla($kilpailu, $linkit, 'Kilpailu', [
       }
       ?>
       <?php foreach ($hubLinkit as $hl): ?>
+        <?php if (!empty($hl['disabled'])): ?>
+          <span class="lb-hub-link laskutusposti-esto" aria-disabled="true"
+                title="<?= htmlspecialchars((string) ($hl['title'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars((string) $hl['label']) ?></span>
+        <?php else: ?>
         <a class="lb-hub-link<?= !empty($hl['primary']) ? ' lb-hub-link--primary' : '' ?>"
            href="<?= htmlspecialchars((string) $hl['href']) ?>"<?php
              if (!empty($hl['download'])) {
@@ -401,7 +411,18 @@ tulospalveluYla($kilpailu, $linkit, 'Kilpailu', [
                  echo ' title="' . htmlspecialchars((string) $hl['title'], ENT_QUOTES, 'UTF-8') . '"';
              }
            ?>><?= htmlspecialchars((string) $hl['label']) ?></a>
+        <?php endif; ?>
       <?php endforeach; ?>
+      <?php
+      foreach ($hubLinkit as $hl) {
+          if (!empty($hl['disabled'])) {
+              if (function_exists('tiliLaskutuspostiHuomioHtml')) {
+                  tiliLaskutuspostiHuomioHtml('Lisää se seuran asetuksiin.');
+              }
+              break;
+          }
+      }
+      ?>
       <button type="button" class="lb-hub-link" data-kopioi-linkki
               data-url="<?= htmlspecialchars(
                   (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https' : 'http')

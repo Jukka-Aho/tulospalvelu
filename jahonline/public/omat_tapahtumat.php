@@ -37,6 +37,7 @@ if ($seura) {
 }
 $voiAvaimen = function_exists('iltarastiVoiAvaimen') && iltarastiVoiAvaimen();
 $liitanta = $seura && function_exists('tiliSeuraRastilippuPaalla') && tiliSeuraRastilippuPaalla($seura);
+$postiOk = $seura && function_exists('tiliSeuraLaskutuspostiOk') && tiliSeuraLaskutuspostiOk($seura);
 $seuraNimiOk = function_exists('iltarastiSeurallaOnNimi') && iltarastiSeurallaOnNimi($seura);
 $voiViesti = function_exists('tiliKayttajaViestiPaalla') && tiliKayttajaViestiPaalla();
 $viesti = trim((string) ($_GET['viesti'] ?? ''));
@@ -382,6 +383,9 @@ pageStart('Omat tapahtumat', [
                 (<?= htmlspecialchars(function_exists('tiliEuroTeksti') ? tiliEuroTeksti(tiliRastilippuHintaEuro()) : '5,00 €') ?>/tapahtuma,
                 laskutus kuukausittain). Ota se käyttöön oman seuran tiedoissa.
             </p>
+            <?php if (!$postiOk): ?>
+                <?php tiliLaskutuspostiHuomioHtml('Lisää se seuran asetuksiin, ennen kuin liitännän voi ottaa käyttöön.'); ?>
+            <?php endif; ?>
             <p><a href="/admin/oma_seura.php">Oma seura →</a></p>
         </div>
     <?php elseif (!$avainTallennettu || $naytaAvain || isset($_GET['avain'])): ?>

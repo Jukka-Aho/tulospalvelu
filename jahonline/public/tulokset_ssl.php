@@ -46,13 +46,18 @@ if (function_exists('onkoViestiKilpailu') && onkoViestiKilpailu($kilpailu)) {
 
 $hinta = function_exists('tiliSslHintaEuro') ? tiliSslHintaEuro() : 10.0;
 $hintaTxt = function_exists('tiliEuroTeksti') ? tiliEuroTeksti($hinta) : '10,00 €';
+$postiOk = sslTuloksetLaskutusOk($pdo, $kilpailu);
 $kaytetty = sslTuloksetKaytetty($kilpailu);
-$lataaNyt = $kaytetty;
+$lataaNyt = $postiOk && $kaytetty;
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!tarkistaCsrf((string) ($_POST['csrf'] ?? ''))) {
         die('Virheellinen pyyntö');
     }
-    $lataaNyt = true;
+    if (!$postiOk) {
+        $lataaNyt = false;
+    } else {
+        $lataaNyt = true;
+    }
 }
 
 if ($lataaNyt) {
@@ -69,6 +74,13 @@ pageStart('SSL-tulokset', ['admin' => true, 'pdo' => $pdo]);
     <strong><?= htmlspecialchars($hintaTxt) ?></strong>
     ja laskutetaan kuukausittain seuran laskutussähköpostiin.
 </p>
+<?php if (!$postiOk): ?>
+    <?php tiliLaskutuspostiHuomioHtml('Lisää se seuran asetuksiin, ennen kuin tulokset voi ladata.'); ?>
+    <p class="form-actions">
+        <?php tiliLaskutuspostiEstettyNappi('Lataa ja merkitse laskutettavaksi'); ?>
+        <a class="btn-secondary" href="/admin/oma_seura.php">Seuran asetukset</a>
+    </p>
+<?php else: ?>
 <form method="post">
     <?= csrfKentta() ?>
     <p class="form-actions">
@@ -76,4 +88,5 @@ pageStart('SSL-tulokset', ['admin' => true, 'pdo' => $pdo]);
         <a class="btn-secondary" href="/admin/tulokset_vienti.php">Peruuta</a>
     </p>
 </form>
+<?php endif; ?>
 <?php pageEnd(); ?>

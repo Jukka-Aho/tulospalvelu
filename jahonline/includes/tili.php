@@ -552,6 +552,117 @@ function tiliSeuraEiLaskutusta(array $seura): bool
     return (int) ($seura['ei_laskutusta'] ?? 0) === 1;
 }
 
+function tiliLaskutuspostiOk(?string $email, bool $eiLaskutusta = false): bool
+{
+    if ($eiLaskutusta) {
+        return true;
+    }
+    $email = trim((string) $email);
+
+    return $email !== '' && filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
+}
+
+function tiliSeuraLaskutuspostiOk(?array $seura): bool
+{
+    if (!is_array($seura)) {
+        return false;
+    }
+
+    return tiliLaskutuspostiOk(
+        (string) ($seura['laskutus_email'] ?? ''),
+        tiliSeuraEiLaskutusta($seura)
+    );
+}
+
+function tiliKilpailuLaskutuspostiOk(PDO $pdo, array $kilpailu): bool
+{
+    $sid = (int) ($kilpailu['seura_id'] ?? 0);
+    if ($sid < 1) {
+        return false;
+    }
+    try {
+        $st = $pdo->prepare('SELECT laskutus_email, ei_laskutusta FROM seurat WHERE id = ? LIMIT 1');
+        $st->execute([$sid]);
+        $r = $st->fetch(PDO::FETCH_ASSOC);
+
+        return is_array($r) && tiliSeuraLaskutuspostiOk($r);
+    } catch (Throwable $e) {
+        return false;
+    }
+}
+
+function tiliLaskutuspostiPuuttuuTeksti(): string
+{
+    return 'Laskutussähköposti puuttuu';
+}
+
+function tiliLaskutuspostiTyylit(): string
+{
+    return '<style>'
+        . '.laskutusposti-esto,.laskutusposti-esto:hover{opacity:.45;filter:grayscale(.55);pointer-events:none;cursor:not-allowed}'
+        . '.laskutusposti-huom{color:#8a5a00;margin:.4rem 0 .2rem}'
+        . 'label.laskutusposti-esto{display:inline-flex;align-items:center;gap:.4rem}'
+        . '</style>';
+}
+
+function tiliLaskutuspostiHuomioHtml(string $ohje = ''): void
+{
+    static $tyyli = false;
+    if (!$tyyli) {
+        echo tiliLaskutuspostiTyylit();
+        $tyyli = true;
+    }
+    $txt = tiliLaskutuspostiPuuttuuTeksti();
+    if ($ohje !== '') {
+        $txt .= '. ' . $ohje;
+    } else {
+        $txt .= '.';
+    }
+    echo '<p class="laskutusposti-huom">' . htmlspecialchars($txt) . '</p>';
+}
+
+function tiliLaskutuspostiEstettyNappi(string $label, string $luokka = 'btn'): void
+{
+    static $tyyli = false;
+    if (!$tyyli) {
+        echo tiliLaskutuspostiTyylit();
+        $tyyli = true;
+    }
+    echo '<span class="' . htmlspecialchars($luokka) . ' laskutusposti-esto" aria-disabled="true" title="'
+        . htmlspecialchars(tiliLaskutuspostiPuuttuuTeksti()) . '">'
+        . htmlspecialchars($label) . '</span>';
+}
+
+function tiliLaskutuspostiLiitantaJs(): void
+{
+    echo <<<'HTML'
+<script>
+(function () {
+    var email = document.querySelector('[name="laskutus_email"]');
+    var cb = document.querySelector('[name="rastilippu_liitanta"]');
+    var ei = document.querySelector('[name="ei_laskutusta"]');
+    if (!cb) return;
+    var lab = cb.closest('label');
+    function ok() {
+        if (ei && ei.checked) return true;
+        var v = ((email && email.value) || '').trim();
+        return v.indexOf('@') > 0 && v.indexOf('.') > v.indexOf('@');
+    }
+    function sync() {
+        var on = ok();
+        cb.disabled = !on;
+        if (lab) lab.classList.toggle('laskutusposti-esto', !on);
+        var huom = document.getElementById('laskutusposti-huom-liitanta');
+        if (huom) huom.hidden = on;
+    }
+    if (email) email.addEventListener('input', sync);
+    if (ei) ei.addEventListener('change', sync);
+    sync();
+})();
+</script>
+HTML;
+}
+
 function tiliTallennaSeuraEiLaskutusta(PDO $pdo, int $seuraId, bool $eiLaskutusta): void
 {
     tiliVarmistaTaulut($pdo);
@@ -586,7 +697,10 @@ function tiliTallennaRastilippuLiitanta(PDO $pdo, int $seuraId, bool $paalla, ?s
         $eiLaskua = (int) $st->fetchColumn() === 1;
     } catch (Throwable $e) {
     }
-    if ($paalla && $vaadiPosti && !$eiLaskua) {
+    if ($paalla && !$eiLaskua) {
+        if ($email === '' || filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
+            throw new RuntimeException(tiliLaskutuspostiPuuttuuTeksti() . '. Lisää se ennen Rastilippu-liitännän käyttöönottoa.');
+        }
         $email = tiliValidoiLaskutusposti($email);
     } elseif ($email !== '') {
         $email = tiliValidoiLaskutusposti($email);
