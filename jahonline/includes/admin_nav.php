@@ -30,6 +30,8 @@ function adminShell($active, $pdo = null)
     }
 
     echo '<aside class="admin-sidebar" id="admin-sidebar" tabindex="-1" aria-label="Hallintavalikko">';
+    echo '<style>.active-kilpailu-seura{margin-top:4px;font-size:13px;font-weight:500}'
+        . '.active-kilpailu-lisatieto{margin-top:2px;font-size:12px}</style>';
     echo '<div class="admin-sidebar-inner">';
     echo '<div class="admin-sidebar-header">';
     echo '<span class="admin-sidebar-title">Hallinta</span>';
@@ -44,6 +46,26 @@ function adminShell($active, $pdo = null)
         echo '<div class="section-label">' . ($iltarasti ? 'Tämä tapahtuma' : 'Tämä kilpailu') . '</div>';
         echo '<div class="active-kilpailu">';
         echo '<strong>' . htmlspecialchars($kilpailu['nimi']) . '</strong>';
+        $seuraNimiNav = '';
+        if (function_exists('kilpailuSeuraNimi') && $pdo instanceof PDO) {
+            $seuraNimiNav = kilpailuSeuraNimi($pdo, $kilpailu);
+        } else {
+            $seuraNimiNav = trim((string) ($kilpailu['seura_nimi'] ?? ''));
+        }
+        if ($seuraNimiNav !== '') {
+            echo '<div class="active-kilpailu-seura">' . htmlspecialchars($seuraNimiNav) . '</div>';
+        }
+        $kisaLisat = [];
+        if (!empty($kilpailu['paiva']) && function_exists('formatPaiva')) {
+            $kisaLisat[] = formatPaiva($kilpailu['paiva']);
+        }
+        if (!empty($kilpailu['paikka'])) {
+            $kisaLisat[] = (string) $kilpailu['paikka'];
+        }
+        if ($kisaLisat !== []) {
+            echo '<div class="active-kilpailu-lisatieto muted">'
+                . htmlspecialchars(implode(' · ', $kisaLisat)) . '</div>';
+        }
         echo '<div class="active-kilpailu-meta">';
         echo '<span class="badge">' . htmlspecialchars(kilpailuTilaLabel($kilpailu['tila'] ?? '')) . '</span>';
         $luonneLabel = kisaLuonneLabel($kilpailu['luonne'] ?? null);

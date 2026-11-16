@@ -26,6 +26,9 @@ if ($hasLayout) {
     if (is_readable(__DIR__ . '/../includes/acl.php')) {
         require_once __DIR__ . '/../includes/acl.php';
     }
+    if (is_readable(__DIR__ . '/../includes/kilpailu_aikavali.php')) {
+        require_once __DIR__ . '/../includes/kilpailu_aikavali.php';
+    }
     if (is_readable(__DIR__ . '/../includes/kilpailu_context.php')) {
         require_once __DIR__ . '/../includes/kilpailu_context.php';
     }
@@ -153,11 +156,16 @@ $ominaisuudet = function_exists('tiliNykyinenOminaisuudet')
     : ['gps' => true, 'tulospalvelu' => true];
 
 $omatKisat = [];
+$kisaAikavali = null;
+if ($hasLayout && function_exists('onAdmin') && onAdmin() && function_exists('kilpailuParsiaikavali')) {
+    $kisaAikavali = kilpailuParsiaikavali($_GET);
+}
 if ($hasLayout && function_exists('haeKayttajanKilpailut')) {
     try {
         $omatKisat = haeKayttajanKilpailut(
             $pdo,
-            "CASE k.tila WHEN 'kaynnissa' THEN 0 WHEN 'ilmoittautuminen' THEN 1 WHEN 'tulossa' THEN 2 WHEN 'luonnos' THEN 3 ELSE 4 END, k.paiva DESC, k.id DESC"
+            "CASE k.tila WHEN 'kaynnissa' THEN 0 WHEN 'ilmoittautuminen' THEN 1 WHEN 'tulossa' THEN 2 WHEN 'luonnos' THEN 3 ELSE 4 END, k.paiva DESC, k.id DESC",
+            $kisaAikavali
         );
         $omatKisat = array_values(array_filter(
             $omatKisat,
@@ -674,12 +682,20 @@ if ($hasLayout) {
 <?php elseif ($hasLayout): ?>
     <section class="kisa-lista-osio">
         <div class="kisa-lista-header">
-            <h2>Omat kilpailut</h2>
+            <h2><?= onAdmin() ? 'Kaikki kilpailut' : 'Omat kilpailut' ?></h2>
             <p class="muted">Valitse kilpailu jatkaaksesi. Valikot avautuvat oikeuksiesi mukaan.</p>
+            <?php if ($kisaAikavali && function_exists('kilpailuAikavaliLomake')): ?>
+                <?php kilpailuAikavaliLomake('index.php', $kisaAikavali); ?>
+            <?php endif; ?>
         </div>
 
         <?php if ($omatKisat === []): ?>
-            <p class="home-empty muted">Ei vielä kilpailuja. <a href="kilpailut.php?uusi=1">Luo ensimmäinen kilpailu</a>.</p>
+            <p class="home-empty muted">
+                <?= $kisaAikavali ? 'Ei kilpailuja tällä aikavälillä.' : 'Ei vielä kilpailuja.' ?>
+                <a href="kilpailut.php?uusi=1">Luo kilpailu</a><?php if ($kisaAikavali): ?>
+                    · <a href="index.php?kaikki=1">Näytä kaikki</a>
+                <?php endif; ?>
+            </p>
         <?php else: ?>
             <div class="kisa-lista">
                 <?php foreach ($omatKisat as $k): ?>

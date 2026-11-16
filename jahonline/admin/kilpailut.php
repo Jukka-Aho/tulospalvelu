@@ -6,6 +6,9 @@ require_once __DIR__ . '/../includes/kilpailu_context.php';
 require_once __DIR__ . '/../includes/pirila_mode.php';
 require_once __DIR__ . '/../includes/layout.php';
 require_once __DIR__ . '/../includes/acl.php';
+if (is_readable(__DIR__ . '/../includes/kilpailu_aikavali.php')) {
+    require_once __DIR__ . '/../includes/kilpailu_aikavali.php';
+}
 require_once __DIR__ . '/../includes/tili.php';
 require_once __DIR__ . '/../db.php';
 
@@ -452,7 +455,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $seuraValinnat = kilpailuSeuraValinnat($pdo);
 
-$kilpailut = haeKayttajanKilpailut($pdo, 'k.paiva DESC, k.id DESC');
+$kisaAikavali = null;
+if (onAdmin() && function_exists('kilpailuParsiaikavali')) {
+    $kisaAikavali = kilpailuParsiaikavali($_GET);
+}
+$kilpailut = haeKayttajanKilpailut($pdo, 'k.paiva DESC, k.id DESC', $kisaAikavali);
 // Liitä seuran nimi listaan
 $seuraNimet = [];
 if ($kilpailut !== []) {
@@ -530,6 +537,9 @@ ob_start();
     <div class="kisa-lista-header">
         <h2>Kilpailulista</h2>
         <p class="muted">Valitse kisa hallintaan, muokkaa, arkistoi tai poista. Arkistoidut eivät näy julkisilla listoilla.</p>
+        <?php if ($kisaAikavali && function_exists('kilpailuAikavaliLomake')): ?>
+            <?php kilpailuAikavaliLomake('kilpailut.php', $kisaAikavali); ?>
+        <?php endif; ?>
         <p><a class="btn" href="kilpailut.php?uusi=1">Lisää uusi kilpailu</a></p>
     </div>
 
