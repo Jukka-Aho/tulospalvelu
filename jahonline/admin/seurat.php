@@ -4,6 +4,25 @@ require_once __DIR__ . '/../includes/auth.php';
 vaadiKirjautuminen();
 require_once __DIR__ . '/../db.php';
 require_once __DIR__ . '/../includes/tili.php';
+if (is_readable(__DIR__ . '/../includes/seura_logo.php')) {
+    require_once __DIR__ . '/../includes/seura_logo.php';
+}
+
+function seuratHallintaOhjaa(int $id = 0, string $viesti = '', string $virhe = ''): void
+{
+    $q = [];
+    if ($id > 0) {
+        $q['id'] = $id;
+    }
+    if ($viesti !== '') {
+        $q['viesti'] = $viesti;
+    }
+    if ($virhe !== '') {
+        $q['virhe'] = $virhe;
+    }
+    header('Location: seurat.php' . ($q !== [] ? '?' . http_build_query($q) : ''));
+    exit;
+}
 
 $hasLayout = is_readable(__DIR__ . '/../includes/layout.php')
     && is_readable(__DIR__ . '/../includes/helpers.php');
@@ -20,8 +39,8 @@ if (!onAdmin()) {
     die('Ei käyttöoikeutta');
 }
 
-$viesti = '';
-$virhe = '';
+$viesti = trim((string) ($_GET['viesti'] ?? ''));
+$virhe = trim((string) ($_GET['virhe'] ?? ''));
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
@@ -29,6 +48,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             throw new RuntimeException('Virheellinen pyyntö');
         }
         $toiminto = $_POST['toiminto'] ?? '';
+        if ($toiminto === 'tallenna_logo') {
+            $seuraId = (int) ($_POST['seura_id'] ?? 0);
+            seuraLogoTallenna($pdo, $seuraId, $_FILES['logo'] ?? []);
+            seuratHallintaOhjaa($seuraId, 'Logo tallennettu.');
+        }
+        if ($toiminto === 'poista_logo') {
+            $seuraId = (int) ($_POST['seura_id'] ?? 0);
+            seuraLogoPoista($pdo, $seuraId);
+            seuratHallintaOhjaa($seuraId, 'Logo poistettu.');
+        }
         if ($toiminto === 'tallenna_palvelut') {
             $seuraId = (int) ($_POST['seura_id'] ?? 0);
             $pakettiId = (int) ($_POST['paketti_id'] ?? 0);
@@ -62,13 +91,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $seuraId,
                 !empty($_POST['ei_laskutusta'])
             );
-            $viesti = 'Seuran palvelut tallennettu.';
+            seuratHallintaOhjaa($seuraId, 'Seuran palvelut tallennettu.');
         }
         if ($toiminto === 'tila') {
             $seuraId = (int) ($_POST['seura_id'] ?? 0);
             $tila = ($_POST['tila'] ?? '') === 'suljettu' ? 'suljettu' : 'aktiivinen';
             $pdo->prepare('UPDATE seurat SET tila = ? WHERE id = ?')->execute([$tila, $seuraId]);
-            $viesti = 'Seuran tila päivitetty.';
+            seuratHallintaOhjaa($seuraId, 'Seuran tila päivitetty.');
         }
         if ($toiminto === 'poista_seura') {
             $tulos = tiliPoistaSeuraJaKayttajat(
@@ -78,9 +107,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             );
             $viesti = 'Seura «' . $tulos['nimi'] . '» poistettu'
                 . ($tulos['kayttajia'] > 0 ? (' ja ' . $tulos['kayttajia'] . ' käyttäjää poistettu.') : '.');
+            seuratHallintaOhjaa(0, $viesti);
         }
     } catch (Throwable $e) {
-        $virhe = $e->getMessage();
+        seuratHallintaOhjaa((int) ($_POST['seura_id'] ?? 0), '', $e->getMessage());
     }
 }
 
@@ -104,121 +134,75 @@ $seurat = $pdo->query("
            (SELECT COUNT(*) FROM seura_jasenet j WHERE j.seura_id = s.id AND j.tila = 'aktiivinen') AS jasen_lkm
     FROM seurat s
     INNER JOIN paketit p ON p.id = s.paketti_id
-    ORDER BY s.id DESC
+    ORDER BY s.nimi ASC, s.id ASC
 ")->fetchAll(PDO::FETCH_ASSOC);
 
+$valittuId = (int) ($_GET['id'] ?? 0);
+$valittuSeura = null;
+if ($valittuId > 0) {
+    foreach ($seurat as $s) {
+        if ((int) $s['id'] === $valittuId) {
+            $valittuSeura = $s;
+            break;
+        }
+    }
+    if (!$valittuSeura && $virhe === '') {
+        $virhe = 'Seuraa ei löytynyt.';
+        $valittuId = 0;
+    }
+}
+
+$seuraTyylit = function_exists('seuraLogoTyylit') ? seuraLogoTyylit() : '';
 if ($hasLayout) {
-    pageStart('Seurat', ['admin' => true, 'active' => 'seurat', 'pdo' => $pdo]);
+    pageStart('Seurat', ['admin' => true, 'active' => 'seurat', 'pdo' => $pdo, 'extraHead' => $seuraTyylit]);
 } else {
-    echo '<!DOCTYPE html><html lang="fi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Seurat</title><link rel="stylesheet" href="../assets/css/style.css"></head><body><div class="container">';
+    echo '<!DOCTYPE html><html lang="fi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Seurat</title><link rel="stylesheet" href="../assets/css/style.css">' . $seuraTyylit . '</head><body><div class="container">';
     echo '<p><a href="index.php">← Hallinta</a></p>';
 }
 ?>
 
 <h1>Seurojen hallinta</h1>
+<?php if ($valittuSeura): ?>
+    <p><a href="seurat.php">&larr; Kaikki seurat</a></p>
+<?php else: ?>
 <p class="muted">
-    Palvelut ovat seuralle erilliset: <strong>GPS</strong>, <strong>Kilpailut</strong> ja
-    <strong>Iltarastit</strong>. Viestikilpailu on adminin seuralle antama lisäoikeus.
-    IRMA/Rastilippu-liitäntä on seuran itse valitsema lisäominaisuus
-    (<?= htmlspecialchars(tiliEuroTeksti(tiliRastilippuHintaEuro())) ?>/tapahtuma, laskutus vuosittain).
-    GPS-paketti (ilmainen / pro / analyysi) rajoittaa vain GPS:n ominaisuuksia ja kuukausikiintiötä.
+    Valitse seura nähdäksesi sen asetukset. Logo näkyy, jos seura on tallentanut sen.
 </p>
+<?php endif; ?>
 
 <?php if ($viesti): ?><p class="notice" style="color:#c49a22"><?= htmlspecialchars($viesti) ?></p><?php endif; ?>
 <?php if ($virhe): ?><p class="error" style="color:#c62828"><?= htmlspecialchars($virhe) ?></p><?php endif; ?>
 
-<div class="public-card">
-    <h2>Rastilippu-laskutus <?= (int) $laskutusVuosi ?></h2>
-    <p class="muted">
-        <?= htmlspecialchars(tiliEuroTeksti(tiliRastilippuHintaEuro())) ?>/tapahtuma ·
-        laskutetaan vuosittain seuran laskutussähköpostiin.
-        Yhteensä <?= (int) $laskuTapahtumat ?> tapahtumaa ·
-        <?= htmlspecialchars(tiliEuroTeksti($laskuSumma)) ?>.
-        Seurat, joille on merkitty ei laskutusta, eivät näy tässä listassa.
-    </p>
-    <p>
-        <?php for ($y = $nytVuosi; $y >= $nytVuosi - 3; $y--): ?>
-            <?php if ($y === $laskutusVuosi): ?>
-                <strong><?= $y ?></strong>
-            <?php else: ?>
-                <a href="seurat.php?vuosi=<?= $y ?>"><?= $y ?></a>
-            <?php endif; ?>
-            <?= $y > $nytVuosi - 3 ? ' · ' : '' ?>
-        <?php endfor; ?>
-    </p>
-    <?php if (!$laskut): ?>
-        <p class="muted">Ei liitäntöjä eikä yhdistettyjä tapahtumia tälle vuodelle.</p>
-    <?php else: ?>
-        <table border="1" cellpadding="8" cellspacing="0" style="width:100%;border-collapse:collapse">
-            <tr>
-                <th>Seura</th>
-                <th>Laskutussähköposti</th>
-                <th>Liitäntä</th>
-                <th>Tapahtumia</th>
-                <th>Summa</th>
-            </tr>
-            <?php foreach ($laskut as $rivi): ?>
-                <tr>
-                    <td><?= htmlspecialchars((string) $rivi['nimi']) ?></td>
-                    <td>
-                        <?php if ($rivi['laskutus_email'] !== ''): ?>
-                            <?= htmlspecialchars($rivi['laskutus_email']) ?>
-                        <?php else: ?>
-                            <span class="error">puuttuu</span>
-                        <?php endif; ?>
-                    </td>
-                    <td><?= !empty($rivi['liitanta']) ? 'päällä' : 'ei' ?></td>
-                    <td><?= (int) $rivi['yhdistettyja'] ?></td>
-                    <td><?= htmlspecialchars(tiliEuroTeksti((float) $rivi['summa_euro'])) ?></td>
-                </tr>
-            <?php endforeach; ?>
-        </table>
-    <?php endif; ?>
-</div>
-
-<div class="public-card">
-    <h2>GPS-paketit</h2>
-    <table border="1" cellpadding="8" cellspacing="0" style="width:100%;border-collapse:collapse;margin-bottom:24px">
-        <tr>
-            <th>Koodi</th><th>Nimi</th><th>Laitteet</th><th>Kesto</th><th>Tapahtumat/kk</th><th>Kuvaus</th>
-        </tr>
-        <?php foreach ($paketit as $p): ?>
-            <tr>
-                <td><?= htmlspecialchars($p['koodi']) ?></td>
-                <td><?= htmlspecialchars($p['nimi']) ?></td>
-                <td><?= (int) $p['max_laitteet'] ?></td>
-                <td><?= (int) $p['max_kesto_tuntia'] ?> h</td>
-                <td><?= (int) $p['max_tapahtumat_kk'] ?></td>
-                <td><?= htmlspecialchars((string) ($p['kuvaus'] ?? '')) ?></td>
-            </tr>
-        <?php endforeach; ?>
-    </table>
-</div>
-
-<?php if (!$seurat): ?>
-    <div class="public-card" style="margin-top:1rem">
-        <p class="muted">Ei seuroja vielä. Käyttäjät luovat seuran rekisteröityessä.</p>
-    </div>
-<?php else: ?>
-    <?php foreach ($seurat as $s): ?>
-        <?php
-        $sid = (int) $s['id'];
-        $gpsKk = tiliSeuranTapahtumatKuussa($pdo, $sid);
-        $kisat = tiliSeuranKilpailuLkm($pdo, $sid);
-        $rl = tiliRastilippuLaskutus($pdo, $sid, $laskutusVuosi);
-        $maxKk = (int) ($s['max_tapahtumat_kk'] ?? 0);
-        ?>
-        <div class="public-card" style="margin-top:1rem">
-            <h2><?= htmlspecialchars($s['nimi']) ?> <small>#<?= $sid ?></small></h2>
-            <p class="muted">
-                <?= htmlspecialchars((string) $s['slug']) ?>
-                · <?= (int) $s['jasen_lkm'] ?> jäsentä
-                · tila <?= htmlspecialchars($s['tila']) ?>
-            </p>
+<?php if ($valittuSeura): ?>
+    <?php
+    $s = $valittuSeura;
+    $sid = (int) $s['id'];
+    $gpsKk = tiliSeuranTapahtumatKuussa($pdo, $sid);
+    $kisat = tiliSeuranKilpailuLkm($pdo, $sid);
+    $rl = tiliRastilippuLaskutus($pdo, $sid, $laskutusVuosi);
+    $maxKk = (int) ($s['max_tapahtumat_kk'] ?? 0);
+    $csrf = function_exists('csrfKentta') ? csrfKentta() : '';
+    ?>
+    <div class="public-card">
+        <div class="seura-asetus-paa">
+            <?php if (function_exists('seuraLogoHtml')) {
+                seuraLogoHtml($s, 'seura-logo--iso');
+            } ?>
+            <div>
+                <h2><?= htmlspecialchars((string) $s['nimi']) ?></h2>
+                <p class="muted" style="margin:0.25rem 0 0">
+                    <?= htmlspecialchars((string) $s['slug']) ?>
+                    · <?= (int) $s['jasen_lkm'] ?> jäsentä
+                    · tila <?= htmlspecialchars((string) $s['tila']) ?>
+                    · #<?= $sid ?>
+                </p>
+            </div>
+        </div>
+        <?php if (function_exists('seuraLogoLomakeHtml')) {
+            seuraLogoLomakeHtml($s, $csrf);
+        } ?>
             <form method="post">
-                <?php if (function_exists('csrfKentta')) {
-                    echo csrfKentta();
-                } ?>
+                <?= $csrf ?>
                 <input type="hidden" name="toiminto" value="tallenna_palvelut">
                 <input type="hidden" name="seura_id" value="<?= $sid ?>">
                 <fieldset style="border:0;padding:0;margin:0 0 1rem">
@@ -289,24 +273,114 @@ if ($hasLayout) {
                 </p>
             </form>
             <form method="post" style="margin:0">
-                <?php if (function_exists('csrfKentta')) {
-                    echo csrfKentta();
-                } ?>
+                <?= $csrf ?>
                 <input type="hidden" name="toiminto" value="tila">
                 <input type="hidden" name="seura_id" value="<?= $sid ?>">
                 <input type="hidden" name="tila" value="<?= $s['tila'] === 'aktiivinen' ? 'suljettu' : 'aktiivinen' ?>">
                 <button type="submit" class="btn-secondary"><?= $s['tila'] === 'aktiivinen' ? 'Sulje seura' : 'Avaa seura' ?></button>
             </form>
             <form method="post" style="margin:0.6rem 0 0" onsubmit="return confirm('Poistetaanko seura <?= htmlspecialchars((string) $s['nimi'], ENT_QUOTES) ?> ja sen käyttäjät pysyvästi? Tätä ei voi perua.');">
-                <?php if (function_exists('csrfKentta')) {
-                    echo csrfKentta();
-                } ?>
+                <?= $csrf ?>
                 <input type="hidden" name="toiminto" value="poista_seura">
                 <input type="hidden" name="seura_id" value="<?= $sid ?>">
                 <button type="submit" class="btn-danger">Poista seura ja sen käyttäjät</button>
             </form>
-        </div>
-    <?php endforeach; ?>
+    </div>
+<?php else: ?>
+<?php if (!$seurat): ?>
+    <div class="public-card" style="margin-top:1rem">
+        <p class="muted">Ei seuroja vielä. Käyttäjät luovat seuran rekisteröityessä.</p>
+    </div>
+<?php else: ?>
+    <div class="seura-kortti-lista">
+        <?php foreach ($seurat as $s): ?>
+            <a class="seura-kortti" href="seurat.php?id=<?= (int) $s['id'] ?>">
+                <?php if (function_exists('seuraLogoHtml')) {
+                    seuraLogoHtml($s);
+                } ?>
+                <span class="seura-kortti-teksti">
+                    <strong class="seura-kortti-nimi"><?= htmlspecialchars((string) $s['nimi']) ?></strong>
+                    <span class="seura-kortti-meta muted">
+                        <?= (int) $s['jasen_lkm'] ?> jäsentä
+                        · <?= htmlspecialchars((string) $s['tila']) ?>
+                    </span>
+                </span>
+            </a>
+        <?php endforeach; ?>
+    </div>
+<?php endif; ?>
+<?php endif; ?>
+
+<?php if (!$valittuSeura): ?>
+
+<div class="public-card">
+    <h2>Rastilippu-laskutus <?= (int) $laskutusVuosi ?></h2>
+    <p class="muted">
+        <?= htmlspecialchars(tiliEuroTeksti(tiliRastilippuHintaEuro())) ?>/tapahtuma ·
+        laskutetaan vuosittain seuran laskutussähköpostiin.
+        Yhteensä <?= (int) $laskuTapahtumat ?> tapahtumaa ·
+        <?= htmlspecialchars(tiliEuroTeksti($laskuSumma)) ?>.
+        Seurat, joille on merkitty ei laskutusta, eivät näy tässä listassa.
+    </p>
+    <p>
+        <?php for ($y = $nytVuosi; $y >= $nytVuosi - 3; $y--): ?>
+            <?php if ($y === $laskutusVuosi): ?>
+                <strong><?= $y ?></strong>
+            <?php else: ?>
+                <a href="seurat.php?vuosi=<?= $y ?>"><?= $y ?></a>
+            <?php endif; ?>
+            <?= $y > $nytVuosi - 3 ? ' · ' : '' ?>
+        <?php endfor; ?>
+    </p>
+    <?php if (!$laskut): ?>
+        <p class="muted">Ei liitäntöjä eikä yhdistettyjä tapahtumia tälle vuodelle.</p>
+    <?php else: ?>
+        <table border="1" cellpadding="8" cellspacing="0" style="width:100%;border-collapse:collapse">
+            <tr>
+                <th>Seura</th>
+                <th>Laskutussähköposti</th>
+                <th>Liitäntä</th>
+                <th>Tapahtumia</th>
+                <th>Summa</th>
+            </tr>
+            <?php foreach ($laskut as $rivi): ?>
+                <tr>
+                    <td><?= htmlspecialchars((string) $rivi['nimi']) ?></td>
+                    <td>
+                        <?php if ($rivi['laskutus_email'] !== ''): ?>
+                            <?= htmlspecialchars($rivi['laskutus_email']) ?>
+                        <?php else: ?>
+                            <span class="error">puuttuu</span>
+                        <?php endif; ?>
+                    </td>
+                    <td><?= !empty($rivi['liitanta']) ? 'päällä' : 'ei' ?></td>
+                    <td><?= (int) $rivi['yhdistettyja'] ?></td>
+                    <td><?= htmlspecialchars(tiliEuroTeksti((float) $rivi['summa_euro'])) ?></td>
+                </tr>
+            <?php endforeach; ?>
+        </table>
+    <?php endif; ?>
+</div>
+
+<div class="public-card">
+    <h2>GPS-paketit</h2>
+    <table border="1" cellpadding="8" cellspacing="0" style="width:100%;border-collapse:collapse;margin-bottom:24px">
+        <tr>
+            <th>Koodi</th><th>Nimi</th><th>Laitteet</th><th>Kesto</th><th>Tapahtumat/kk</th><th>Kuvaus</th>
+        </tr>
+        <?php foreach ($paketit as $p): ?>
+            <tr>
+                <td><?= htmlspecialchars($p['koodi']) ?></td>
+                <td><?= htmlspecialchars($p['nimi']) ?></td>
+                <td><?= (int) $p['max_laitteet'] ?></td>
+                <td><?= (int) $p['max_kesto_tuntia'] ?> h</td>
+                <td><?= (int) $p['max_tapahtumat_kk'] ?></td>
+                <td><?= htmlspecialchars((string) ($p['kuvaus'] ?? '')) ?></td>
+            </tr>
+        <?php endforeach; ?>
+    </table>
+</div>
+
 <?php endif; ?>
 
 <?php

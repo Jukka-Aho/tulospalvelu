@@ -364,6 +364,13 @@ function tiliVarmistaSeuraPalvelut(PDO $pdo): void
     tiliVarmistaSarake($pdo, 'seurat', 'viesti_kilpailu', 'TINYINT(1) NOT NULL DEFAULT 0');
     tiliVarmistaSarake($pdo, 'seurat', 'laskutus_email', 'VARCHAR(255) NULL');
     tiliVarmistaSarake($pdo, 'seurat', 'ei_laskutusta', 'TINYINT(1) NOT NULL DEFAULT 0');
+    tiliVarmistaSarake($pdo, 'seurat', 'logo', 'VARCHAR(255) NULL');
+    if (is_readable(__DIR__ . '/seura_logo.php')) {
+        require_once __DIR__ . '/seura_logo.php';
+        if (function_exists('seuraLogoVarmista')) {
+            seuraLogoVarmista($pdo);
+        }
+    }
     if ($uusiLiit) {
         try {
             $pdo->exec("

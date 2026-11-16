@@ -1,10 +1,5 @@
 <?php
 
-require_once __DIR__ . '/../includes/tili.php';
-if (is_readable(__DIR__ . '/../includes/auth.php')) {
-    require_once __DIR__ . '/../includes/auth.php';
-}
-
 function fail($msg)
 {
     fwrite(STDERR, "FAIL: $msg\n");
@@ -15,6 +10,20 @@ function ok($msg)
 {
     echo "ok: $msg\n";
 }
+
+require_once __DIR__ . '/../includes/tili.php';
+require_once __DIR__ . '/../includes/seura_logo.php';
+if (is_readable(__DIR__ . '/../includes/auth.php')) {
+    require_once __DIR__ . '/../includes/auth.php';
+}
+
+seuraLogoKirjaimet('Helsingin Suunnistajat') === 'HS' || fail('kirjaimet kaksi sanaa');
+seuraLogoKirjaimet('Koovee') === 'KO' || fail('kirjaimet yksi sana');
+seuraLogoKirjaimet('') === '?' || fail('kirjaimet tyhja');
+seuraLogoTiedostoOk('12-ab12cd.png') || fail('tiedosto ok');
+seuraLogoTiedostoOk('../x.php') && fail('tiedosto polku');
+seuraLogoUrl(['logo' => '12-ab12cd.png']) === '' || fail('url ilman tiedostoa');
+ok('logo apurit');
 
 $vanha = $_SESSION ?? [];
 $_SESSION = ['role' => 'iltarasti', 'user_id' => 10];
@@ -101,6 +110,9 @@ str_contains($oma, 'poista_maksu') && fail('oma_seura ei maksuja');
 str_contains($oma, 'id="seura-maksut"') && fail('oma_seura ei maksukehysta');
 str_contains($oma, 'Ei maksuja.') && fail('oma_seura ei tyhjaa maksulistaa');
 $seurat = file_get_contents(__DIR__ . '/../admin/seurat.php');
+str_contains($seurat, 'seura-kortti') || fail('seurat kortit');
+str_contains($seurat, 'seurat.php?id=') || fail('seurat avaa asetukset');
+str_contains($seurat, 'seuraLogoLomakeHtml') || fail('seurat logo lomake');
 str_contains($seurat, 'poista_seura') || fail('ui poista seura');
 str_contains($seurat, 'poista_maksu') && fail('seurat ei nayta kilpailijoiden maksuja');
 str_contains($seurat, 'poista_seuran_maksut') && fail('seurat ei poista seuran maksuja');
@@ -131,6 +143,8 @@ str_contains($tiliUi, "'kaikki' => 'Kaikki'") || fail('valikko kaikki');
 str_contains($tiliUi, "'ajanotto' => 'Ajanotto'") || fail('valikko ajanotto');
 str_contains($tiliUi, "'lahtopaikka' => 'Lähtöpaikka'") || fail('valikko lahtopaikka');
 str_contains($tiliUi, "'ilmoittautuminen' => 'Ilmoittautuminen'") || fail('valikko ilmoittautuminen');
+str_contains($oma, 'seuraLogoLomakeHtml') || fail('oma_seura logo');
+str_contains($oma, 'tallenna_logo') || fail('oma_seura tallenna logo');
 str_contains($oma, 'name="lopeta_seura_nimi"') || fail('lopeta kirjoita nimi');
 str_contains($oma, 'Haluan lopettaa seuran') || fail('lopeta vahvistusnappi');
 str_contains($oma, "onsubmit=\"return confirm('Lopetetaanko") && fail('lopeta ei pelkkaa confirmia');

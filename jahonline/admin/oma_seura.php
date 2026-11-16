@@ -4,6 +4,9 @@ require_once __DIR__ . '/../includes/auth.php';
 vaadiKirjautuminen();
 require_once __DIR__ . '/../db.php';
 require_once __DIR__ . '/../includes/tili.php';
+if (is_readable(__DIR__ . '/../includes/seura_logo.php')) {
+    require_once __DIR__ . '/../includes/seura_logo.php';
+}
 if (is_readable(__DIR__ . '/../includes/iltarasti.php')) {
     require_once __DIR__ . '/../includes/iltarasti.php';
 }
@@ -93,6 +96,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $omatSeurat = tiliHaeSeuratKayttajalle($pdo, $userId);
             $voiHallita = $seura && in_array($seura['jasen_rooli'] ?? '', ['omistaja', 'admin'], true);
             $viesti = 'Seura on lopetettu JAHOnlinessa.';
+        }
+        if ($seura && $voiHallita && $toiminto === 'tallenna_logo') {
+            seuraLogoTallenna($pdo, (int) $seura['id'], $_FILES['logo'] ?? []);
+            tiliLataaKayttajaSessioon($pdo);
+            $seura = tiliHaeSeuraKayttajalle($pdo, $userId);
+            $viesti = 'Logo tallennettu.';
+        }
+        if ($seura && $voiHallita && $toiminto === 'poista_logo') {
+            seuraLogoPoista($pdo, (int) $seura['id']);
+            tiliLataaKayttajaSessioon($pdo);
+            $seura = tiliHaeSeuraKayttajalle($pdo, $userId);
+            $viesti = 'Logo poistettu.';
         }
         if ($seura && $voiHallita && $toiminto === 'rastilippu_liitanta') {
             if (!$illatPaalla) {
@@ -353,8 +368,9 @@ $jasenTauluCss = <<<'CSS'
 </style>
 CSS;
 
+$seuraTyylit = function_exists('seuraLogoTyylit') ? seuraLogoTyylit() : '';
 if ($hasLayout) {
-    pageStart('Oma seura', ['admin' => true, 'active' => 'oma_seura', 'pdo' => $pdo, 'extraHead' => $jasenTauluCss]);
+    pageStart('Oma seura', ['admin' => true, 'active' => 'oma_seura', 'pdo' => $pdo, 'extraHead' => $jasenTauluCss . $seuraTyylit]);
 } else {
     echo '<!DOCTYPE html><html lang="fi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Oma seura</title><link rel="stylesheet" href="../assets/css/style.css"></head><body><div class="container">';
     echo '<p><a href="index.php">← Hallinta</a></p>';
@@ -381,7 +397,17 @@ if ($hasLayout) {
     </div>
 <?php else: ?>
     <div class="public-card">
-        <h2><?= htmlspecialchars($seura['nimi']) ?></h2>
+        <div class="seura-asetus-paa">
+            <?php if (function_exists('seuraLogoHtml')) {
+                seuraLogoHtml($seura, 'seura-logo--iso');
+            } ?>
+            <div>
+                <h2><?= htmlspecialchars($seura['nimi']) ?></h2>
+            </div>
+        </div>
+        <?php if ($voiHallita && function_exists('seuraLogoLomakeHtml')) {
+            seuraLogoLomakeHtml($seura, $csrfKentta);
+        } ?>
         <?php if (count($omatSeurat) > 1): ?>
             <form method="post" style="margin:0 0 1rem">
                 <?= $csrfKentta ?>

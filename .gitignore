@@ -1,3 +1,5 @@
+jahonline/uploads/seurat/*
+!jahonline/uploads/seurat/.gitkeep
 TPexe
 vc10
 Debug
