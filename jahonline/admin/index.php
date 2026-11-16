@@ -685,15 +685,15 @@ if ($hasLayout) {
             <h2><?= onAdmin() ? 'Kaikki kilpailut' : 'Omat kilpailut' ?></h2>
             <p class="muted">Valitse kilpailu jatkaaksesi. Valikot avautuvat oikeuksiesi mukaan.</p>
             <?php if ($kisaAikavali && function_exists('kilpailuAikavaliLomake')): ?>
-                <?php kilpailuAikavaliLomake('index.php', $kisaAikavali); ?>
+                <?php kilpailuAikavaliLomake('index.php', $kisaAikavali, $pdo); ?>
             <?php endif; ?>
         </div>
 
         <?php if ($omatKisat === []): ?>
             <p class="home-empty muted">
-                <?= $kisaAikavali ? 'Ei kilpailuja tällä aikavälillä.' : 'Ei vielä kilpailuja.' ?>
-                <a href="kilpailut.php?uusi=1">Luo kilpailu</a><?php if ($kisaAikavali): ?>
-                    · <a href="index.php?kaikki=1">Näytä kaikki</a>
+                <?= $kisaAikavali ? 'Ei kilpailuja näillä suodattimilla.' : 'Ei vielä kilpailuja.' ?>
+                <a href="kilpailut.php?uusi=1">Luo kilpailu</a><?php if ($kisaAikavali && function_exists('kilpailuAikavaliKaikkiHref')): ?>
+                    · <a href="<?= htmlspecialchars(kilpailuAikavaliKaikkiHref('index.php', $kisaAikavali)) ?>">Näytä kaikki päivät</a>
                 <?php endif; ?>
             </p>
         <?php else: ?>

@@ -55,6 +55,31 @@ ok('sql väli');
 $tyhjaSql === '' || fail('kaikki ei sql');
 ok('kaikki ilman sql-rajaa');
 
+kilpailuParsiSeuraId([]) === 0 || fail('seura oletus');
+kilpailuParsiSeuraId(['seura_id' => '12']) === 12 || fail('seura id');
+kilpailuParsiSeuraId(['seura_id' => '-1']) === -1 || fail('ilman seuraa');
+kilpailuParsiSeuraId(['seura_id' => 'abc']) === 0 || fail('huono seura');
+ok('seura parse');
+
+$seuraGet = kilpailuParsiaikavali(['seura_id' => '7']);
+$seuraGet['seura_id'] === 7 || fail('parse seura_id');
+$seuraGet['kaikki'] === false || fail('seura ei poista päivää');
+ok('parse seura + oletuspäivät');
+
+[$seuraSql, $seuraP] = kilpailuAikavaliSql('k', ['kaikki' => true, 'seura_id' => 7]);
+$seuraSql === 'k.seura_id = ?' || fail('seura sql kaikki-päivillä');
+$seuraP === [7] || fail('seura param');
+ok('seura sql säilyy kun kaikki päivät');
+
+[$nullSql] = kilpailuAikavaliSql('k', ['kaikki' => true, 'seura_id' => -1]);
+$nullSql === 'k.seura_id IS NULL' || fail('ilman seuraa sql');
+ok('ilman seuraa sql');
+
+$href = kilpailuAikavaliKaikkiHref('index.php', ['seura_id' => 9, 'kaikki' => false]);
+str_contains($href, 'kaikki=1') || fail('href kaikki');
+str_contains($href, 'seura_id=9') || fail('href seura');
+ok('kaikki-href säilyttää seuran');
+
 $acl = file_get_contents(__DIR__ . '/../includes/acl.php');
 str_contains($acl, 'function kilpailuSeuraNimi') || fail('seura nimi fn');
 str_contains($acl, '?array $aikavali = null') || fail('haeKayttajanKilpailut aikavali');
@@ -63,12 +88,19 @@ ok('acl');
 $index = file_get_contents(__DIR__ . '/../admin/index.php');
 str_contains($index, 'Kaikki kilpailut') || fail('index otsikko');
 str_contains($index, 'kilpailuAikavaliLomake') || fail('index lomake');
+str_contains($index, "kilpailuAikavaliLomake('index.php', \$kisaAikavali, \$pdo)") || fail('index seura pdo');
 str_contains($index, 'seura_nimi') || fail('index seura');
 ok('index');
 
 $lista = file_get_contents(__DIR__ . '/../admin/kilpailut.php');
 str_contains($lista, 'kilpailuAikavaliLomake') || fail('lista lomake');
+str_contains($lista, "kilpailuAikavaliLomake('kilpailut.php', \$kisaAikavali, \$pdo)") || fail('lista seura pdo');
 ok('kilpailulista');
+
+$lomakeSrc = file_get_contents(__DIR__ . '/../includes/kilpailu_aikavali.php');
+str_contains($lomakeSrc, 'name="seura_id"') || fail('lomake seura');
+str_contains($lomakeSrc, 'Kaikki seurat') || fail('lomake kaikki seurat');
+ok('lomake seura');
 
 $nav = file_get_contents(__DIR__ . '/../includes/admin_nav.php');
 str_contains($nav, 'active-kilpailu-seura') || fail('nav seura');

@@ -538,7 +538,7 @@ ob_start();
         <h2>Kilpailulista</h2>
         <p class="muted">Valitse kisa hallintaan, muokkaa, arkistoi tai poista. Arkistoidut eivät näy julkisilla listoilla.</p>
         <?php if ($kisaAikavali && function_exists('kilpailuAikavaliLomake')): ?>
-            <?php kilpailuAikavaliLomake('kilpailut.php', $kisaAikavali); ?>
+            <?php kilpailuAikavaliLomake('kilpailut.php', $kisaAikavali, $pdo); ?>
         <?php endif; ?>
         <p><a class="btn" href="kilpailut.php?uusi=1">Lisää uusi kilpailu</a></p>
     </div>
