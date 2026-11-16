@@ -55,10 +55,10 @@ ok('sql väli');
 $tyhjaSql === '' || fail('kaikki ei sql');
 ok('kaikki ilman sql-rajaa');
 
-kilpailuParsiSeuraId([]) === 0 || fail('seura oletus');
-kilpailuParsiSeuraId(['seura_id' => '12']) === 12 || fail('seura id');
-kilpailuParsiSeuraId(['seura_id' => '-1']) === -1 || fail('ilman seuraa');
-kilpailuParsiSeuraId(['seura_id' => 'abc']) === 0 || fail('huono seura');
+kilpailuSuodatinSeuraId([]) === 0 || fail('seura oletus');
+kilpailuSuodatinSeuraId(['seura_id' => '12']) === 12 || fail('seura id');
+kilpailuSuodatinSeuraId(['seura_id' => '-1']) === -1 || fail('ilman seuraa');
+kilpailuSuodatinSeuraId(['seura_id' => 'abc']) === 0 || fail('huono seura');
 ok('seura parse');
 
 $seuraGet = kilpailuParsiaikavali(['seura_id' => '7']);
@@ -101,6 +101,15 @@ $lomakeSrc = file_get_contents(__DIR__ . '/../includes/kilpailu_aikavali.php');
 str_contains($lomakeSrc, 'name="seura_id"') || fail('lomake seura');
 str_contains($lomakeSrc, 'Kaikki seurat') || fail('lomake kaikki seurat');
 ok('lomake seura');
+
+preg_match_all('/function ([a-zA-Z_][a-zA-Z0-9_]*)/', $lomakeSrc, $fnAikavali);
+preg_match_all('/function ([a-zA-Z_][a-zA-Z0-9_]*)/', $lista, $fnLista);
+$hit = array_intersect(
+    array_map('strtolower', $fnAikavali[1]),
+    array_map('strtolower', $fnLista[1])
+);
+$hit === [] || fail('funktionimitörmäys: ' . implode(',', $hit));
+ok('ei törmäystä kilpailut.php:n kanssa');
 
 $nav = file_get_contents(__DIR__ . '/../includes/admin_nav.php');
 str_contains($nav, 'active-kilpailu-seura') || fail('nav seura');

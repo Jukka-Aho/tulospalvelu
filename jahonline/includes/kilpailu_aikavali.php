@@ -30,7 +30,7 @@ function kilpailuAikavaliPaivaOk(string $arvo): bool
     return $dt instanceof DateTimeImmutable && $dt->format('Y-m-d') === $arvo;
 }
 
-function kilpailuParsiSeuraId(array $get): int
+function kilpailuSuodatinSeuraId(array $get): int
 {
     $raw = trim((string) ($get['seura_id'] ?? ''));
     if ($raw === '-1') {
@@ -71,7 +71,7 @@ function kilpailuParsiaikavali(array $get): array
         'alkaen' => $alkaen,
         'asti' => $asti,
         'kaikki' => $kaikki,
-        'seura_id' => kilpailuParsiSeuraId($get),
+        'seura_id' => kilpailuSuodatinSeuraId($get),
     ];
 }
 
