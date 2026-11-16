@@ -35,6 +35,12 @@ function iltarastiVarmista(PDO $pdo): void
         }
     };
     $lisaa($pdo, 'tyyppi', "tyyppi ENUM('henkilokohtainen','viesti') NOT NULL DEFAULT 'henkilokohtainen'");
+    if (is_readable(__DIR__ . '/viesti_sarjat.php')) {
+        require_once __DIR__ . '/viesti_sarjat.php';
+        if (function_exists('viestiSarjatVarmista')) {
+            viestiSarjatVarmista($pdo);
+        }
+    }
     $lisaa($pdo, 'rastilippu_event_id', 'rastilippu_event_id INT NULL DEFAULT NULL');
     $lisaa($pdo, 'rastilippu_event_uuid', 'rastilippu_event_uuid VARCHAR(64) NULL DEFAULT NULL');
     $lisaa($pdo, 'rastilippu_series_id', 'rastilippu_series_id INT NULL DEFAULT NULL');

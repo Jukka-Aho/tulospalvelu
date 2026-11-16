@@ -199,8 +199,9 @@ function emitLukijaTaydennaViesti(PDO $pdo, array $kilpailu, ?array $rivi, array
         }
     }
     $osuusLkm = 0;
+    $sarjaId = (int) ($joukkue['sarja_id'] ?? ($rivi['sarja_id'] ?? 0));
     if (function_exists('viestiOsuusLkm')) {
-        $osuusLkm = viestiOsuusLkm($pdo, (int) $kilpailu['id'], $osuus);
+        $osuusLkm = viestiOsuusLkm($pdo, (int) $kilpailu['id'], $osuus, $sarjaId);
     }
     if ($joukkueId > 0) {
         try {

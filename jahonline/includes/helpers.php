@@ -2543,8 +2543,14 @@ function haeLiveTulokset(PDO $pdo, $kilpailu_id)
 /**
  * Viestikilpailun osuusmäärä (1–30).
  */
-function viestiOsuusLkm(PDO $pdo, int $kilpailu_id, int $havaittuMax = 0): int
+function viestiOsuusLkm(PDO $pdo, int $kilpailu_id, int $havaittuMax = 0, int $sarjaId = 0): int
 {
+    if (is_readable(__DIR__ . '/viesti_sarjat.php')) {
+        require_once __DIR__ . '/viesti_sarjat.php';
+    }
+    if (function_exists('viestiOsuusLkmSarjasta')) {
+        return viestiOsuusLkmSarjasta($pdo, $kilpailu_id, $sarjaId, $havaittuMax);
+    }
     $n = 0;
     try {
         $stmt = $pdo->prepare('SELECT COALESCE(osuuksia, 0) FROM kilpailut WHERE id = ?');
@@ -2657,6 +2663,12 @@ function taydennaViestiOsuusSijat(array $tulokset): array
 function haeLiveViestiTulokset(PDO $pdo, $kilpailu_id): array
 {
     $kilpailu_id = (int) $kilpailu_id;
+    if (is_readable(__DIR__ . '/viesti_sarjat.php')) {
+        require_once __DIR__ . '/viesti_sarjat.php';
+        if (function_exists('viestiSarjatVarmista')) {
+            viestiSarjatVarmista($pdo);
+        }
+    }
     $osuusLkmOletus = viestiOsuusLkm($pdo, $kilpailu_id);
 
     $stmt = $pdo->prepare('
@@ -2670,7 +2682,8 @@ function haeLiveViestiTulokset(PDO $pdo, $kilpailu_id): array
             s.matka AS sarja_matka,
             s.jarjestys AS sarja_jarjestys,
             s.nayta_ajat,
-            s.valia_lkm
+            s.valia_lkm,
+            s.osuuksia AS sarja_osuuksia
         FROM joukkueet j
         JOIN sarjat s ON s.id = j.sarja_id
         WHERE j.kilpailu_id = ?
@@ -2728,7 +2741,13 @@ function haeLiveViestiTulokset(PDO $pdo, $kilpailu_id): array
             $havaittuMax = max($havaittuMax, $os);
         }
 
-        $osuusLkm = min(30, max($osuusLkmOletus, $havaittuMax, count($byOsuus), 1));
+        $osuusLkm = min(30, max(
+            (int) ($j['sarja_osuuksia'] ?? 0),
+            $osuusLkmOletus,
+            $havaittuMax,
+            count($byOsuus),
+            1
+        ));
 
         $osuudet = [];
         $kumul = 0;

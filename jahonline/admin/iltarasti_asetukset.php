@@ -28,6 +28,9 @@ if (!kisaOnIltarasti($kilpailu)) {
 }
 iltarastiOhjaaJulkiseen('/public/iltarasti_asetukset.php');
 iltarastiVarmista($pdo);
+if (is_readable(__DIR__ . '/../includes/viesti_sarjat.php')) {
+    require_once __DIR__ . '/../includes/viesti_sarjat.php';
+}
 $kilpailu_id = (int) $kilpailu['id'];
 $seuraId = (int) ($kilpailu['seura_id'] ?? 0);
 $voiAvaimen = iltarastiVoiAvaimen();
@@ -72,6 +75,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             (string) ($_POST['paikka'] ?? ''),
             (string) ($_POST['paiva'] ?? '')
         );
+        if ($onViesti && function_exists('viestiSarjatTallenna')) {
+            viestiSarjatTallenna(
+                $pdo,
+                $kilpailu_id,
+                $_POST['sarja_id'] ?? [],
+                $_POST['sarja_nimi'] ?? [],
+                $_POST['sarja_osuuksia'] ?? [],
+                $_POST['sarja_poista'] ?? []
+            );
+        }
         if ($voiYhdistaa && array_key_exists('rastilippu_event_id', $_POST)) {
             $eventId = (int) ($_POST['rastilippu_event_id'] ?? 0);
             $tapahtuma = null;
@@ -109,6 +122,7 @@ if (function_exists('radatKorjaaIltarastiPituusKm')) {
     radatKorjaaIltarastiPituusKm($pdo, $kilpailu_id);
 }
 $radat = function_exists('radatHaeKilpailuun') ? radatHaeKilpailuun($pdo, $kilpailu_id) : [];
+$viestiSarjat = ($onViesti && function_exists('viestiSarjatHae')) ? viestiSarjatHae($pdo, $kilpailu_id) : [];
 if (is_readable(__DIR__ . '/../includes/emit_lukija.php')) {
     require_once __DIR__ . '/../includes/emit_lukija.php';
 }
@@ -150,6 +164,89 @@ pageStart('Asetukset', iltarastiKuoriOpts($pdo, $kilpailu, 'asetukset'));
     <label>Päivä <input type="date" name="paiva" required value="<?= htmlspecialchars($pvmLomake) ?>"></label>
     <?php if (!empty($onViesti)): ?>
         <p class="muted">Rastilippu-liitäntä on toistaiseksi vain henkilökohtaisissa tapahtumissa.</p>
+        <h2 style="margin:1.1rem 0 0.4rem">Sarjat</h2>
+        <p class="muted">Anna sarjan nimi ja montako osuutta siinä juostaan.</p>
+        <div class="table-scroll">
+            <table class="data-table" id="viesti-sarjat">
+                <thead>
+                    <tr>
+                        <th>Sarja</th>
+                        <th>Osuuksia</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php
+                    $sarjaRivit = $viestiSarjat;
+                    $sarjaRivit[] = ['id' => 0, 'nimi' => '', 'osuuksia' => 3];
+                    foreach ($sarjaRivit as $sr):
+                        $sid = (int) ($sr['id'] ?? 0);
+                        $osu = (int) ($sr['osuuksia'] ?? 0);
+                        if ($osu < 1) {
+                            $osu = 3;
+                        }
+                        ?>
+                        <tr>
+                            <td>
+                                <input type="hidden" name="sarja_id[]" value="<?= $sid ?>">
+                                <input type="hidden" name="sarja_poista[]" value="0" class="viesti-sarja-poista">
+                                <input name="sarja_nimi[]" maxlength="80" placeholder="esim. H21"
+                                       value="<?= htmlspecialchars((string) ($sr['nimi'] ?? '')) ?>">
+                            </td>
+                            <td>
+                                <input type="number" name="sarja_osuuksia[]" min="1" max="30" value="<?= $osu ?>" style="width:4.5rem">
+                            </td>
+                            <td>
+                                <?php if ($sid > 0): ?>
+                                    <button type="button" class="btn-small btn-secondary viesti-sarja-poista-nappi">Poista</button>
+                                <?php endif; ?>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+        <p class="form-actions">
+            <button type="button" class="btn-secondary" id="viesti-sarja-lisaa">Lisää sarja</button>
+        </p>
+        <script>
+        (function () {
+            var taulu = document.getElementById('viesti-sarjat');
+            if (!taulu) return;
+            var tbody = taulu.querySelector('tbody');
+            var lisaa = document.getElementById('viesti-sarja-lisaa');
+            function riviPohja() {
+                var tr = document.createElement('tr');
+                tr.innerHTML = '<td><input type="hidden" name="sarja_id[]" value="0">'
+                    + '<input type="hidden" name="sarja_poista[]" value="0" class="viesti-sarja-poista">'
+                    + '<input name="sarja_nimi[]" maxlength="80" placeholder="esim. H21"></td>'
+                    + '<td><input type="number" name="sarja_osuuksia[]" min="1" max="30" value="3" style="width:4.5rem"></td>'
+                    + '<td><button type="button" class="btn-small btn-secondary viesti-sarja-poista-nappi">Poista</button></td>';
+                return tr;
+            }
+            if (lisaa) {
+                lisaa.addEventListener('click', function () {
+                    tbody.appendChild(riviPohja());
+                });
+            }
+            tbody.addEventListener('click', function (ev) {
+                var nappi = ev.target.closest('.viesti-sarja-poista-nappi');
+                if (!nappi) return;
+                var tr = nappi.closest('tr');
+                var id = tr.querySelector('input[name="sarja_id[]"]');
+                var poista = tr.querySelector('.viesti-sarja-poista');
+                if (id && id.value !== '0' && poista) {
+                    if (!confirm('Poistetaanko sarja?')) return;
+                    poista.value = '1';
+                    tr.style.display = 'none';
+                    var nimi = tr.querySelector('input[name="sarja_nimi[]"]');
+                    if (nimi && !nimi.value) nimi.value = '-';
+                } else {
+                    tr.remove();
+                }
+            });
+        })();
+        </script>
     <?php elseif ($voiYhdistaa && $avainTallennettu): ?>
         <label for="rastilippu_event_id">Rastilippu-tapahtuma</label>
         <select id="rastilippu_event_id" name="rastilippu_event_id">
