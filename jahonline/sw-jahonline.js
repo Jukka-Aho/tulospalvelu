@@ -3,7 +3,7 @@
  * /ahoauto/, /autot/, /ohjaus/ ja /scenic/ jätetään rauhaan.
  * Iltarastit: verkko ensin, muuten viimeisin avattu sivu.
  */
-const CACHE = 'jahonline-app-v23';
+const CACHE = 'jahonline-app-v56';
 const SHELL = [
   '/gps/assets/css/gps.css',
   '/gps/assets/icons/icon-192.png',
@@ -13,23 +13,24 @@ const SHELL = [
   '/gps/assets/icons/logo-128.png',
   '/public/icon-192.png',
   '/public/icon-512.png',
-  '/assets/css/style.css?v=20261106palvelut',
-  '/assets/css/emit_lukija.css?v=20261112esitys',
+  '/assets/css/style.css?v=20261114teema',
+  '/assets/css/emit_lukija.css?v=20261116viesti',
   '/assets/css/live_board.css?v=20261112pallo',
-  '/assets/css/iltarasti_kuori.css?v=20261112esitys',
+  '/assets/css/iltarasti_kuori.css?v=20261114pcusb2',
   '/assets/css/palvelu_valitsin.css?v=20261106mobiili',
-  '/assets/js/emit_lukija.js?v=20261112esitys',
+  '/assets/js/emit_lukija.js?v=20261116viesti',
+  '/assets/js/iltarasti_kuori_kehys.js?v=20261114pcusb3',
   '/assets/js/seuranta.js?v=20261112pallo',
-  '/assets/js/jah-radat-offline.js?v=20261107radat',
-  '/assets/js/emit_proto.js?v=20261024leima2',
+  '/assets/js/jah-radat-offline.js?v=20261112rata4',
+  '/assets/js/emit_proto.js?v=20261114tyhja',
   '/assets/js/si_proto.js?v=20261112si',
-  '/assets/js/usb_sarja.js?v=20261112si',
-  '/assets/js/usb_sarja_boot.js?v=20261112si',
+  '/assets/js/usb_sarja.js?v=20261114pcusb3',
+  '/assets/js/usb_sarja_boot.js?v=20261114pcusb3',
   '/assets/js/wake_lock.js?v=20260718a',
   '/assets/js/admin_nav.js?v=20261016avaus',
-  '/assets/js/jah-pwa.js?v=20261112esitys',
+  '/assets/js/jah-pwa.js?v=20261116viesti',
   '/assets/js/iltarasti_esitykset.js?v=20261112esitys',
-  '/assets/js/theme.js?v=20260917teema2'
+  '/assets/js/theme.js?v=20261114teema3'
 ];
 const AUTO_PREFIXES = ['/ahoauto', '/autot', '/ohjaus', '/scenic'];
 
@@ -42,6 +43,7 @@ function isAutoPath(pathname) {
 function isIltarastiOfflinePath(pathname) {
   return (
     pathname.indexOf('/public/emit_lukija.php') === 0 ||
+    pathname.indexOf('/public/viesti_lukija.php') === 0 ||
     pathname.indexOf('/public/automaatti.php') === 0 ||
     pathname.indexOf('/public/iltarastit.php') === 0 ||
     pathname.indexOf('/public/kilpailijat.php') === 0 ||

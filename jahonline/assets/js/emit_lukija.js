@@ -1,6 +1,6 @@
 (function () {
     'use strict';
-    window.JAH_EMIT_VERSIO = 'automaatti3';
+    window.JAH_EMIT_VERSIO = 'automaatti24';
 
     var proto = window.JahEmitProto;
     var siProto = window.JahSiProto;
@@ -17,6 +17,10 @@
     var moodi = 'lahto';
     var portti = null;
     var auki = false;
+    var lukijaKatkesi = false;
+    var yhdistaKaynnissa = false;
+    var yhdistaVahti = null;
+    var eiUsbPolyfill = false;
     var puskuri = proto.luoPuskuri();
     var viimeBadge = 0;
     var viimeAika = 0;
@@ -40,10 +44,16 @@
     var automaattiAjastin = null;
     var automaattiHaku = 0;
     var automaattiPuhu = true;
+    var puheAjastin = null;
+    var puheLause = null;
+    var puheAvattu = false;
+    var korttiOdotus = null;
+    var lahetysNro = 0;
+    var lahetysOhjain = null;
     try {
         automaattiPuhu = localStorage.getItem('jah-emit-puhe') !== '0';
     } catch (ePuhu) { /* */ }
-    var AUTOMAATTI_TYHJENNYS_MS = 12000;
+    var AUTOMAATTI_TYHJENNYS_MS = 16000;
 
     var tulosEl = document.getElementById('tulos');
     var leimaEl = document.getElementById('leima-lista');
@@ -66,10 +76,16 @@
 
     var rataSana = cfg.iltarasti ? 'rata' : 'sarja';
     var OHJE = {
-        lahto: 'Lue kortti lähdössä. Uusi kortti kysyy, luetaanko lähteväksi vai maaliin. Jo lähtenyt kortti menee leimantarkastukseen, jos kortilla on rastit.',
+        lahto: cfg.viesti
+            ? 'Lue 1. osuuden kortti lähdössä. Vaihtoon ja maaliin lue kortti Vaihto / maali -tilassa.'
+            : ('Lue kortti lähdössä. Uusi kortti kysyy, luetaanko lähteväksi vai ' + (cfg.iltarasti ? 'pois maastosta' : 'maaliin') + '. Jo lähtenyt kortti menee leimantarkastukseen, jos kortilla on rastit.'),
         lisaa: 'Täytä ' + rataSana + ' ja nimi. Tallenna lähtevänä tai maaliin.',
-        maali: 'Lue kortti maalissa. Rastit tarkistetaan ja aika otetaan nollaleimauksesta. Uusi kortti kysyy tiedot.',
-        automaatti: 'Maalinäyttö. Kortin luku näyttää nimen, ajan ja sijoituksen tai hylkäysesityksen. Tyhjenee itsestään.'
+        maali: cfg.viesti
+            ? 'Lue vaihtoon tai maaliin tuleva osuus. Rastit tarkistetaan ja aika kirjataan. Seuraavan osuuden lähtö on tämä vaihto.'
+            : 'Lue kortti maalissa. Rastit tarkistetaan ja aika otetaan nollaleimauksesta. Uusi kortti kysyy tiedot.',
+        automaatti: cfg.viesti
+            ? 'Maalinäyttö. Kortin luku näyttää joukkueen, osuuden, ajan ja rastitarkistuksen.'
+            : 'Maalinäyttö. Kortin luku näyttää nimen, ajan ja sijoituksen tai hylkäysesityksen. Tyhjenee itsestään.'
     };
 
     function escapeHtml(text) {
@@ -114,6 +130,66 @@
             nimi = String(data.nimi).trim();
         }
         return nimi;
+    }
+
+    function viestiOtsikko(data) {
+        if (!data) {
+            return '';
+        }
+        if (data.viesti_otsikko) {
+            return String(data.viesti_otsikko).trim();
+        }
+        var nro = data.joukkue_numero != null ? data.joukkue_numero : data.numero;
+        var joukkue = String(data.joukkue_nimi || '').trim();
+        var juoksija = kioskiNimi(data);
+        var ots = '';
+        if (nro != null && nro !== '') {
+            ots = String(nro) + ' ';
+        }
+        ots += joukkue || juoksija || '';
+        return ots.trim();
+    }
+
+    function viestiOsuusTxt(data) {
+        if (!data) {
+            return '';
+        }
+        if (data.osuus_txt) {
+            return String(data.osuus_txt);
+        }
+        var os = parseInt(data.osuus, 10) || 0;
+        if (!os) {
+            return '';
+        }
+        var txt = os + '. osuus';
+        var juoksija = kioskiNimi(data);
+        var joukkue = String(data.joukkue_nimi || '').trim();
+        if (juoksija && juoksija !== joukkue) {
+            txt += ' · ' + juoksija;
+        }
+        return txt;
+    }
+
+    function viestiHenkiloHtml(data) {
+        var html = '<strong>' + escapeHtml(viestiOtsikko(data) || kioskiNimi(data) || '') + '</strong>';
+        var osuus = viestiOsuusTxt(data);
+        if (osuus) {
+            html += '<br><span class="emit-osuus">' + escapeHtml(osuus) + '</span>';
+        }
+        if (data.sarja) {
+            html += '<br><span class="muted">' + escapeHtml(data.sarja) + '</span>';
+        }
+        if (data.vaihto && data.seuraava_nimi) {
+            html += '<br><span class="muted">Seuraava: '
+                + escapeHtml(String(data.seuraava_osuus || '')) + '. osuus '
+                + escapeHtml(data.seuraava_nimi) + '</span>';
+        } else if (data.joukkue_maali) {
+            html += '<br><span class="muted">Joukkueen maali</span>';
+        }
+        if (data.emit) {
+            html += '<br><span class="muted">Emit ' + escapeHtml(String(data.emit)) + '</span>';
+        }
+        return html;
     }
 
     function tarkistusHtml(data) {
@@ -189,7 +265,9 @@
 
     function naytaTulos(luokka, html) {
         if (onkoAutomaatti()) {
-            naytaAutomaattiVirhe(luokka === 'virhe' ? html : '');
+            if (luokka === 'virhe') {
+                naytaAutomaattiVirhe(html);
+            }
             return;
         }
         if (cfg.iltarasti && tulosEl) {
@@ -376,6 +454,9 @@
     }
 
     function soitaAani(tyyppi) {
+        if (!automaattiPuhu) {
+            return;
+        }
         var ctx = avaaAani();
         if (!ctx) {
             return;
@@ -553,6 +634,11 @@
         tallennaJono(arr);
     }
 
+    function emitOnMaastossa(h) {
+        var k = String((h && h.keskhyl) || '').trim().charAt(0).toUpperCase();
+        return k === '' || k === '-';
+    }
+
     function haeOsanottajaEmitilla(emit) {
         var n = parseInt(emit, 10);
         var lista = cfg.osanottajat || [];
@@ -607,18 +693,23 @@
             : null;
         var ok = !!(vert && vert.ok);
         var kayta = body.moodi || 'lue';
-        if (!h && (kayta === 'lue' || kayta === 'maali' || kayta === 'lahto')) {
-            return {
-                taso: 'ok',
-                kysy: true,
-                jono: true,
-                emit: emit,
-                leimat: leimat,
-                ehdotukset: (cfg.nimet || []).filter(function (n) {
-                    return parseInt(n.emit, 10) === emit;
-                }),
-                message: 'Tuntematon kortti. Tallennettu jonoon.'
-            };
+        var hMaastossa = !!(h && emitOnMaastossa(h));
+        if ((!h || !hMaastossa) && (kayta === 'lue' || kayta === 'maali' || kayta === 'lahto')) {
+            if (!(onkoAutomaatti() && h)) {
+                return {
+                    taso: 'ok',
+                    kysy: true,
+                    jono: true,
+                    emit: emit,
+                    leimat: leimat,
+                    ehdotukset: (cfg.nimet || []).filter(function (n) {
+                        return parseInt(n.emit, 10) === emit;
+                    }),
+                    message: h
+                        ? 'Tämä kortti on jo luettu pois maastosta. Luetaanko lähteväksi vai pois maastosta?'
+                        : 'Tuntematon kortti. Tallennettu jonoon.'
+                };
+            }
         }
         if (kayta === 'tallenna' || kayta === 'maastoon' || kayta === 'lisaa') {
             h = {
@@ -666,6 +757,7 @@
                     ok: ok,
                     puuttuvat: (vert.puuttuvat || []).map(function (p) { return p.koodi; }),
                     koodit: vert.koodit,
+                    oikeat: vert.oikeat,
                     sammunut: rata.sammunut || [],
                     leimat: vert.leimat,
                     sarja_id: sarjaId,
@@ -690,23 +782,34 @@
     }
 
     async function lahetaFetch(body) {
-        var resp = await fetch('/api/api_emit_luku.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'same-origin',
-            body: JSON.stringify(body)
-        });
-        var teksti = await resp.text();
-        var data = null;
+        var ohjain = typeof AbortController === 'function' ? new AbortController() : null;
+        var t = setTimeout(function () {
+            if (ohjain) {
+                try { ohjain.abort(); } catch (eTo) { /* */ }
+            }
+        }, 8000);
         try {
-            data = teksti ? JSON.parse(teksti) : null;
-        } catch (e) {
-            throw new Error(resp.ok ? 'Virheellinen vastaus.' : 'Palvelinvirhe.');
+            var resp = await fetch('/api/api_emit_luku.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'same-origin',
+                body: JSON.stringify(body),
+                signal: ohjain ? ohjain.signal : undefined
+            });
+            var teksti = await resp.text();
+            var data = null;
+            try {
+                data = teksti ? JSON.parse(teksti) : null;
+            } catch (e) {
+                throw new Error(resp.ok ? 'Virheellinen vastaus.' : 'Palvelinvirhe.');
+            }
+            if (!data) {
+                throw new Error('Palvelinvirhe.');
+            }
+            return data;
+        } finally {
+            clearTimeout(t);
         }
-        if (!data) {
-            throw new Error('Palvelinvirhe.');
-        }
-        return data;
     }
 
     async function tyhjennaJono() {
@@ -881,9 +984,10 @@
         }
         if (kysyEl) {
             kysyEl.hidden = false;
-            if (kysyEl.scrollIntoView) {
-                kysyEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            }
+        }
+        var idEl = document.getElementById('kilpailija-id');
+        if (idEl) {
+            idEl.value = '';
         }
         var emitEl = document.getElementById('lisaa-emit');
         if (emitEl) {
@@ -898,7 +1002,7 @@
             asetaMoodi(tarkoitus === 'maali' ? 'maali' : 'lahto', { sailo: true, lomake: true });
         }
         lomakeMuokattu = false;
-        ['etunimi', 'sukunimi', 'seura'].forEach(function (id) {
+        ['etunimi', 'sukunimi', 'seura', 'kilpailija-id'].forEach(function (id) {
             var el = document.getElementById(id);
             if (el) {
                 el.value = '';
@@ -909,11 +1013,14 @@
         }
         if (lisaaEl) {
             lisaaEl.hidden = false;
-            if (lisaaEl.scrollIntoView) {
-                lisaaEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            }
         }
         naytaEhdotukset(odottaaEmit);
+        if (cfg.iltarasti && suunta === 'maali' && odottaaLeimat && odottaaLeimat.length) {
+            naytaLeimat(odottaaLeimat, null);
+        } else if (cfg.iltarasti && leimaEl) {
+            leimaEl.hidden = true;
+            leimaEl.innerHTML = '';
+        }
         var suku = document.getElementById('sukunimi');
         if (suku && !suku.value) {
             suku.focus();
@@ -1009,9 +1116,14 @@
         if (cfg.iltarasti) {
             if (yhdistaBtn) {
                 yhdistaBtn.hidden = auki;
+                yhdistaBtn.classList.toggle('is-irti', !auki && lukijaKatkesi);
+                yhdistaBtn.textContent = (!auki && lukijaKatkesi)
+                    ? 'Yhdistä lukija uudelleen'
+                    : 'Yhdistä lukija';
             }
             if (lukijaIkoni) {
                 lukijaIkoni.hidden = !auki;
+                lukijaIkoni.textContent = auki ? 'Lukija yhdistetty' : 'Lukija irti';
             }
         } else if (yhdistaBtn) {
             yhdistaBtn.textContent = auki
@@ -1025,6 +1137,15 @@
         if (typeof paivitaAutomaattiYhteys === 'function') {
             paivitaAutomaattiYhteys();
         }
+        ilmoitaKuoriUsb();
+    }
+
+    function ilmoitaKuoriUsb() {
+        try {
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({ type: 'jah-lukija', usb: !!auki }, location.origin);
+            }
+        } catch (eKuoriUsb) { /* */ }
     }
 
     function leimaRiviHtml(l, nroPakko) {
@@ -1473,6 +1594,117 @@
         return d;
     }
 
+    function automaattiRastiMerkki(k) {
+        var n = parseInt(k, 10);
+        return n === 10000 || n === 10001;
+    }
+
+    function automaattiKoodiTeksti(p) {
+        if (p == null) {
+            return '';
+        }
+        if (typeof p === 'object') {
+            if (p.koodi != null && p.koodi !== '') {
+                return String(p.koodi);
+            }
+            if (p.nro != null && p.nro !== '') {
+                return String(p.nro);
+            }
+            return '';
+        }
+        return String(p);
+    }
+
+    function automaattiPuuttuvaTeksti(p) {
+        if (!p) {
+            return '';
+        }
+        if (p.nro) {
+            return String(p.nro) + '. ' + String(p.koodi);
+        }
+        return String(p.koodi || '');
+    }
+
+    function automaattiPuuttuvatKoodit(data) {
+        var t = (data && data.tarkistus) || {};
+        var raw = t.puuttuvat || (data && data.puuttuvat) || [];
+        var koodit = t.koodit || valitunRadanKoodit(data && data.sarja_id) || [];
+        var oikeat = t.oikeat || [];
+        var sammunut = t.sammunut || [];
+        var ulos = [];
+        var i;
+        var nro = 0;
+        if (koodit.length) {
+            var jono = [];
+            (raw || []).forEach(function (p) {
+                var k = parseInt(typeof p === 'object' && p ? p.koodi : p, 10);
+                if (k > 0 && !automaattiRastiMerkki(k)) {
+                    jono.push(k);
+                }
+            });
+            var ji = 0;
+            for (i = 0; i < koodit.length; i++) {
+                var koodi = parseInt(koodit[i], 10);
+                if (!koodi || automaattiRastiMerkki(koodi)) {
+                    continue;
+                }
+                nro += 1;
+                var puuttuu = false;
+                if (oikeat.length) {
+                    puuttuu = !oikeat[i] && !sammunut[i];
+                } else if (ji < jono.length && jono[ji] === koodi) {
+                    puuttuu = true;
+                    ji += 1;
+                }
+                if (puuttuu) {
+                    ulos.push({ nro: nro, koodi: koodi });
+                }
+            }
+            if (ulos.length) {
+                return ulos;
+            }
+        }
+        nro = 0;
+        (raw || []).forEach(function (p) {
+            if (p && typeof p === 'object') {
+                var kObj = parseInt(p.koodi, 10);
+                var nObj = parseInt(p.nro, 10);
+                if (kObj > 0) {
+                    nro += 1;
+                    ulos.push({ nro: nObj > 0 ? nObj : nro, koodi: kObj });
+                }
+                return;
+            }
+            var k = parseInt(p, 10);
+            if (k > 0) {
+                nro += 1;
+                ulos.push({ nro: nro, koodi: k });
+            }
+        });
+        return ulos;
+    }
+
+    function automaattiRastiLkm(data, puuttuvat) {
+        var t = (data && data.tarkistus) || {};
+        var koodit = t.koodit || [];
+        if (!koodit.length) {
+            koodit = valitunRadanKoodit(data && data.sarja_id);
+        }
+        var rastit = koodit.length;
+        var leimattu = 0;
+        if (rastit) {
+            leimattu = Math.max(0, rastit - ((puuttuvat && puuttuvat.length) || 0));
+        } else {
+            ((data && data.leimat) || []).forEach(function (l) {
+                var k = parseInt(l && (l.koodi != null ? l.koodi : l), 10);
+                if (k > 0 && !leimaOnLukija(k)) {
+                    leimattu += 1;
+                }
+            });
+        }
+        return { rastit: rastit, leimattu: leimattu };
+    }
+
     function automaattiAikaSec(data) {
         var t = data && data.tarkistus ? data.tarkistus : {};
         if (t.aika_sec != null && t.aika_sec !== '') {
@@ -1508,16 +1740,19 @@
         if (isNaN(sija)) {
             sija = null;
         }
-        var puuttuvat = t.puuttuvat || [];
-        if (!puuttuvat.length && data.puuttuvat) {
-            puuttuvat = data.puuttuvat;
-        }
-        var nimi = kioskiNimi(data);
+        var puuttuvat = automaattiPuuttuvatKoodit(data);
+        var rastit = automaattiRastiLkm(data, puuttuvat);
+        var nimi = cfg.viesti ? (viestiOtsikko(data) || kioskiNimi(data)) : kioskiNimi(data);
         if (!nimi && data.emit) {
             nimi = 'Emit ' + String(data.emit);
         }
+        var seura = (data.seura || '').trim();
+        if (cfg.viesti) {
+            seura = viestiOsuusTxt(data) || seura;
+        }
         return {
             nimi: nimi || '',
+            seura: seura,
             rata: data.sarja || data.rata || '',
             emit: data.emit ? String(data.emit) : '',
             aika: aikaTxt || '',
@@ -1528,6 +1763,8 @@
             hylatty: tila.koodi === 'H',
             tuntematon: !!data.kysy || (!data.kilpailija_id && !nimi && !!data.emit),
             puuttuvat: puuttuvat,
+            rastit: rastit.rastit,
+            leimattu: rastit.leimattu,
             mitali: (!hylkays && sija >= 1 && sija <= 3) ? sija : 0,
             luokka: hylkays ? 'hylkays' : (tila.koodi === 'K' ? 'kesk' : 'ok')
         };
@@ -1544,10 +1781,15 @@
         if (malli.nimi) {
             osat.push(malli.nimi);
         }
+        if (cfg.viesti && malli.seura) {
+            osat.push(malli.seura);
+        }
         if (malli.hylkaysesitys) {
             osat.push('hylkäysesitys');
             if (malli.puuttuvat && malli.puuttuvat.length) {
-                osat.push('puuttuu ' + malli.puuttuvat.join(', '));
+                osat.push('puuttuu ' + malli.puuttuvat.map(function (p) {
+                    return p.nro ? ('rasti ' + p.nro + ' koodi ' + p.koodi) : String(p.koodi);
+                }).join(', '));
             }
         } else if (malli.hylatty) {
             osat.push('hylätty');
@@ -1644,8 +1886,8 @@
             return;
         }
         btn.setAttribute('aria-pressed', automaattiPuhu ? 'true' : 'false');
-        btn.setAttribute('title', automaattiPuhu ? 'Puhe päällä' : 'Puhe mykistetty');
-        btn.setAttribute('aria-label', automaattiPuhu ? 'Mykistä puhe' : 'Avaa puhe');
+        btn.setAttribute('title', automaattiPuhu ? 'Ääni päällä' : 'Ääni pois');
+        btn.setAttribute('aria-label', automaattiPuhu ? 'Ääni pois' : 'Ääni päälle');
         btn.textContent = automaattiPuhu ? '🔊' : '🔇';
     }
 
@@ -1668,14 +1910,39 @@
             } catch (e2) { /* */ }
             paivitaAutomaattiPuheNappi(puheBtn);
             if (!automaattiPuhu && window.speechSynthesis) {
+                clearTimeout(puheAjastin);
                 window.speechSynthesis.cancel();
+            } else if (automaattiPuhu) {
+                avaaPuhe();
+                puhuAutomaatti('Puhe päällä');
             }
         });
         return puheBtn;
     }
 
+    function siirraPuheYlapalkkiin() {
+        if (!cfg.iltarasti) {
+            return;
+        }
+        var toimet = document.querySelector('.site-topbar-actions')
+            || document.querySelector('.site-topbar');
+        if (!toimet) {
+            return;
+        }
+        var puhe = luoAutomaattiPuheNappi();
+        var teema = document.querySelector('.site-topbar .theme-toggle');
+        if (teema && teema.parentNode) {
+            if (puhe.nextSibling !== teema) {
+                teema.parentNode.insertBefore(puhe, teema);
+            }
+        } else if (puhe.parentNode !== toimet) {
+            toimet.appendChild(puhe);
+        }
+    }
+
     function siirraAutomaattiYlapalkkiin() {
         if (!cfg.automaattiSivu) {
+            siirraPuheYlapalkkiin();
             return;
         }
         var toimet = document.querySelector('.site-topbar-actions')
@@ -1731,6 +1998,7 @@
         el.className = 'emit-automaatti is-odottaa';
         el.hidden = true;
         el.innerHTML = '<div class="emit-automaatti-odota" id="emit-automaatti-odota">'
+            + '<div class="emit-automaatti-odota-merkki" aria-hidden="true"></div>'
             + '<div class="emit-automaatti-ots" id="emit-automaatti-ots">Yhdistä lukija</div>'
             + '<div class="emit-automaatti-ala" id="emit-automaatti-yhteys"></div>'
             + '<div class="emit-automaatti-virhe" id="emit-automaatti-virhe" hidden></div>'
@@ -1755,7 +2023,7 @@
             }
             ev.preventDefault();
             ev.stopPropagation();
-            yhdista();
+            yhdistaNapista();
         });
         el.addEventListener('dblclick', function (ev) {
             if (ev.target && ev.target.closest
@@ -1781,8 +2049,15 @@
         if (!el) {
             return;
         }
+        var wrap = document.getElementById('emit-automaatti');
+        if (wrap && wrap.classList.contains('is-odottaa')) {
+            wrap.classList.toggle('is-auki', !!auki);
+            wrap.classList.toggle('is-irti', !auki && lukijaKatkesi);
+        }
         if (ots) {
-            ots.textContent = auki ? 'Lue kortti' : 'Yhdistä lukija';
+            ots.textContent = auki
+                ? 'Näytä kortti'
+                : (lukijaKatkesi ? 'Lukija irtosi' : 'Yhdistä lukija');
         }
         if (auki) {
             var virheEl = document.getElementById('emit-automaatti-virhe');
@@ -1790,7 +2065,8 @@
                 virheEl.hidden = true;
                 virheEl.textContent = '';
             }
-            el.innerHTML = '<div class="emit-automaatti-yhteys-ok">Lukija yhdistetty</div>'
+            el.innerHTML = '<div class="emit-automaatti-yhteys-ok">Lukija valmiina</div>'
+                + '<div class="emit-automaatti-yhteys-ohje">Vie emit-kortti lukijaan</div>'
                 + '<button type="button" class="emit-automaatti-katkaise" id="emit-automaatti-katkaise">'
                 + 'Katkaise yhteys</button>';
             return;
@@ -1800,13 +2076,15 @@
             + '<button type="button" class="emit-lukija-tyyppi' + (lukijaTyyppi === 'si' ? ' is-valittu' : '') + '" data-tyyppi="si">SportIdent</button>'
             + '</div>'
             + '<button type="button" class="emit-automaatti-yhdista" id="emit-automaatti-yhdista">'
-            + 'Yhdistä lukija</button>'
+            + (lukijaKatkesi ? 'Yhdistä lukija uudelleen' : 'Yhdistä lukija') + '</button>'
             + '<div class="emit-automaatti-yhteys-ohje">'
             + (usbLukijaSaatavilla()
-                ? (onkoSportIdent()
-                    ? 'Valitse SportIdent USB-lukija (BSM7/BSM8) ja lue kortti lukumoodissa.'
-                    : 'Valitse listasta USB Serial')
-                : 'Paina Yhdistä. Jos lista ei aukea, avaa sivu Chromessa.')
+                ? (lukijaKatkesi
+                    ? 'Kytke kaapeli ja paina Yhdistä. Lukija yhdistyy ilman listaa, jos lupa on voimassa.'
+                    : (onkoSportIdent()
+                        ? 'Paina Yhdistä. Ensimmäisellä kerralla valitse SportIdent-lukija; sen jälkeen yhdistyy suoraan.'
+                        : 'Paina Yhdistä. Ensimmäisellä kerralla selain voi kysyä USB-lukijaa; sen jälkeen yhdistyy suoraan.'))
+                : 'Paina Yhdistä. Jos yhteys ei aukea, avaa sivu Chromessa.')
             + '</div>';
     }
 
@@ -1873,17 +2151,195 @@
         automaattiAjastin = setTimeout(tyhjennaAutomaatti, AUTOMAATTI_TYHJENNYS_MS);
     }
 
-    function puhuAutomaatti(teksti) {
-        if (!automaattiPuhu || !teksti || !window.speechSynthesis) {
+    function suomiPuheAani() {
+        var w = puheIkkuna();
+        if (!w.speechSynthesis || !w.speechSynthesis.getVoices) {
+            return null;
+        }
+        var voices = w.speechSynthesis.getVoices() || [];
+        var i;
+        var t;
+        var lang;
+        for (i = 0; i < voices.length; i++) {
+            t = ((voices[i].name || '') + ' ' + (voices[i].voiceURI || '')).toLowerCase();
+            if (t.indexOf('satu') !== -1) {
+                return voices[i];
+            }
+        }
+        for (i = 0; i < voices.length; i++) {
+            lang = (voices[i].lang || '').toLowerCase();
+            t = ((voices[i].name || '') + ' ' + (voices[i].voiceURI || '')).toLowerCase();
+            if (lang.indexOf('fi') === 0 || t.indexOf('finnish') !== -1
+                || t.indexOf('suomi') !== -1 || t.indexOf('onni') !== -1) {
+                return voices[i];
+            }
+        }
+        return voices[0] || null;
+    }
+
+    function puheIkkuna() {
+        try {
+            if (window.top && window.top.speechSynthesis) {
+                return window.top;
+            }
+        } catch (eTop) { /* */ }
+        return window;
+    }
+
+    function avaaPuhe() {
+        var w = puheIkkuna();
+        if (!w.speechSynthesis) {
             return;
         }
         try {
-            window.speechSynthesis.cancel();
-            var u = new SpeechSynthesisUtterance(teksti);
-            u.lang = 'fi-FI';
-            u.rate = 1.02;
-            window.speechSynthesis.speak(u);
-        } catch (e) { /* */ }
+            w.speechSynthesis.getVoices();
+            if (w.speechSynthesis.paused && w.speechSynthesis.resume) {
+                w.speechSynthesis.resume();
+            }
+            if (puheAvattu) {
+                return;
+            }
+            puheAvattu = true;
+            puheLause = new w.SpeechSynthesisUtterance(' ');
+            puheLause.volume = 0;
+            puheLause.rate = 2;
+            w.__jahPuheLause = puheLause;
+            w.speechSynthesis.speak(puheLause);
+        } catch (eAv) { /* */ }
+        try {
+            if (window.parent && window.parent !== window && window.parent.JahKuori
+                && typeof window.parent.JahKuori.avaaPuhe === 'function') {
+                window.parent.JahKuori.avaaPuhe();
+            }
+        } catch (eKuoriPuhe) { /* */ }
+    }
+
+    function puhuAutomaatti(teksti) {
+        if (!automaattiPuhu || !teksti) {
+            return;
+        }
+        var w = puheIkkuna();
+        if (!w.speechSynthesis) {
+            return;
+        }
+        clearTimeout(puheAjastin);
+        function sano(ilmanAanta) {
+            try {
+                var syn = w.speechSynthesis;
+                if (syn.paused && syn.resume) {
+                    syn.resume();
+                }
+                if (syn.speaking || syn.pending) {
+                    syn.cancel();
+                    puheAjastin = setTimeout(function () { sano(ilmanAanta); }, 150);
+                    return;
+                }
+                puheLause = new w.SpeechSynthesisUtterance(String(teksti));
+                puheLause.rate = 1.02;
+                if (!ilmanAanta) {
+                    puheLause.lang = 'fi-FI';
+                    var v = suomiPuheAani();
+                    if (v) {
+                        puheLause.voice = v;
+                        puheLause.lang = v.lang || 'fi-FI';
+                    }
+                }
+                puheLause.onend = function () { /* pidä viite */ };
+                puheLause.onerror = function () {
+                    if (!ilmanAanta) {
+                        sano(true);
+                    }
+                };
+                w.__jahPuheLause = puheLause;
+                syn.speak(puheLause);
+            } catch (ePuhu) { /* */ }
+        }
+        sano(false);
+    }
+
+    function automaattiMerkkiHtml(malli) {
+        var tila = 'Hyväksytty';
+        var ala = 'Rata leimattu oikein';
+        var ico = '✓';
+        if (malli.tuntematon) {
+            tila = 'Tuntematon kortti';
+            ala = 'Korttia ei ole kirjattu tähän tapahtumaan';
+            ico = '?';
+        } else if (malli.hylkaysesitys) {
+            tila = 'Hylkäysesitys';
+            ala = malli.puuttuvat && malli.puuttuvat.length
+                ? 'Radalla puuttuu ' + malli.puuttuvat.length
+                    + (malli.puuttuvat.length === 1 ? ' rasti' : ' rastia')
+                : 'Rastit eivät täsmää rataan';
+            ico = '!';
+        } else if (malli.hylatty) {
+            tila = 'Hylätty';
+            ala = 'Tulos on merkitty hylätyksi';
+            ico = '×';
+        } else if (malli.tila && malli.tila.koodi === 'K') {
+            tila = 'Keskeyttänyt';
+            ala = 'Suoritus merkitty keskeytyneeksi';
+            ico = '–';
+        }
+        return '<div class="emit-automaatti-merkki">'
+            + '<span class="emit-automaatti-merkki-ico" aria-hidden="true">' + ico + '</span>'
+            + '<span class="emit-automaatti-merkki-tekstit">'
+            + '<span class="emit-automaatti-tila">' + escapeHtml(tila) + '</span>'
+            + '<span class="emit-automaatti-tila-ala">' + escapeHtml(ala) + '</span>'
+            + '</span></div>';
+    }
+
+    function automaattiAikaHtml(malli) {
+        if (malli.tuntematon || !malli.aika) {
+            return '';
+        }
+        var html = '<div class="emit-automaatti-luvut">';
+        html += '<div class="emit-automaatti-aika-lohko">'
+            + '<div class="emit-automaatti-aika-ots">Aika</div>'
+            + '<div class="emit-automaatti-aika">' + escapeHtml(malli.aika) + '</div>'
+            + '</div>';
+        if (malli.sija && !malli.hylkaysesitys && !malli.hylatty) {
+            html += '<div class="emit-automaatti-sija'
+                + (malli.mitali ? ' is-mitali is-' + malli.mitali : '') + '">'
+                + '<span class="emit-automaatti-sija-nro">' + escapeHtml(String(malli.sija)) + '.</span>'
+                + '<span class="emit-automaatti-sija-txt">sija</span></div>';
+        }
+        html += '</div>';
+        return html;
+    }
+
+    function automaattiPuuteHtml(malli) {
+        if (!malli.puuttuvat || !malli.puuttuvat.length || malli.tuntematon) {
+            return '';
+        }
+        var html = '<div class="emit-automaatti-puute">'
+            + '<div class="emit-automaatti-puute-ots">Puuttuvat rastit</div>'
+            + '<div class="emit-automaatti-koodit">';
+        malli.puuttuvat.forEach(function (p) {
+            html += '<div class="emit-automaatti-koodi">'
+                + '<span class="emit-automaatti-koodi-nro">'
+                + escapeHtml(p.nro ? (String(p.nro) + '.') : '')
+                + '</span>'
+                + '<span class="emit-automaatti-koodi-koodi">'
+                + escapeHtml(String(p.koodi))
+                + '</span></div>';
+        });
+        html += '</div></div>';
+        return html;
+    }
+
+    function automaattiMetaHtml(malli) {
+        var osat = [];
+        if (!malli.tuntematon && malli.rastit > 0) {
+            osat.push(String(malli.leimattu) + ' / ' + String(malli.rastit) + ' rastia');
+        }
+        if (malli.emit) {
+            osat.push('Emit ' + malli.emit);
+        }
+        if (!osat.length) {
+            return '';
+        }
+        return '<div class="emit-automaatti-meta">' + escapeHtml(osat.join(' · ')) + '</div>';
     }
 
     function piirraAutomaatti(malli) {
@@ -1901,43 +2357,19 @@
             luokka = 'emit-automaatti is-tuntematon';
         }
         wrap.className = luokka;
-        var html = '';
+        var html = '<div class="emit-automaatti-kortti">';
         if (malli.rata) {
             html += '<div class="emit-automaatti-rata">' + escapeHtml(malli.rata) + '</div>';
         }
         html += '<div class="emit-automaatti-nimi">' + escapeHtml(malli.nimi || '–') + '</div>';
-        if (malli.tuntematon) {
-            html += '<div class="emit-automaatti-tila">Tuntematon kortti</div>';
-            if (malli.emit) {
-                html += '<div class="emit-automaatti-aika">Emit ' + escapeHtml(malli.emit) + '</div>';
-            }
-        } else if (malli.hylkaysesitys) {
-            html += '<div class="emit-automaatti-tila">Hylkäysesitys</div>';
-            if (malli.aika) {
-                html += '<div class="emit-automaatti-aika">' + escapeHtml(malli.aika) + '</div>';
-            }
-            if (malli.puuttuvat && malli.puuttuvat.length) {
-                html += '<div class="emit-automaatti-puute">Puuttuu: '
-                    + escapeHtml(malli.puuttuvat.join(', ')) + '</div>';
-            }
-        } else if (malli.hylatty) {
-            html += '<div class="emit-automaatti-tila">Hylätty</div>';
-            if (malli.aika) {
-                html += '<div class="emit-automaatti-aika">' + escapeHtml(malli.aika) + '</div>';
-            }
-        } else if (malli.tila && malli.tila.koodi === 'K') {
-            html += '<div class="emit-automaatti-tila">Keskeyttänyt</div>';
-        } else {
-            if (malli.aika) {
-                html += '<div class="emit-automaatti-aika">' + escapeHtml(malli.aika) + '</div>';
-            }
-            if (malli.sija) {
-                html += '<div class="emit-automaatti-sija' + (malli.mitali ? ' is-mitali is-' + malli.mitali : '') + '">'
-                    + '<span class="emit-automaatti-sija-nro">' + escapeHtml(String(malli.sija)) + '.</span>'
-                    + '<span class="emit-automaatti-sija-txt">sija</span></div>';
-            }
-            html += '<div class="emit-automaatti-tila">OK</div>';
+        if (malli.seura && !malli.tuntematon) {
+            html += '<div class="emit-automaatti-seura">' + escapeHtml(malli.seura) + '</div>';
         }
+        html += automaattiMerkkiHtml(malli);
+        html += automaattiAikaHtml(malli);
+        html += automaattiPuuteHtml(malli);
+        html += automaattiMetaHtml(malli);
+        html += '</div>';
         tulos.innerHTML = html;
         tulos.hidden = false;
         wrap.hidden = false;
@@ -2065,18 +2497,27 @@
         }
         var li = document.createElement('li');
         li.className = 'lahto-rivi';
-        var nro = data.numero != null ? data.numero : '–';
-        li.innerHTML = '<strong>' + escapeHtml(String(nro)) + '</strong> '
-            + escapeHtml(data.nimi || '')
-            + ' <span class="muted">' + escapeHtml(data.sarja || '') + '</span>'
-            + ' <span class="muted">emit ' + escapeHtml(String(data.emit || '')) + '</span>';
+        if (cfg.viesti) {
+            var nroV = data.joukkue_numero != null ? data.joukkue_numero : data.numero;
+            li.innerHTML = '<strong>' + escapeHtml(String(nroV != null ? nroV : '–')) + '</strong> '
+                + escapeHtml(data.joukkue_nimi || data.nimi || '')
+                + (data.osuus ? ' <span class="muted">' + escapeHtml(String(data.osuus) + '. osuus') + '</span>' : '')
+                + ' <span class="muted">' + escapeHtml(data.sarja || '') + '</span>'
+                + ' <span class="muted">emit ' + escapeHtml(String(data.emit || '')) + '</span>';
+        } else {
+            var nro = data.numero != null ? data.numero : '–';
+            li.innerHTML = '<strong>' + escapeHtml(String(nro)) + '</strong> '
+                + escapeHtml(data.nimi || '')
+                + ' <span class="muted">' + escapeHtml(data.sarja || '') + '</span>'
+                + ' <span class="muted">emit ' + escapeHtml(String(data.emit || '')) + '</span>';
+        }
         viimeisetEl.prepend(li);
         while (viimeisetEl.children.length > 12) {
             viimeisetEl.removeChild(viimeisetEl.lastChild);
         }
     }
 
-    function nollaSec() {
+    function nollaSec(leimat) {
         var el = document.getElementById('nolla');
         if (el) {
             var v = (el.value || '').trim();
@@ -2085,7 +2526,7 @@
                 return parseInt(m[1], 10) * 3600 + parseInt(m[2], 10) * 60 + parseInt(m[3] || '0', 10);
             }
         }
-        return nollaSecLeimoista(kilpailija.leimat || odottaaLeimat || []);
+        return nollaSecLeimoista(leimat || odottaaLeimat || []);
     }
 
     function nollaSecLeimoista(leimat) {
@@ -2241,7 +2682,7 @@
                 body[k] = extra[k];
             });
         }
-        if (kayta === 'tallenna' || kayta === 'maastoon' || kayta === 'pois_maastosta') {
+        if (kayta === 'tallenna' || kayta === 'maastoon' || kayta === 'pois_maastosta' || (cfg.iltarasti && kayta === 'maali')) {
             var sarja = document.getElementById('sarja');
             body.sarja_id = body.sarja_id || (sarja ? parseInt(sarja.value, 10) : 0);
             body.etunimi = body.etunimi != null ? body.etunimi : kentta('etunimi');
@@ -2249,28 +2690,61 @@
             body.seura = body.seura != null ? body.seura : kentta('seura');
             var lainaEl = document.getElementById('lainakortti');
             body.laina = !!(lainaEl && lainaEl.checked);
+            var eiAikaaEl = document.getElementById('ei-aikaa');
+            body.ilman_aikaa = !!(eiAikaaEl && eiAikaaEl.checked);
             var idEl = document.getElementById('kilpailija-id');
             if (idEl && idEl.value) {
                 body.kilpailija_id = parseInt(idEl.value, 10) || 0;
             }
             if (kayta === 'tallenna') {
                 body.leimat = kilpailija.leimat || odottaaLeimat || [];
-                body.nolla_sec = nollaSec();
+                body.nolla_sec = nollaSec(kilpailija.leimat);
                 body.tarkoitus = tarkoitus || (moodi === 'maali' ? 'maali' : 'lahto');
             }
         }
         if (kayta === 'maali' || kayta === 'lue' || kayta === 'vaihda_rata' || kayta === 'paatos') {
             body.leimat = kilpailija.leimat || odottaaLeimat || [];
-            body.nolla_sec = nollaSec();
+            body.nolla_sec = nollaSec(body.leimat);
         }
         if (kayta === 'lue') {
             body.oletus_moodi = (moodi === 'maali' || moodi === 'automaatti') ? 'maali' : 'lahto';
         }
+        if (onkoAutomaatti() || kioski) {
+            body.automaatti = 1;
+        }
         return body;
+    }
+
+    function samaNayttoEmit(emit) {
+        return !!(viimeVastaus && !viimeVastaus.kysy && emit
+            && String(viimeVastaus.emit) === String(emit));
     }
 
     function kasitteleVastaus(data, body) {
         var kayta = (body && body.moodi) || moodi;
+        var edellinen = viimeVastaus;
+        var emitVastaus = (body && body.emit) || (data && data.emit);
+        if (data && data.kysy && onkoAutomaatti() && samaNayttoEmit(emitVastaus)) {
+            return;
+        }
+        var vanhatLeimat = (edellinen && edellinen.leimat && edellinen.leimat.length)
+            ? edellinen.leimat
+            : (odottaaLeimat || []);
+        var uudetLeimat = (data && data.leimat) || [];
+        if (!data.kysy && samaNayttoEmit(emitVastaus) && vanhatLeimat.length && uudetLeimat.length < vanhatLeimat.length) {
+            data.leimat = vanhatLeimat;
+            if (!data.tarkistus && edellinen && edellinen.tarkistus) {
+                data.tarkistus = edellinen.tarkistus;
+            }
+            if (!data.kilpailija_id && edellinen) {
+                data.kilpailija_id = edellinen.kilpailija_id;
+                data.etunimi = data.etunimi || edellinen.etunimi;
+                data.sukunimi = data.sukunimi || edellinen.sukunimi;
+                data.nimi = data.nimi || edellinen.nimi;
+                data.sarja = data.sarja || edellinen.sarja;
+                data.keskhyl = data.keskhyl || edellinen.keskhyl;
+            }
+        }
         if (kayta === 'paatos' && viimeVastaus) {
             if (!data.leimat && viimeVastaus.leimat) {
                 data.leimat = viimeVastaus.leimat;
@@ -2311,6 +2785,11 @@
                 sarja_id: data.sarja_id || 0,
                 rata: data.sarja || '',
                 keskhyl: data.keskhyl || '-',
+                osuus: data.osuus || 0,
+                joukkue_id: data.joukkue_id || 0,
+                joukkue_numero: data.joukkue_numero,
+                joukkue_nimi: data.joukkue_nimi || '',
+                osuus_txt: data.osuus_txt || '',
                 aika_sec: (data.tarkistus && data.tarkistus.aika_sec != null)
                     ? data.tarkistus.aika_sec
                     : (data.aika_sec != null ? data.aika_sec : null),
@@ -2321,10 +2800,35 @@
         asetaEhdotukset(data.ehdotukset);
         if (data.kysy) {
             var kysyLeimat = (body && body.leimat) || odottaaLeimat || [];
+            var emitKysy = (body && body.emit) || data.emit;
+            if (onkoAutomaatti() && samaNayttoEmit(emitKysy)) {
+                return;
+            }
             if (onkoAutomaatti()) {
+                var paikAuto = haeOsanottajaEmitilla(emitKysy);
+                if (paikAuto) {
+                    naytaAutomaatti({
+                        emit: emitKysy,
+                        etunimi: paikAuto.etunimi,
+                        sukunimi: paikAuto.sukunimi,
+                        nimi: paikAuto.nimi,
+                        sarja: paikAuto.rata || paikAuto.sarja,
+                        keskhyl: paikAuto.keskhyl,
+                        kilpailija_id: paikAuto.id,
+                        tarkistus: {
+                            ok: String(paikAuto.keskhyl || '').toUpperCase() === 'T',
+                            keskhyl: paikAuto.keskhyl,
+                            aika_txt: paikAuto.aika_txt || '',
+                            aika_sec: paikAuto.aika_sec
+                        },
+                        leimat: data.leimat || kysyLeimat
+                    });
+                    soitaAani('varoitus');
+                    return;
+                }
                 naytaAutomaatti({
                     kysy: true,
-                    emit: (body && body.emit) || data.emit,
+                    emit: emitKysy,
                     leimat: data.leimat || kysyLeimat,
                     message: data.message
                 });
@@ -2332,8 +2836,20 @@
                 return;
             }
             naytaKysely(body && body.emit, kysyLeimat);
-            naytaLeimat(data.leimat || kysyLeimat, data.tarkistus);
-            naytaTulos('varoitus', '<strong>Emit ' + escapeHtml(String(body && body.emit)) + '</strong><br>Uusi kortti. Luetaanko lähteväksi vai maaliin?');
+            if (cfg.iltarasti) {
+                if (leimaEl && !(kysyLeimat && kysyLeimat.length && moodi === 'maali')) {
+                    leimaEl.hidden = true;
+                    leimaEl.innerHTML = '';
+                }
+                naytaTulos('varoitus', '<strong>Emit ' + escapeHtml(String(body && body.emit)) + '</strong><br>'
+                    + escapeHtml(data.message || 'Uusi kortti. Luetaanko lähteväksi vai pois maastosta?'));
+            } else {
+                naytaLeimat(data.leimat || kysyLeimat, data.tarkistus);
+                naytaTulos('varoitus', '<strong>Emit ' + escapeHtml(String(body && body.emit)) + '</strong><br>'
+                    + escapeHtml(data.message || (cfg.viesti
+                        ? 'Tuntematon kortti. Luetaanko 1. osuuden lähteväksi vai vaihtoon/maaliin?'
+                        : 'Uusi kortti. Luetaanko lähteväksi vai maaliin?')));
+            }
             soitaAani('varoitus');
             return;
         }
@@ -2348,9 +2864,40 @@
             soitaAani(aaniVastauksesta(data, luokka));
             return;
         }
-        if (cfg.iltarasti && (moodi === 'maali' || kayta === 'lue' || kayta === 'vaihda_rata' || kayta === 'paatos')) {
+        if (cfg.iltarasti && (kayta === 'maastoon' || (kayta === 'tallenna' && tarkoitus !== 'maali'))) {
+            asetaMoodi('lahto', { sailo: true });
+            piilotaKysely();
+            naytaTulos(luokka, '<strong>' + escapeHtml(data.message || 'Maastoon') + '</strong>'
+                + (data.nimi ? '<br>' + escapeHtml(data.nimi) : ''));
+            if (lisaaEl && data.taso === 'ok') {
+                lisaaEl.hidden = true;
+            }
+            if (leimaEl) {
+                leimaEl.hidden = true;
+                leimaEl.innerHTML = '';
+            }
+            if (data.kilpailija_id || data.luotu) {
+                lisaaViimeisiin(data);
+            }
+            soitaAani(aaniVastauksesta(data, luokka));
+            if (data.taso === 'ok') {
+                lomakeMuokattu = false;
+                odottaaEmit = 0;
+                odottaaLeimat = [];
+                tyhjennaLomake();
+                piilotaEhdotukset();
+                asetaEhdotukset([]);
+            }
+            return;
+        }
+        if (cfg.iltarasti && (moodi === 'maali' || kayta === 'lue' || kayta === 'maali'
+            || kayta === 'vaihda_rata' || kayta === 'paatos' || kayta === 'pois_maastosta')) {
             if (moodi !== 'maali') {
                 asetaMoodi('maali', { sailo: true });
+            }
+            piilotaKysely();
+            if (lisaaEl) {
+                lisaaEl.hidden = true;
             }
             naytaIltarastiMaali(data, luokka);
             if (data.kilpailija_id || data.luotu) {
@@ -2360,15 +2907,19 @@
             return;
         }
         var html = '<strong>' + escapeHtml(data.message || 'Virhe') + '</strong>';
-        if (data.nimi) {
-            html += '<br>' + escapeHtml(String(data.numero != null ? data.numero : ''))
-                + ' ' + escapeHtml(data.nimi);
-        }
-        if (data.sarja) {
-            html += '<br><span class="muted">' + escapeHtml(data.sarja) + '</span>';
-        }
-        if (data.emit) {
-            html += '<br><span class="muted">Emit ' + escapeHtml(String(data.emit)) + '</span>';
+        if (cfg.viesti && (data.joukkue_nimi || data.osuus || data.nimi)) {
+            html += '<br>' + viestiHenkiloHtml(data);
+        } else {
+            if (data.nimi) {
+                html += '<br>' + escapeHtml(String(data.numero != null ? data.numero : ''))
+                    + ' ' + escapeHtml(data.nimi);
+            }
+            if (data.sarja) {
+                html += '<br><span class="muted">' + escapeHtml(data.sarja) + '</span>';
+            }
+            if (data.emit) {
+                html += '<br><span class="muted">Emit ' + escapeHtml(String(data.emit)) + '</span>';
+            }
         }
         html += tarkistusHtml(data);
         naytaTulos(luokka, html);
@@ -2395,21 +2946,37 @@
     }
 
     async function laheta(kilpailija, moodiOverride, extra) {
-        if (kesken) {
-            return;
-        }
-        var body = rakennaLahetys(kilpailija, moodiOverride, extra);
+        var nro = ++lahetysNro;
+        var body;
         kesken = true;
         try {
+            body = rakennaLahetys(kilpailija, moodiOverride, extra);
             if (!onkoVerkko()) {
                 jonoon(body);
-                kasitteleVastaus(paikallinenVastaus(body), body);
-                kesken = false;
+                if (nro === lahetysNro) {
+                    kasitteleVastaus(paikallinenVastaus(body), body);
+                }
                 return;
             }
             var data = await lahetaFetch(body);
-            kasitteleVastaus(data, body);
+            if (nro !== lahetysNro) {
+                return;
+            }
+            try {
+                kasitteleVastaus(data, body);
+            } catch (eKas) {
+                naytaTulos('virhe', 'Kortin käsittely keskeytyi. Lue uudelleen.');
+                soitaAani('varoitus');
+            }
         } catch (e) {
+            if (nro !== lahetysNro) {
+                return;
+            }
+            if (e && e.name === 'AbortError') {
+                naytaTulos('varoitus', 'Palvelin ei vastannut. Lue kortti uudelleen.');
+                soitaAani('varoitus');
+                return;
+            }
             if (onkoVerkkovirhe(e)) {
                 jonoon(body);
                 kasitteleVastaus(paikallinenVastaus(body), body);
@@ -2418,9 +2985,12 @@
                 naytaLeimat((body && body.leimat) || odottaaLeimat || [], null);
                 soitaAani('varoitus');
             }
+        } finally {
+            if (nro === lahetysNro) {
+                kesken = false;
+            }
         }
-        kesken = false;
-        if (onkoVerkko() && lueJono().length && !(viimeVastaus && viimeVastaus.kysy)) {
+        if (nro === lahetysNro && onkoVerkko() && lueJono().length && !(viimeVastaus && viimeVastaus.kysy)) {
             tyhjennaJono();
         }
     }
@@ -2528,9 +3098,12 @@
 
     function korttiLuettu(sanoma) {
         var nyt = Date.now();
-        if (sanoma.badge === viimeBadge && nyt - viimeAika < 2500) {
-            viimeAika = nyt;
-            return;
+        var nLeimat = (sanoma.leimat && sanoma.leimat.length) || 0;
+        if (sanoma.badge === viimeBadge && nLeimat <= (odottaaLeimat || []).length) {
+            if (nyt - viimeAika < 8000 || samaNayttoEmit(sanoma.badge)) {
+                viimeAika = nyt;
+                return;
+            }
         }
         if (lomakeKesken() && sanoma.badge !== odottaaEmit) {
             naytaTulos('varoitus', 'Tallenna ensin emit ' + odottaaEmit + '.');
@@ -2540,19 +3113,58 @@
         viimeBadge = sanoma.badge;
         viimeAika = nyt;
         nayttiKortin = true;
+        if (window.parent && window.parent !== window && window.parent.JahKuori
+            && typeof window.parent.JahKuori.naytaLukija === 'function') {
+            var kuoriBody = null;
+            try {
+                kuoriBody = window.parent.document && window.parent.document.body;
+            } catch (eKuori) { /* */ }
+            if (!(kuoriBody && kuoriBody.classList.contains('is-lukija-nakyva'))) {
+                window.parent.JahKuori.naytaLukija({ eiHistoria: onkoAutomaatti() });
+            }
+        }
         var korttiSana = (sanoma.lahde === 'si' || onkoSportIdent()) ? 'Kortti' : 'Emit';
         if (laiteEl) {
             laiteEl.textContent = korttiSana + ' ' + sanoma.badge;
         }
         var html = '<strong>' + korttiSana + ' ' + escapeHtml(String(sanoma.badge)) + '</strong>';
-        if (sanoma.viikko) {
+        var paik = haeOsanottajaEmitilla(sanoma.badge);
+        if (paik) {
+            if (cfg.viesti && (paik.joukkue_nimi || paik.osuus)) {
+                html = viestiHenkiloHtml({
+                    joukkue_nimi: paik.joukkue_nimi,
+                    joukkue_numero: paik.joukkue_numero,
+                    numero: paik.joukkue_numero != null ? paik.joukkue_numero : paik.numero,
+                    osuus: paik.osuus,
+                    osuus_txt: paik.osuus_txt,
+                    etunimi: paik.etunimi,
+                    sukunimi: paik.sukunimi,
+                    nimi: paik.nimi,
+                    sarja: paik.rata || paik.sarja,
+                    emit: sanoma.badge
+                });
+            } else {
+                var pnimi = ((paik.sukunimi || '') + ' ' + (paik.etunimi || '')).trim() || paik.nimi || '';
+                if (pnimi) {
+                    html = '<strong>' + escapeHtml(String(pnimi)) + '</strong>'
+                        + '<br><span class="muted">' + korttiSana + ' ' + escapeHtml(String(sanoma.badge)) + '</span>';
+                }
+            }
+        }
+        if (sanoma.viikko && !cfg.iltarasti) {
             html += '<br><span class="muted">viikko ' + escapeHtml(String(sanoma.viikko))
                 + (sanoma.vuosi ? '/' + escapeHtml(String(sanoma.vuosi)) : '') + '</span>';
+        } else if (sanoma.viikko) {
+            lokiin('Emit ' + sanoma.badge + ' kortin viikko ' + sanoma.viikko
+                + (sanoma.vuosi ? '/' + sanoma.vuosi : '') + ' (ei näytetä).');
         }
-        if (sanoma.leimat && sanoma.leimat.length) {
+        if (sanoma.leimat && sanoma.leimat.length && !(cfg.iltarasti && !kioski)) {
             html += '<br><span class="muted">' + sanoma.leimat.length + ' leimaa</span>';
         }
-        naytaTulos('ok', html);
+        html += '<br>Luetaan rastit…';
+        if (!(kesken && sanoma.badge === viimeBadge) && !samaNayttoEmit(sanoma.badge)) {
+            naytaTulos('ok', html);
+        }
         var leimat = (sanoma.leimat || []).map(function (l) {
             return {
                 koodi: l.koodi,
@@ -2561,9 +3173,34 @@
                 aika_sec: l.aika_sec
             };
         });
-        odottaaLeimat = leimat;
-        naytaLeimat(leimat, null);
+        if (!(odottaaLeimat && odottaaLeimat.length > nLeimat && sanoma.badge === viimeBadge)) {
+            odottaaLeimat = leimat;
+        }
+        var maaliNakyma = moodi === 'maali' || moodi === 'automaatti' || kioski;
+        if (maaliNakyma || !cfg.iltarasti) {
+            if ((odottaaLeimat || []).length) {
+                naytaLeimat(odottaaLeimat, samaNayttoEmit(sanoma.badge) ? (viimeVastaus && viimeVastaus.tarkistus) : null);
+            }
+        } else if (leimaEl && !samaNayttoEmit(sanoma.badge)) {
+            leimaEl.hidden = true;
+            leimaEl.innerHTML = '';
+        }
         asetaEmitKentta(sanoma.badge);
+        if (cfg.iltarasti && !kioski && !onkoAutomaatti()) {
+            var tunnettu = (cfg.osanottajat || []).some(function (h) {
+                return parseInt(h.emit, 10) === parseInt(sanoma.badge, 10) && emitOnMaastossa(h);
+            });
+            if (!tunnettu) {
+                var valmis = haeOsanottajaEmitilla(sanoma.badge);
+                naytaKysely(sanoma.badge, leimat);
+                naytaTulos('varoitus', '<strong>Emit ' + escapeHtml(String(sanoma.badge)) + '</strong><br>'
+                    + (valmis
+                        ? 'Tämä kortti on jo luettu pois maastosta. Luetaanko lähteväksi vai pois maastosta?'
+                        : 'Uusi kortti. Luetaanko lähteväksi vai pois maastosta?'));
+            } else if (moodi !== 'maali') {
+                asetaMoodi('maali', { sailo: true });
+            }
+        }
         if (kioski) {
             laheta({ emit: sanoma.badge, leimat: leimat });
             return;
@@ -2733,7 +3370,7 @@
         if (paketit > 0) {
             viesti = 'Lukija on linjalla (' + paketit + ' USB-pakettia) mutta ei ole lähettänyt merkkejä. Näytä kortti. Jos datatavuja pysyy nollassa, vaihda nopeus 9600.';
         } else {
-            viesti = 'Selain ei saa USB-paketteja lukijalta. Irrota kaapeli, yhdistä uudelleen ja valitse USB Serial.';
+            viesti = 'Selain ei saa USB-paketteja lukijalta. Irrota kaapeli ja yhdistä uudelleen.';
         }
         lokiin(viesti);
         naytaTulos('varoitus', escapeHtml(viesti));
@@ -2741,6 +3378,19 @@
 
     var kerays = [];
     var keraysAjastin = null;
+    var keraysAlku = 0;
+    var keraysViime = 0;
+    var otsikkoLahetetty = 0;
+    var KERAYS_IDLE_MS = 2500;
+    var KERAYS_MAX_MS = 8000;
+
+    function asetaKerays(data) {
+        kerays = data && data.length ? [data] : [];
+        if (!kerays.length) {
+            keraysAlku = 0;
+            keraysViime = 0;
+        }
+    }
 
     function kasitteleTavut(bytes) {
         if (!bytes || !bytes.length) {
@@ -2754,17 +3404,35 @@
             return;
         }
         kerays.push(bytes);
-        var kertynyt = 0;
-        var i;
-        for (i = 0; i < kerays.length; i++) {
-            kertynyt += kerays[i].length;
+        keraysViime = Date.now();
+        if (!keraysAlku) {
+            keraysAlku = keraysViime;
+        }
+        var ennakko = yhdistaTavut(kerays);
+        if (ennakko.length > 2000 && proto.lueKehykset) {
+            var trim = proto.lueKehykset(ennakko);
+            if (trim.alku > 0) {
+                asetaKerays(ennakko.slice(trim.alku));
+                ennakko = yhdistaTavut(kerays);
+            } else if (trim.alku < 0) {
+                asetaKerays(ennakko.slice(ennakko.length - 250));
+                ennakko = yhdistaTavut(kerays);
+            }
+        }
+        if (proto.etsiLukija && proto.etsiLukija(ennakko).length) {
+            clearTimeout(keraysAjastin);
+            tulkitseKerays();
+            return;
+        }
+        var ots = proto.lueOtsikko ? proto.lueOtsikko(ennakko) : null;
+        if (ots && ots.badge && ots.badge !== otsikkoLahetetty) {
+            otsikkoLahetetty = ots.badge;
+            if (!(cfg.iltarasti && (moodi === 'maali' || moodi === 'automaatti'))) {
+                korttiLuettu(ots);
+            }
         }
         if (!keraysAjastin) {
             keraysAjastin = setTimeout(tulkitseKerays, 400);
-        }
-        if (kertynyt > 8000) {
-            clearTimeout(keraysAjastin);
-            tulkitseKerays();
         }
     }
 
@@ -2774,13 +3442,39 @@
             return;
         }
         var data = yhdistaTavut(kerays);
-        kerays = [];
+        var nyt = Date.now();
+        var idle = nyt - (keraysViime || nyt);
+        var ikainen = nyt - (keraysAlku || nyt);
+        var luetut = proto.lueKehykset
+            ? proto.lueKehykset(data)
+            : { sanomat: proto.etsiLukija ? proto.etsiLukija(data) : [], jaljella: data, alku: -1 };
+        if (luetut.sanomat && luetut.sanomat.length) {
+            asetaKerays(luetut.jaljella);
+            otsikkoLahetetty = 0;
+            luetut.sanomat.forEach(function (s) {
+                korttiLuettu(s);
+            });
+            if (kerays.length) {
+                keraysAlku = nyt;
+                keraysViime = nyt;
+                keraysAjastin = setTimeout(tulkitseKerays, 400);
+            }
+            return;
+        }
+        var kesken = proto.keskenLukija && proto.keskenLukija(data);
+        if ((kesken || idle < KERAYS_IDLE_MS) && ikainen < KERAYS_MAX_MS) {
+            keraysAjastin = setTimeout(tulkitseKerays, 200);
+            return;
+        }
+        if (luetut.alku > 0) {
+            asetaKerays(data.slice(luetut.alku));
+            keraysAlku = nyt;
+            keraysAjastin = setTimeout(tulkitseKerays, 400);
+            return;
+        }
         var sanomat = [];
-        proto.luoPuskuri().syota(data, function (s) {
-            sanomat.push(s);
-        });
-        if (proto.etsiLukija) {
-            proto.etsiLukija(data).forEach(function (s) {
+        if (!kesken) {
+            proto.luoPuskuri().syota(data, function (s) {
                 sanomat.push(s);
             });
         }
@@ -2801,6 +3495,8 @@
         var loki = document.getElementById('emit-loki');
         if (kortti) {
             loytyiMerkkeja = true;
+            asetaKerays(new Uint8Array(0));
+            otsikkoLahetetty = 0;
             if (loki) {
                 loki.textContent = '';
             }
@@ -2809,15 +3505,21 @@
         }
         if (tila) {
             loytyiMerkkeja = true;
+            asetaKerays(new Uint8Array(0));
+            otsikkoLahetetty = 0;
             if (loki) {
                 loki.textContent = '';
             }
             tilaLuettu(tila);
             return;
         }
-        if (data.length > 12 && !nayttiKortin) {
+        if (data.length > 12 && !nayttiKortin && !cfg.iltarasti) {
             naytaTulos('varoitus', 'Lukijalta tuli ' + data.length + ' tavua, mutta kortin numeroa ei vielä saatu. ' + nayteHex(data));
+        } else if (data.length) {
+            lokiin('Osittainen kehys ' + data.length + ' tavua, odotetaan loppua.');
         }
+        asetaKerays(new Uint8Array(0));
+        otsikkoLahetetty = 0;
     }
 
     async function herataFtdi() {
@@ -3031,6 +3733,9 @@
         if (proto.etsiLukija(data).length) {
             return true;
         }
+        if (proto.keskenLukija && proto.keskenLukija(data)) {
+            return true;
+        }
         return kehysKelpaa(arvioiEmit(data));
     }
 
@@ -3144,8 +3849,7 @@
                     lupaus.catch(function () { /* keskeytetty */ });
                     continue;
                 }
-                lokiin('LUKU KATKESI ' + (e3 && e3.message ? e3.message : e3));
-                naytaTulos('virhe', 'Lukuyhteys katkesi. Yhdistä uudelleen.');
+                lukijaIrti('ftdi');
                 break;
             }
             portti.usbTilat = (portti.usbTilat || 0) + 1;
@@ -3166,6 +3870,9 @@
             while (auki) {
                 var tulos = await reader.read();
                 if (tulos.done) {
+                    if (auki) {
+                        lukijaIrti('sarja-loppu');
+                    }
                     break;
                 }
                 if (tulos.value && tulos.value.length) {
@@ -3174,10 +3881,8 @@
             }
         } catch (e) {
             if (auki) {
-                asetaYhteys('Lukija irtosi');
                 lokiin('LUKU KATKESI ' + (e && e.message ? e.message : e));
-                naytaTulos('virhe', 'Lukuyhteys katkesi. Yhdistä uudelleen.'
-                    + (e && e.message ? '<br><span class="muted">' + escapeHtml(e.message) + '</span>' : ''));
+                lukijaIrti('sarja');
             }
         } finally {
             try { reader.releaseLock(); } catch (e2) { /* jo vapaa */ }
@@ -3192,13 +3897,18 @@
         var nimi = e && e.name ? e.name : '';
         var viesti = e && e.message ? e.message : '';
         if (nimi === 'NotFoundError') {
-            return 'Lukijaa ei valittu. Kytke USB-kaapeli ja valitse listasta USB Serial.';
+            return 'Lukijaa ei valittu. Kytke USB-kaapeli ja paina Yhdistä.';
         }
         if (nimi === 'SecurityError' || nimi === 'NotAllowedError') {
-            return 'Selain ei saanut USB-lupaa. Avaa sivu Chromessa ja salli laitteen käyttö.';
+            return 'Selain ei avannut USB-ikkunaa. Paina Yhdistä uudelleen Chromessa tai Edgessä ja salli lukija.';
         }
         if (/claimInterface|Unable to claim|access denied|device is busy/i.test(viesti)) {
-            return 'Puhelin piti lukijan itsellään. Irrota kaapeli, kytke uudelleen ja valitse Chrome, jos puhelin kysyy millä sovelluksella laite avataan.';
+            return onPuhelin()
+                ? 'Puhelin piti lukijan itsellään. Irrota kaapeli, kytke uudelleen ja valitse Chrome, jos puhelin kysyy millä sovelluksella laite avataan.'
+                : 'Windows pitää lukijaa itsellään. Irrota kaapeli, kytke uudelleen ja paina Yhdistä. Jos laite näkyy COM-porttina, valitse se listasta.';
+        }
+        if (/user gesture|Must be handling/i.test(viesti)) {
+            return 'Selain ei avannut USB-ikkunaa. Paina Yhdistä uudelleen.';
         }
         return 'USB-yhteys ei auennut. ' + viesti;
     }
@@ -3224,40 +3934,393 @@
         });
     }
 
-    async function valitsePortti() {
-        // Puhelimen Chrome listaa Emit-lukijan USB-laitteena (USB Serial), ei sarjaporttina.
-        if (onPuhelin()) {
-            if (!navigator.usb) {
-                throw new Error('Puhelimessa lukija avataan Chromella.');
+    var USB_SARJA_SUODATTIMET = [
+        { usbVendorId: 0x067B },
+        { usbVendorId: 0x0403 },
+        { usbVendorId: 0x1A86 },
+        { usbVendorId: 0x10C4 },
+        { usbVendorId: 0x2341 },
+        { usbVendorId: 0x239A },
+        { usbVendorId: 0x2E8A },
+        { usbVendorId: 0x0483 },
+        { usbVendorId: 0x26AC },
+        { usbVendorId: 0x1209 },
+        { usbVendorId: 0x27AC }
+    ];
+
+    function yhdistaKohde(ev) {
+        return !!(ev && ev.target && ev.target.closest
+            && ev.target.closest('#yhdista, #emit-automaatti-yhdista, #lukija-yhteys'));
+    }
+
+    function pyydaPorttiHetissa() {
+        var opts = { filters: USB_SARJA_SUODATTIMET };
+        try {
+            if (!eiUsbPolyfill && navigator.usb && window.JahUsbSerial) {
+                return window.JahUsbSerial.requestPort(opts);
             }
-            var serial = window.JahUsbSerial || await odotaJahUsbSerial();
-            return serial.requestPort();
+            if (navigator.serial) {
+                return navigator.serial.requestPort(opts);
+            }
+            if (navigator.usb && window.JahUsbSerial) {
+                return window.JahUsbSerial.requestPort(opts);
+            }
+        } catch (eHetissa) {
+            return Promise.reject(eHetissa);
+        }
+        return Promise.reject(new Error('Tämä selain ei avaa USB-sarjaporttia. Käytä Chromea tai Edgeä.'));
+    }
+
+    function yhdistaNapista() {
+        var lupaus = null;
+        if (!auki) {
+            lupaus = pyydaPorttiHetissa();
+        }
+        yhdista({ porttiLupaus: lupaus });
+    }
+
+    function kuoriUsbPortti(laite) {
+        if (!laite) {
+            return null;
+        }
+        if (laite.vendorId != null && window.JahUsbSerial
+                && typeof window.JahUsbSerial.portFromDevice === 'function') {
+            return window.JahUsbSerial.portFromDevice(laite);
+        }
+        if (typeof laite.open === 'function' && typeof laite.getInfo === 'function') {
+            return laite;
+        }
+        return null;
+    }
+
+    async function avaaKuoriUsb() {
+        var lupaus = null;
+        try {
+            var annettu = window.JahKuoriUsbLaite;
+            window.JahKuoriUsbLaite = null;
+            if (navigator.usb && window.JahUsbSerial
+                    && typeof window.JahUsbSerial.portFromDevice === 'function') {
+                var devices = [];
+                try {
+                    devices = await navigator.usb.getDevices();
+                } catch (eDev) { /* */ }
+                var d = null;
+                var i;
+                if (annettu && annettu.vendorId != null && devices.length) {
+                    for (i = 0; i < devices.length; i++) {
+                        if (devices[i].vendorId === annettu.vendorId
+                                && devices[i].productId === annettu.productId) {
+                            d = devices[i];
+                            break;
+                        }
+                    }
+                }
+                if (!d && devices.length) {
+                    d = devices[devices.length - 1];
+                }
+                if (!d && annettu && annettu.vendorId != null) {
+                    d = annettu;
+                }
+                if (d) {
+                    lupaus = Promise.resolve(window.JahUsbSerial.portFromDevice(d));
+                }
+            }
+            if (!lupaus) {
+                var kuoriP = kuoriUsbPortti(annettu);
+                if (kuoriP) {
+                    lupaus = Promise.resolve(kuoriP);
+                }
+            }
+            if (!lupaus) {
+                var tunnettu = await haeSallittuPortti();
+                if (tunnettu) {
+                    lupaus = Promise.resolve(tunnettu);
+                }
+            }
+            if (!lupaus) {
+                throw new Error('Lukijaa ei saatu auki. Paina Yhdistä uudelleen ja valitse laite.');
+            }
+        } catch (eAvaus) {
+            naytaTulos('virhe', usbVirhe(eAvaus));
+            soitaAani('virhe');
+            paivitaNapit();
+            return;
+        }
+        yhdista({ porttiLupaus: lupaus });
+    }
+
+    async function usbPolyfillPortti(opts) {
+        if (!navigator.usb) {
+            throw new Error(onPuhelin()
+                ? 'Puhelimessa lukija avataan Chromella.'
+                : 'Tämä selain ei avaa USB-sarjaporttia. Käytä Chromea tai Edgeä.');
+        }
+        if (window.JahUsbSerial) {
+            return window.JahUsbSerial.requestPort(opts);
+        }
+        var serial = await odotaJahUsbSerial();
+        return serial.requestPort(opts);
+    }
+
+    async function valitsePortti() {
+        var opts = { filters: USB_SARJA_SUODATTIMET };
+        if (!eiUsbPolyfill && navigator.usb && (onPuhelin() || window.JahUsbSerial)) {
+            try {
+                return await usbPolyfillPortti(opts);
+            } catch (eUsb) {
+                if (!navigator.serial || onPuhelin()) {
+                    throw eUsb;
+                }
+                if (eUsb && eUsb.name !== 'NotFoundError' && eUsb.name !== 'SecurityError') {
+                    throw eUsb;
+                }
+            }
+        } else if (onPuhelin()) {
+            throw new Error('Puhelimessa lukija avataan Chromella.');
         }
         if (navigator.serial) {
-            return navigator.serial.requestPort();
+            try {
+                return await navigator.serial.requestPort(opts);
+            } catch (eSuod) {
+                if (eSuod && eSuod.name === 'NotFoundError') {
+                    return navigator.serial.requestPort();
+                }
+                throw eSuod;
+            }
         }
-        if (window.JahUsbSerial && navigator.usb) {
-            return window.JahUsbSerial.requestPort();
+        if (navigator.usb) {
+            return usbPolyfillPortti(opts);
         }
         throw new Error('Tämä selain ei avaa USB-sarjaporttia. Käytä Chromea tai Edgeä.');
     }
 
-    async function yhdista() {
-        if (auki) {
-            auki = false;
-            siKone = null;
-            try { await portti.close(); } catch (e) { /* suljettu */ }
-            portti = null;
-            asetaYhteys('Lukija katkaistu');
-            paivitaNapit();
+    function lukijaHalutaan() {
+        try {
+            return localStorage.getItem('jah-lukija-halutaan') === '1';
+        } catch (eHal) {
+            return false;
+        }
+    }
+
+    function asetaLukijaHalutaan(paalla) {
+        try {
+            if (paalla) {
+                localStorage.setItem('jah-lukija-halutaan', '1');
+            } else {
+                localStorage.removeItem('jah-lukija-halutaan');
+            }
+        } catch (eHal2) { /* */ }
+    }
+
+    function portinTiedot(p) {
+        var vid = 0;
+        var pid = 0;
+        try {
+            if (p && typeof p.getInfo === 'function') {
+                var info = p.getInfo() || {};
+                vid = parseInt(info.usbVendorId, 10) || 0;
+                pid = parseInt(info.usbProductId, 10) || 0;
+            }
+        } catch (eInfo) { /* */ }
+        if (!vid && p && p.device_) {
+            vid = parseInt(p.device_.vendorId, 10) || 0;
+            pid = parseInt(p.device_.productId, 10) || 0;
+        }
+        return { vid: vid, pid: pid };
+    }
+
+    function talletaLukijaLaite(p) {
+        var t = portinTiedot(p);
+        if (!t.vid) {
             return;
         }
-        avaaAani();
         try {
+            localStorage.setItem('jah-lukija-vid', String(t.vid));
+            localStorage.setItem('jah-lukija-pid', String(t.pid || ''));
+        } catch (eTal) { /* */ }
+    }
+
+    function valitseSallittuPortti(lista) {
+        if (!lista || !lista.length) {
+            return null;
+        }
+        var muistiVid = 0;
+        var muistiPid = 0;
+        try {
+            muistiVid = parseInt(localStorage.getItem('jah-lukija-vid'), 10) || 0;
+            muistiPid = parseInt(localStorage.getItem('jah-lukija-pid'), 10) || 0;
+        } catch (eMuisti) { /* */ }
+        var i;
+        if (muistiVid) {
+            for (i = 0; i < lista.length; i++) {
+                var t = portinTiedot(lista[i]);
+                if (t.vid === muistiVid && (!muistiPid || t.pid === muistiPid)) {
+                    return lista[i];
+                }
+            }
+        }
+        return lista[0];
+    }
+
+    async function haeSallittuPortti() {
+        try {
+            if (onPuhelin()) {
+                var serial = window.JahUsbSerial || await odotaJahUsbSerial();
+                var usbPortit = await serial.getPorts();
+                var usbValittu = valitseSallittuPortti(usbPortit);
+                if (usbValittu) {
+                    return usbValittu;
+                }
+            }
+            if (navigator.serial && navigator.serial.getPorts) {
+                var serialPortit = await navigator.serial.getPorts();
+                var serialValittu = valitseSallittuPortti(serialPortit);
+                if (serialValittu) {
+                    return serialValittu;
+                }
+            }
+            if (!eiUsbPolyfill && window.JahUsbSerial && navigator.usb) {
+                var polyPortit = await window.JahUsbSerial.getPorts();
+                var polyValittu = valitseSallittuPortti(polyPortit);
+                if (polyValittu) {
+                    return polyValittu;
+                }
+            }
+        } catch (ePortti) { /* ei aiempaa lupaa */ }
+        return null;
+    }
+
+    function samaUsbLaite(device) {
+        if (!device || !portti) {
+            return false;
+        }
+        if (portti.device_ && portti.device_ === device) {
+            return true;
+        }
+        var t = portinTiedot(portti);
+        return !!(t.vid && t.vid === device.vendorId && (!t.pid || t.pid === device.productId));
+    }
+
+    function lukijaIrti(syy) {
+        if (!auki && !portti) {
+            return;
+        }
+        var p = portti;
+        auki = false;
+        portti = null;
+        siKone = null;
+        lukijaKatkesi = true;
+        if (p) {
+            try { p.close(); } catch (eSulje) { /* irti */ }
+        }
+        lokiin('LUKIJA IRTOSI' + (syy ? ' (' + syy + ')' : ''));
+        paivitaNapit();
+        if (onkoAutomaatti()) {
+            naytaAutomaattiVirhe('Lukija irtosi. Kytke kaapeli ja paina Yhdistä lukija.');
+            puhuAutomaatti('Lukija irtosi');
+        } else {
+            asetaYhteys('Lukija irtosi');
+            naytaTulos('virhe', 'Lukija irtosi. Yhdistä uudelleen.');
+        }
+        soitaAani('virhe');
+    }
+
+    function kuunteleUsbTapahtumat() {
+        if (navigator.usb && navigator.usb.addEventListener) {
+            navigator.usb.addEventListener('disconnect', function (ev) {
+                if (samaUsbLaite(ev && ev.device)) {
+                    lukijaIrti('usb-disconnect');
+                }
+            });
+            navigator.usb.addEventListener('connect', function () {
+                if (!auki && lukijaHalutaan()) {
+                    yhdista({ hiljainen: true }).catch(function () { /* */ });
+                }
+            });
+        }
+        if (navigator.serial && navigator.serial.addEventListener) {
+            navigator.serial.addEventListener('disconnect', function (ev) {
+                if (portti && ev && ev.target === portti) {
+                    lukijaIrti('serial-disconnect');
+                }
+            });
+            navigator.serial.addEventListener('connect', function () {
+                if (!auki && lukijaHalutaan()) {
+                    yhdista({ hiljainen: true }).catch(function () { /* */ });
+                }
+            });
+        }
+    }
+
+    function vapautaYhdistaminen() {
+        yhdistaKaynnissa = false;
+        if (yhdistaVahti) {
+            clearTimeout(yhdistaVahti);
+            yhdistaVahti = null;
+        }
+    }
+
+    function naytaYhdistetaan() {
+        if (yhdistaBtn && !auki) {
+            yhdistaBtn.textContent = 'Yhdistetään…';
+        }
+        var autoBtn = document.getElementById('emit-automaatti-yhdista');
+        if (autoBtn) {
+            autoBtn.textContent = 'Yhdistetään…';
+        }
+        var ots = document.getElementById('emit-automaatti-ots');
+        if (onkoAutomaatti() && ots && !auki) {
+            ots.textContent = 'Yhdistetään';
+        } else if (!cfg.iltarasti) {
+            asetaYhteys('Yhdistetään lukijaa…');
+        }
+    }
+
+    async function yhdista(opts) {
+        var hiljainen = !!(opts && opts.hiljainen);
+        if (yhdistaKaynnissa) {
+            return;
+        }
+        yhdistaKaynnissa = true;
+        yhdistaVahti = setTimeout(function () {
+            yhdistaKaynnissa = false;
+            yhdistaVahti = null;
+        }, 20000);
+        try {
+            if (auki) {
+                if (hiljainen) {
+                    return;
+                }
+                auki = false;
+                siKone = null;
+                lukijaKatkesi = false;
+                try { await portti.close(); } catch (e) { /* suljettu */ }
+                portti = null;
+                asetaLukijaHalutaan(false);
+                asetaYhteys('Lukija katkaistu');
+                paivitaNapit();
+                return;
+            }
+            if (!hiljainen) {
+                naytaYhdistetaan();
+            }
             if (onkoSportIdent() && !siProto) {
                 throw new Error('SportIdent-ohjelma ei latautunut. Päivitä sivu.');
             }
-            portti = await valitsePortti();
+            if (opts && opts.porttiLupaus) {
+                portti = await opts.porttiLupaus;
+            } else {
+                portti = await haeSallittuPortti();
+                if (!portti && !hiljainen) {
+                    portti = await valitsePortti();
+                }
+            }
+            if (!portti) {
+                if (hiljainen) {
+                    return;
+                }
+                throw new Error('Lukijaa ei valittu.');
+            }
             var si = onkoSportIdent();
             nykyStop = si ? 1 : 2;
             var baudAvaus = si ? 38400 : 9600;
@@ -3271,19 +4334,49 @@
                 }
                 baudValinta.value = String(baudAvaus);
             }
-            await portti.open({
+            var avaus = {
                 baudRate: baudAvaus,
                 dataBits: 8,
                 stopBits: si ? 1 : 2,
                 parity: 'none',
                 bufferSize: 255
-            });
+            };
+            try {
+                await portti.open(avaus);
+            } catch (eOpen) {
+                var openViesti = eOpen && eOpen.message ? String(eOpen.message) : '';
+                if (onPuhelin() || !navigator.serial
+                        || !/claimInterface|Unable to claim|access denied|device is busy/i.test(openViesti)) {
+                    throw eOpen;
+                }
+                eiUsbPolyfill = true;
+                try { portti.close(); } catch (eSuljeUsb) { /* */ }
+                try {
+                    if (window.parent && window.parent !== window) {
+                        window.parent.postMessage({ type: 'jah-lukija', usb: false, kaytaSarja: true }, location.origin);
+                    }
+                } catch (eSarjaViesti) { /* */ }
+                var sarjaPortti = valitseSallittuPortti(
+                    await navigator.serial.getPorts()
+                );
+                if (!sarjaPortti) {
+                    throw eOpen;
+                }
+                portti = sarjaPortti;
+                await portti.open(avaus);
+            }
             if (portti.setSignals) {
                 try {
                     await portti.setSignals({ dataTerminalReady: true, requestToSend: true });
                 } catch (e2) { /* polyfill asettaa DTR:n itse */ }
             }
             auki = true;
+            lukijaKatkesi = false;
+            avaaAani();
+            if (!hiljainen) {
+                avaaPuhe();
+            }
+            talletaLukijaLaite(portti);
             koodiKorjattu = false;
             moodiKorjattu = false;
             saatiinTila = false;
@@ -3314,6 +4407,10 @@
             }
             paivitaNapit();
             paivitaUsb();
+            asetaLukijaHalutaan(true);
+            if (onkoAutomaatti() && !hiljainen) {
+                puhuAutomaatti('Lukija yhdistetty');
+            }
             if (ftdiKaytossa()) {
                 lueFtdi();
             } else {
@@ -3324,11 +4421,15 @@
                 window.jahWakeLockRefresh();
             }
         } catch (e) {
-            naytaTulos('virhe', usbVirhe(e));
-            soitaAani('virhe');
             auki = false;
             portti = null;
             paivitaNapit();
+            if (!hiljainen) {
+                naytaTulos('virhe', usbVirhe(e));
+                soitaAani('virhe');
+            }
+        } finally {
+            vapautaYhdistaminen();
         }
     }
 
@@ -3364,6 +4465,8 @@
     if (cfg.automaattiSivu) {
         document.body.classList.add('emit-automaatti-sivu', 'is-automaatti-moodi');
         siirraAutomaattiYlapalkkiin();
+    } else if (cfg.iltarasti) {
+        siirraPuheYlapalkkiin();
     }
     lisaaAutomaattiNappi();
     varmistaYlaTyyppi();
@@ -3466,10 +4569,10 @@
     }
 
     if (yhdistaBtn) {
-        yhdistaBtn.addEventListener('click', yhdista);
+        yhdistaBtn.addEventListener('click', yhdistaNapista);
     }
     if (lukijaIkoni) {
-        lukijaIkoni.addEventListener('click', yhdista);
+        lukijaIkoni.addEventListener('click', yhdistaNapista);
     }
 
     var kasinForm = document.getElementById('kasin-form');
@@ -3508,8 +4611,13 @@
                 return;
             }
             var moodiLahetys = 'tallenna';
-            if (cfg.iltarasti && (ilmanAikaa || emitNro < 1)) {
-                moodiLahetys = moodi === 'maali' ? 'pois_maastosta' : 'maastoon';
+            if (cfg.iltarasti) {
+                var pois = moodi === 'maali' || tarkoitus === 'maali';
+                if (pois) {
+                    moodiLahetys = ilmanAikaa ? 'pois_maastosta' : 'maali';
+                } else {
+                    moodiLahetys = 'maastoon';
+                }
             }
             asetaEmitKentta(emitNro);
             laheta({ emit: emitNro, leimat: odottaaLeimat }, moodiLahetys);
@@ -3615,7 +4723,7 @@
 
     if (!cfg.iltarasti) {
         if (onPuhelin()) {
-            asetaYhteys('Paina Yhdistä ja valitse lukija nimellä USB Serial.');
+            asetaYhteys('Paina Yhdistä. Lukija yhdistyy suoraan, jos se on jo sallittu.');
         } else if (!navigator.serial && !(window.JahUsbSerial && navigator.usb)) {
             asetaYhteys(kioski
                 ? 'USB-lukija vaatii Chromen tai Edgen.'
@@ -3641,13 +4749,36 @@
             siirraAutomaattiYlapalkkiin();
             paivitaAutomaattiYhteys();
             paivitaNapit();
+        } else if (cfg.iltarasti) {
+            siirraPuheYlapalkkiin();
         }
     });
     setInterval(paivitaUsb, 400);
     if (typeof window.jahWakeLockRefresh === 'function') {
         window.jahWakeLockRefresh();
     }
-    document.addEventListener('pointerdown', function () { avaaAani(); }, { once: true, passive: true });
+    document.addEventListener('pointerdown', function (ev) {
+        if (yhdistaKohde(ev)) {
+            return;
+        }
+        avaaAani();
+        avaaPuhe();
+    }, { passive: true });
+    if (window.speechSynthesis) {
+        try {
+            speechSynthesis.getVoices();
+            speechSynthesis.addEventListener('voiceschanged', function () {
+                suomiPuheAani();
+            });
+        } catch (eAani) { /* */ }
+        setInterval(function () {
+            try {
+                if (automaattiPuhu && onkoAutomaatti() && speechSynthesis.paused) {
+                    speechSynthesis.resume();
+                }
+            } catch (eRes) { /* */ }
+        }, 4000);
+    }
     window.addEventListener('online', function () { tyhjennaJono(); });
     window.addEventListener('offline', paivitaJonoBanneri);
     if (onkoVerkko() && lueJono().length) {
@@ -3659,4 +4790,43 @@
         puhe: automaattiPuheTeksti,
         sijoitusHtml: sijoitusSeurantaHtmlsta
     };
+
+    window.addEventListener('message', function (ev) {
+        if (ev.origin !== location.origin || !ev.data || ev.data.type !== 'jah-kuori') {
+            return;
+        }
+        if (ev.data.toiminto === 'automaatti') {
+            cfg.automaattiSivu = true;
+            document.body.classList.add('emit-automaatti-sivu', 'is-automaatti-moodi');
+            asetaMoodi('automaatti');
+            siirraAutomaattiYlapalkkiin();
+            paivitaAutomaattiYhteys();
+            paivitaNapit();
+        } else if (ev.data.toiminto === 'tulospalvelu') {
+            if (!cfg.automaattiSivu && moodi !== 'automaatti') {
+                return;
+            }
+            cfg.automaattiSivu = false;
+            document.body.classList.remove('emit-automaatti-sivu', 'is-automaatti-moodi');
+            asetaMoodi('lahto');
+            siirraPuheYlapalkkiin();
+            paivitaNapit();
+        } else if (ev.data.toiminto === 'kuori-usb') {
+            document.body.classList.add('emit-kuori-usb');
+        } else if (ev.data.toiminto === 'usb-valmis') {
+            avaaKuoriUsb();
+        }
+    });
+
+    kuunteleUsbTapahtumat();
+    if (lukijaHalutaan() && usbLukijaSaatavilla()) {
+        var kaynnistaLukija = function () {
+            yhdista({ hiljainen: true }).catch(function () { /* ei aiempaa porttia */ });
+        };
+        if (onPuhelin() && !window.JahUsbSerial) {
+            odotaJahUsbSerial().then(kaynnistaLukija).catch(function () { /* */ });
+        } else {
+            kaynnistaLukija();
+        }
+    }
 })();

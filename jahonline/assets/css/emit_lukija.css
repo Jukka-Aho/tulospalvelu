@@ -231,6 +231,14 @@
     word-spacing: 0.08em;
 }
 
+.emit-viesti-sivu .emit-osuus {
+    font-weight: 700;
+    color: #0b3d2e;
+}
+html[data-theme="dark"] .emit-viesti-sivu .emit-osuus {
+    color: #b7e4c7;
+}
+
 .lahtoluennat-page.emit-lukija-page #emit-usb {
     margin-top: 0.35rem;
     font-weight: 700;
@@ -677,6 +685,24 @@ body.iltarasti-kuori.emit-iltarasti #emit-tarkistus .emit-leimat-otsikko,
     box-shadow: 0 1px 0 #083f1e;
 }
 
+.emit-lukija-page.emit-iltarasti #yhdista.emit-yhdista--kutsu.is-irti:not([hidden]) {
+    background: #b91c1c;
+    border-color: #7f1d1d;
+    box-shadow: 0 1px 0 #450a0a;
+    animation: emit-lukija-irti-vilkku 1.4s ease-in-out infinite;
+}
+
+body.emit-kuori-usb #yhdista,
+body.emit-kuori-usb #emit-automaatti-yhdista {
+    visibility: hidden;
+    pointer-events: none;
+}
+
+@keyframes emit-lukija-irti-vilkku {
+    0%, 100% { filter: brightness(1); }
+    50% { filter: brightness(1.18); }
+}
+
 .emit-lukija-page.emit-iltarasti #lukija-yhteys.emit-lukija-tila:not([hidden]) {
     display: block;
     width: 100%;
@@ -802,7 +828,7 @@ body.is-automaatti-moodi {
     overflow: hidden;
 }
 
-body.is-automaatti-moodi .admin-container > *:not(.emit-yla):not(#emit-jono) {
+body.is-automaatti-moodi .admin-container > *:not(.emit-yla):not(#emit-jono):not(.jah-mainos) {
     display: none !important;
 }
 
@@ -837,6 +863,80 @@ body.emit-automaatti-sivu .emit-yla {
     display: none !important;
 }
 
+html:has(body.emit-automaatti-sivu),
+body.emit-automaatti-sivu {
+    background: #071018 !important;
+    background-image: none !important;
+    color: #f8fafc;
+}
+
+body.emit-automaatti-sivu .site-topbar {
+    background: linear-gradient(180deg, rgba(7, 16, 24, 0.92), rgba(7, 16, 24, 0.28) 78%, transparent);
+    border-bottom: 0;
+    box-shadow: none;
+    color: #e2e8f0;
+}
+
+body.emit-automaatti-sivu .theme-toggle {
+    display: none !important;
+}
+
+/* Tulospalvelu: teema ja ääni pysyvät oikeassa yläkulmassa, eivät kääriydy. */
+body.iltarasti-kuori.emit-iltarasti:not(.emit-automaatti-sivu) .site-topbar {
+    position: relative;
+    flex-wrap: nowrap;
+    padding-right: 6.5rem;
+}
+
+body.iltarasti-kuori.emit-iltarasti:not(.emit-automaatti-sivu) .site-topbar-actions {
+    flex-wrap: nowrap;
+    min-width: 0;
+}
+
+body.iltarasti-kuori.emit-iltarasti:not(.emit-automaatti-sivu) .site-topbar .theme-toggle,
+body.iltarasti-kuori.emit-iltarasti:not(.emit-automaatti-sivu) .site-topbar .emit-automaatti-puhe {
+    position: absolute;
+    top: calc(0.4rem + env(safe-area-inset-top, 0px));
+    z-index: 90;
+    width: 2.4rem;
+    height: 2.4rem;
+    min-width: 2.4rem;
+    min-height: 2.4rem;
+    padding: 0;
+    margin: 0;
+    transform: none;
+    flex: 0 0 auto;
+}
+
+body.iltarasti-kuori.emit-iltarasti:not(.emit-automaatti-sivu) .site-topbar .theme-toggle {
+    right: 0.45rem;
+}
+
+body.iltarasti-kuori.emit-iltarasti:not(.emit-automaatti-sivu) .site-topbar .emit-automaatti-puhe {
+    right: 3.05rem;
+    background: color-mix(in srgb, var(--primary) 12%, var(--card));
+    color: var(--text);
+    box-shadow: inset 0 0 0 1px var(--border);
+    font-size: 1.15rem;
+    line-height: 1;
+}
+
+body.emit-automaatti-sivu .iltarasti-kuori-nimi {
+    color: rgba(226, 232, 240, 0.78);
+    font-size: 1.05rem;
+    letter-spacing: 0.04em;
+}
+
+body.emit-automaatti-sivu .admin-menu-toggle {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.16);
+    color: #e2e8f0;
+}
+
+body.emit-automaatti-sivu .iltarasti-tila-luku {
+    display: none !important;
+}
+
 body.emit-automaatti-sivu .site-topbar-actions {
     gap: 0.35rem;
 }
@@ -851,7 +951,7 @@ body.emit-automaatti-sivu .iltarasti-yhteys-selite {
     font-size: 0.78rem;
     font-weight: 700;
     line-height: 1;
-    color: var(--text);
+    color: #94a3b8;
     letter-spacing: 0.04em;
 }
 
@@ -907,6 +1007,11 @@ body.emit-automaatti-sivu .site-topbar-actions #yhdista:not([hidden]) {
     box-shadow: none;
 }
 
+body.emit-automaatti-sivu .site-topbar-actions #yhdista.is-irti:not([hidden]) {
+    background: #b91c1c !important;
+    border-color: #7f1d1d !important;
+}
+
 body.emit-automaatti-sivu .site-topbar-actions #lukija-yhteys:not([hidden]) {
     display: inline-flex !important;
     width: auto;
@@ -928,7 +1033,7 @@ body.emit-automaatti-sivu #emit-jono:not([hidden]) {
 }
 
 body.emit-automaatti-sivu .emit-automaatti {
-    padding-top: max(4.2rem, calc(env(safe-area-inset-top, 0px) + 3.4rem));
+    padding-top: max(3.6rem, calc(env(safe-area-inset-top, 0px) + 2.8rem));
 }
 
 .emit-automaatti {
@@ -940,8 +1045,11 @@ body.emit-automaatti-sivu .emit-automaatti {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: max(6.4rem, calc(env(safe-area-inset-top, 0px) + 5.8rem)) 1.1rem 1.4rem;
-    background: #071018;
+    padding: max(4.8rem, calc(env(safe-area-inset-top, 0px) + 3.6rem)) 1.1rem 5.4rem;
+    background:
+        radial-gradient(120% 80% at 50% -10%, rgba(34, 197, 94, 0.16), transparent 58%),
+        radial-gradient(90% 70% at 88% 110%, rgba(14, 116, 144, 0.2), transparent 52%),
+        #071018;
     color: #f8fafc;
     text-align: center;
     font-family: "Barlow Condensed", "Barlow", system-ui, sans-serif;
@@ -970,12 +1078,66 @@ body.emit-automaatti-sivu .emit-automaatti {
     width: min(52rem, 100%);
 }
 
+.emit-automaatti-odota-merkki {
+    width: clamp(7.4rem, 22vw, 10.5rem);
+    height: clamp(7.4rem, 22vw, 10.5rem);
+    margin: 0 auto 1.4rem;
+    border-radius: 50%;
+    border: 5px solid rgba(148, 163, 184, 0.55);
+    background: radial-gradient(circle at 50% 42%, rgba(203, 213, 225, 0.45), rgba(148, 163, 184, 0.08) 68%);
+    transform: scale(0.9);
+}
+
+.emit-automaatti.is-odottaa.is-auki .emit-automaatti-odota-merkki {
+    border-color: #4ade80;
+    background: radial-gradient(circle at 50% 40%, #86efac 0%, #22c55e 42%, rgba(22, 163, 74, 0.35) 78%);
+    box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.9), 0 0 28px 10px rgba(74, 222, 128, 0.5);
+    animation: emit-automaatti-pulssi 1.05s ease-in-out infinite;
+}
+
+.emit-automaatti.is-odottaa.is-irti .emit-automaatti-odota-merkki {
+    border-color: #f87171;
+    background: radial-gradient(circle at 50% 40%, #fca5a5 0%, #ef4444 42%, rgba(185, 28, 28, 0.4) 78%);
+    box-shadow: 0 0 0 0 rgba(248, 113, 113, 0.9), 0 0 28px 10px rgba(248, 113, 113, 0.5);
+    animation: emit-automaatti-irti-pulssi 1.05s ease-in-out infinite;
+}
+
+@keyframes emit-automaatti-irti-pulssi {
+    0%, 100% {
+        transform: scale(0.9);
+        box-shadow: 0 0 0 0 rgba(248, 113, 113, 0.85), 0 0 18px 8px rgba(248, 113, 113, 0.4);
+        filter: brightness(1);
+    }
+    50% {
+        transform: scale(1.14);
+        box-shadow: 0 0 0 1.8rem rgba(248, 113, 113, 0.28), 0 0 42px 16px rgba(248, 113, 113, 0.55);
+        filter: brightness(1.28);
+    }
+}
+
+.emit-automaatti.is-irti .emit-automaatti-ots {
+    color: #fecaca;
+}
+
+@keyframes emit-automaatti-pulssi {
+    0%, 100% {
+        transform: scale(0.9);
+        box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.85), 0 0 18px 8px rgba(74, 222, 128, 0.4);
+        filter: brightness(1);
+    }
+    50% {
+        transform: scale(1.14);
+        box-shadow: 0 0 0 1.8rem rgba(74, 222, 128, 0.28), 0 0 42px 16px rgba(74, 222, 128, 0.55);
+        filter: brightness(1.28);
+    }
+}
+
 .emit-automaatti-ots {
     font-size: clamp(2.4rem, 9vw, 5.5rem);
     font-weight: 700;
     letter-spacing: 0.04em;
     text-transform: uppercase;
-    color: #94a3b8;
+    color: #e2e8f0;
 }
 
 .emit-automaatti-ala {
@@ -1063,37 +1225,120 @@ body.emit-automaatti-sivu .emit-automaatti {
     display: none !important;
 }
 
+.emit-automaatti-kortti {
+    width: min(46rem, 100%);
+    margin: 0 auto;
+    padding: 1.35rem 1.4rem 1.55rem;
+    border-radius: 1.45rem;
+    background: rgba(8, 16, 24, 0.58);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 28px 90px rgba(0, 0, 0, 0.48);
+    backdrop-filter: blur(16px);
+}
+
 .emit-automaatti-rata {
-    font-size: clamp(1.1rem, 3vw, 1.7rem);
-    font-weight: 600;
-    letter-spacing: 0.08em;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.55rem;
+    padding: 0.22rem 0.9rem;
+    border-radius: 999px;
+    background: rgba(228, 195, 90, 0.14);
+    border: 1px solid rgba(228, 195, 90, 0.38);
+    color: #e4c35a;
+    font-size: clamp(1rem, 2.6vw, 1.35rem);
+    font-weight: 700;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
-    color: #94a3b8;
-    margin-bottom: 0.35rem;
 }
 
 .emit-automaatti-nimi {
-    font-size: clamp(2.2rem, 8vw, 5.2rem);
+    font-size: clamp(2.3rem, 8vw, 5rem);
     font-weight: 700;
     line-height: 1.05;
     text-wrap: balance;
 }
 
+.emit-automaatti-seura {
+    margin-top: 0.25rem;
+    font-size: clamp(1.05rem, 3vw, 1.55rem);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: #cbd5e1;
+}
+
+.emit-automaatti-merkki {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    max-width: 100%;
+    margin: 1rem auto 0;
+    padding: 0.55rem 1.2rem 0.6rem 0.65rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    text-align: left;
+}
+
+.emit-automaatti-merkki-ico {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.35rem;
+    height: 2.35rem;
+    flex: 0 0 auto;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    font-size: 1.35rem;
+    font-weight: 800;
+}
+
+.emit-automaatti-merkki-tekstit {
+    display: flex;
+    flex-direction: column;
+    gap: 0.08rem;
+    min-width: 0;
+}
+
+.emit-automaatti-luvut {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 0.85rem 1.4rem;
+    margin-top: 1.05rem;
+}
+
+.emit-automaatti-aika-lohko {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.15rem;
+}
+
+.emit-automaatti-aika-ots,
+.emit-automaatti-puute-ots {
+    font-size: clamp(0.92rem, 2.4vw, 1.15rem);
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #94a3b8;
+}
+
 .emit-automaatti-aika {
-    margin-top: 0.35rem;
-    font-size: clamp(3.2rem, 12vw, 7.2rem);
+    font-size: clamp(3.3rem, 12vw, 6.8rem);
     font-weight: 800;
     font-variant-numeric: tabular-nums;
     letter-spacing: 0.02em;
-    line-height: 1;
+    line-height: 0.95;
 }
 
 .emit-automaatti-sija {
     display: inline-flex;
     align-items: baseline;
     gap: 0.45rem;
-    margin-top: 0.55rem;
-    padding: 0.15rem 0.85rem 0.25rem;
+    margin-top: 0;
+    padding: 0.2rem 0.9rem 0.3rem;
     border-radius: 999px;
     background: rgba(255, 255, 255, 0.08);
 }
@@ -1128,25 +1373,112 @@ body.emit-automaatti-sivu .emit-automaatti {
 }
 
 .emit-automaatti-tila {
-    margin-top: 0.7rem;
-    font-size: clamp(1.6rem, 5vw, 2.8rem);
+    margin: 0;
+    font-size: clamp(1.25rem, 4vw, 2rem);
     font-weight: 800;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
+    line-height: 1.05;
+}
+
+.emit-automaatti-tila-ala {
+    font-size: clamp(0.95rem, 2.6vw, 1.2rem);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: #cbd5e1;
+    text-transform: none;
 }
 
 .emit-automaatti-puute {
-    margin-top: 0.55rem;
+    margin-top: 1.05rem;
     font-size: clamp(1.05rem, 3vw, 1.5rem);
     color: #fecaca;
 }
 
+.emit-automaatti-koodit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.38rem;
+    margin-top: 0.55rem;
+}
+
+.emit-automaatti-koodi {
+    display: grid;
+    grid-template-columns: 2.6em minmax(3.2em, auto);
+    align-items: baseline;
+    justify-content: center;
+    column-gap: 0.7rem;
+    min-width: 7.2rem;
+    padding: 0.28rem 0.85rem;
+    border-radius: 0.75rem;
+    background: rgba(248, 113, 113, 0.16);
+    border: 1px solid rgba(251, 113, 133, 0.46);
+    color: #fecaca;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+    text-align: left;
+}
+
+.emit-automaatti-koodi-nro {
+    font-size: clamp(1.15rem, 3.4vw, 1.7rem);
+    font-weight: 700;
+    color: #fda4af;
+    text-align: right;
+}
+
+.emit-automaatti-koodi-koodi {
+    font-size: clamp(1.55rem, 5vw, 2.35rem);
+    font-weight: 800;
+    color: #fecaca;
+}
+
+.emit-automaatti-meta {
+    margin-top: 0.95rem;
+    font-size: clamp(0.98rem, 2.6vw, 1.2rem);
+    font-weight: 650;
+    letter-spacing: 0.06em;
+    color: #94a3b8;
+}
+
+.emit-automaatti.is-ok {
+    background:
+        radial-gradient(130% 95% at 50% -12%, rgba(74, 222, 128, 0.58), transparent 56%),
+        radial-gradient(85% 70% at 12% 108%, rgba(22, 163, 74, 0.5), transparent 52%),
+        radial-gradient(70% 55% at 92% 100%, rgba(34, 197, 94, 0.32), transparent 48%),
+        #07351a;
+}
+
+.emit-automaatti.is-ok .emit-automaatti-kortti {
+    background: rgba(8, 48, 24, 0.52);
+    border-color: rgba(134, 239, 172, 0.42);
+    box-shadow: 0 28px 90px rgba(6, 40, 18, 0.45), 0 0 48px rgba(74, 222, 128, 0.18);
+}
+
 .emit-automaatti.is-ok .emit-automaatti-tila {
-    color: #4ade80;
+    color: #bbf7d0;
+}
+
+.emit-automaatti.is-ok .emit-automaatti-merkki {
+    background: rgba(34, 197, 94, 0.32);
+    border-color: rgba(187, 247, 208, 0.55);
+}
+
+.emit-automaatti.is-ok .emit-automaatti-merkki-ico {
+    background: #22c55e;
+    color: #052e16;
 }
 
 .emit-automaatti.is-hylkays {
-    background: #2a0d0d;
+    background:
+        radial-gradient(120% 80% at 50% -10%, rgba(248, 113, 113, 0.24), transparent 58%),
+        radial-gradient(90% 70% at 12% 110%, rgba(127, 29, 29, 0.38), transparent 52%),
+        #1a0b0b;
+}
+
+.emit-automaatti.is-hylkays .emit-automaatti-kortti {
+    background: rgba(28, 10, 10, 0.58);
+    border-color: rgba(251, 113, 133, 0.22);
 }
 
 .emit-automaatti.is-hylkays .emit-automaatti-tila,
@@ -1154,10 +1486,108 @@ body.emit-automaatti-sivu .emit-automaatti {
     color: #fb7185;
 }
 
+.emit-automaatti.is-hylkays .emit-automaatti-merkki,
+.emit-automaatti.is-tuntematon .emit-automaatti-merkki {
+    background: rgba(248, 113, 113, 0.12);
+    border-color: rgba(251, 113, 133, 0.32);
+}
+
+.emit-automaatti.is-hylkays .emit-automaatti-merkki-ico,
+.emit-automaatti.is-tuntematon .emit-automaatti-merkki-ico {
+    background: #be123c;
+    color: #fff;
+}
+
 .emit-automaatti.is-tuntematon {
-    background: #1a1408;
+    background:
+        radial-gradient(120% 80% at 50% -10%, rgba(234, 179, 8, 0.18), transparent 58%),
+        #14100a;
 }
 
 .emit-automaatti.is-kesk .emit-automaatti-tila {
-    color: #cbd5e1;
+    color: #e2e8f0;
+}
+
+.emit-automaatti.is-kesk .emit-automaatti-merkki-ico {
+    background: #475569;
+    color: #fff;
+}
+
+body.emit-iltarasti .jah-mainos,
+body.emit-automaatti-sivu .jah-mainos,
+body.is-automaatti-moodi .jah-mainos,
+body.is-automaatti-moodi .admin-container > .jah-mainos {
+    display: flex !important;
+    position: fixed;
+    right: max(0.7rem, env(safe-area-inset-right, 0px));
+    bottom: max(0.7rem, env(safe-area-inset-bottom, 0px));
+    z-index: 34;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.4rem 0.85rem 0.4rem 0.4rem;
+    border-radius: 16px;
+    background: rgba(7, 16, 24, 0.82);
+    border: 1px solid rgba(228, 195, 90, 0.45);
+    box-shadow: 0 10px 32px rgba(0, 0, 0, 0.38), 0 0 24px rgba(228, 195, 90, 0.12);
+    backdrop-filter: blur(10px);
+    pointer-events: none;
+    color: #f2f6f8;
+}
+
+html[data-theme="light"] body.emit-iltarasti:not(.emit-automaatti-sivu):not(.is-automaatti-moodi) .jah-mainos {
+    background: rgba(255, 255, 255, 0.92);
+    color: #12202c;
+    border-color: rgba(196, 154, 34, 0.45);
+    box-shadow: 0 10px 28px rgba(18, 32, 44, 0.16);
+}
+
+.jah-mainos-logo {
+    width: 2.55rem;
+    height: 2.55rem;
+    border-radius: 10px;
+    object-fit: contain;
+    background: #0a0a0a;
+    box-shadow: 0 0 0 1px rgba(228, 195, 90, 0.4);
+}
+
+.jah-mainos-tekstit {
+    display: flex;
+    flex-direction: column;
+    gap: 0.16rem;
+    line-height: 1;
+}
+
+.jah-mainos-nimi {
+    font-family: "Barlow Condensed", sans-serif;
+    font-weight: 700;
+    font-size: 1.15rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.jah-mainos-url {
+    font-family: "Barlow", sans-serif;
+    font-weight: 600;
+    font-size: 0.88rem;
+    letter-spacing: 0.16em;
+    color: #e4c35a;
+}
+
+html[data-theme="light"] body.emit-iltarasti:not(.emit-automaatti-sivu):not(.is-automaatti-moodi) .jah-mainos-url {
+    color: #b45309;
+}
+
+@media (max-width: 520px) {
+    .jah-mainos-logo {
+        width: 2.1rem;
+        height: 2.1rem;
+    }
+
+    .jah-mainos-nimi {
+        font-size: 1rem;
+    }
+
+    .jah-mainos-url {
+        font-size: 0.78rem;
+    }
 }

@@ -8,21 +8,43 @@
         navigator.storage.persist().catch(function () {});
     }
 
-    function kioskiPaalle() {
-        var el = document.documentElement;
+    var kioskiPyynto = false;
+
+    function kioskiKokoNayttoJo() {
         if (document.fullscreenElement || document.webkitFullscreenElement) {
+            return true;
+        }
+        try {
+            if (window.matchMedia
+                && (matchMedia('(display-mode: standalone)').matches
+                    || matchMedia('(display-mode: fullscreen)').matches
+                    || matchMedia('(display-mode: minimal-ui)').matches)) {
+                return true;
+            }
+        } catch (eMm) { /* */ }
+        return !!navigator.standalone;
+    }
+
+    function kioskiPaalle() {
+        if (kioskiKokoNayttoJo() || kioskiPyynto) {
             return;
         }
+        var el = document.documentElement;
         var fn = el.requestFullscreen || el.webkitRequestFullscreen;
         if (!fn) {
             return;
         }
+        kioskiPyynto = true;
         try {
             var p = fn.call(el, { navigationUI: 'hide' });
-            if (p && p.catch) {
-                p.catch(function () {});
+            if (p && p.then) {
+                p.then(function () { kioskiPyynto = false; }, function () { kioskiPyynto = false; });
+            } else {
+                kioskiPyynto = false;
             }
-        } catch (e) { /* */ }
+        } catch (e) {
+            kioskiPyynto = false;
+        }
     }
 
     function kioskiPois() {
@@ -238,6 +260,32 @@
                     es.hidden = true;
                 }
             }
+            var rl = d.rastilippu;
+            if (rl && rl.tila) {
+                varmistaTilaLuku(
+                    'iltarasti-rastilippu',
+                    'is-rastilippu' + (rl.tila === 'virhe' ? ' is-virhe' : (rl.tila === 'ok' ? ' is-ok' : '')),
+                    'Rastilippu',
+                    '/public/iltarasti_asetukset.php?kilpailu_id=' + kid
+                );
+                var rlEl = document.getElementById('iltarasti-rastilippu');
+                if (rlEl) {
+                    rlEl.classList.toggle('is-virhe', rl.tila === 'virhe');
+                    rlEl.classList.toggle('is-ok', rl.tila === 'ok');
+                    if (rl.teksti) {
+                        rlEl.title = rl.teksti;
+                    }
+                }
+                asetaTilaNro('iltarasti-rastilippu', rl.lyhyt || rl.tila);
+                if (rlEl) {
+                    rlEl.classList.remove('is-tyhja');
+                }
+            } else {
+                var rlPiil = document.getElementById('iltarasti-rastilippu');
+                if (rlPiil) {
+                    rlPiil.hidden = true;
+                }
+            }
         }).catch(function () {});
     }
 
@@ -317,6 +365,7 @@
                 || p.indexOf('/public/iltarasti_') === 0
                 || p.indexOf('/public/radat.php') === 0
                 || p.indexOf('/public/emit_lukija.php') === 0
+                || p.indexOf('/public/viesti_lukija.php') === 0
                 || p.indexOf('/public/automaatti.php') === 0
                 || p.indexOf('/admin/iltarastit.php') === 0
                 || p.indexOf('/admin/kilpailijat.php') === 0
@@ -361,16 +410,6 @@
             }
             kioskiPaalle();
         }, true);
-        document.addEventListener('touchend', function (e) {
-            var sulje = e.target && e.target.closest
-                ? e.target.closest('.iltarasti-kioski-sulje')
-                : null;
-            if (sulje) {
-                kioskiPois();
-                return;
-            }
-            kioskiPaalle();
-        }, { capture: true, passive: true });
     }
 
     if (!('serviceWorker' in navigator)) {
@@ -378,8 +417,8 @@
     }
 
     var AUTO = /\/(ahoauto|autot|ohjaus|scenic)(\/|$)/;
-    var SW = '/sw-jahonline.js?v=20261112esitys';
-    var CACHE = 'jahonline-app-v23';
+    var SW = '/sw-jahonline.js?v=20261116viesti';
+    var CACHE = 'jahonline-app-v56';
 
     function iltarastiPrefetchUrlit() {
         var urls = {};
@@ -410,7 +449,7 @@
             lisaa('/public/iltarasti_asetukset.php');
             lisaa('/public/iltarasti_tulokset.php');
             lisaa('/public/radat.php');
-            lisaa('/assets/js/jah-radat-offline.js?v=20261107radat');
+            lisaa('/assets/js/jah-radat-offline.js?v=20261112rata4');
             lisaa('/public/emit_lukija.php?kilpailu_id=' + kid);
             lisaa('/public/emit_lukija.php?kilpailu_id=' + kid + '&moodi=lahto');
             lisaa('/public/emit_lukija.php?kilpailu_id=' + kid + '&moodi=maali');

@@ -48,6 +48,12 @@ function formatAikaSecPirila($sec): string
     return formatAikaSec($sec);
 }
 
+/** Punainen ruksi (sulje / poistu). */
+function jahRuksiSvg(): string
+{
+    return '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>';
+}
+
 /**
  * Kellonaika siinä maassa, jossa kisa pidetään.
  * Palvelin on UTC:ssa; Suomi on oletus, kunnes kisalle on oma vyöhyke.
@@ -391,6 +397,31 @@ function datetimeLocalSec(?string $dbValue): string
 }
 
 /**
+ * Jaa DATETIME kenttiin (pvm + tt:mm:ss). Selainten datetime-local näyttää usein vain minuutit.
+ *
+ * @return array{pvm:string,h:string,m:string,s:string,local:string}
+ */
+function datetimeOsat(?string $dbValue): array
+{
+    $local = datetimeLocalSec($dbValue);
+    $out = ['pvm' => '', 'h' => '', 'm' => '', 's' => '', 'local' => $local];
+    if ($local !== '' && preg_match('/^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2}):(\d{2})$/', $local, $lm)) {
+        $out['pvm'] = $lm[1];
+        $out['h'] = $lm[2];
+        $out['m'] = $lm[3];
+        $out['s'] = $lm[4];
+    } elseif ($local !== '' && preg_match('/^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2})$/', $local, $lm)) {
+        $out['pvm'] = $lm[1];
+        $out['h'] = $lm[2];
+        $out['m'] = $lm[3];
+        $out['s'] = '00';
+        $out['local'] = $lm[1] . 'T' . $lm[2] . ':' . $lm[3] . ':00';
+    }
+
+    return $out;
+}
+
+/**
  * Muunna 'H:MM:SS' / 'MM:SS' / sekunnit → int sekunnit.
  */
 function parseAikaSecSyote(?string $value): ?int
@@ -547,14 +578,17 @@ function tallennaKilpailijanAjat(
 
     $chk = $pdo->prepare('SELECT id FROM ajat WHERE kilpailija_id = ?');
     $chk->execute([$kilpailija_id]);
+    $olemassaId = $chk->fetchColumn();
 
-    if ($chk->fetch()) {
-        $pdo->prepare('UPDATE ajat SET maaliaika = ?, aika_sec = ? WHERE kilpailija_id = ?')
-            ->execute([$maaliAt, $aikaSec, $kilpailija_id]);
+    if ($olemassaId) {
+        $ajatId = (int) $olemassaId;
+        $pdo->prepare('UPDATE ajat SET maaliaika = ?, aika_sec = ? WHERE id = ?')
+            ->execute([$maaliAt, $aikaSec, $ajatId]);
         $tapahtuma = 'aika_paivitys';
     } else {
         $pdo->prepare('INSERT INTO ajat (kilpailija_id, maaliaika, aika_sec) VALUES (?, ?, ?)')
             ->execute([$kilpailija_id, $maaliAt, $aikaSec]);
+        $ajatId = (int) $pdo->lastInsertId();
         $tapahtuma = 'aika_lisays';
     }
 
@@ -562,10 +596,18 @@ function tallennaKilpailijanAjat(
     $meta->execute([$kilpailija_id]);
     $info = $meta->fetch(PDO::FETCH_ASSOC) ?: [];
     if (!empty($info['kilpailu_id'])) {
+        $kid = (int) $info['kilpailu_id'];
+        $maaliJonoFile = __DIR__ . '/maali_jono.php';
+        if ($maaliAt !== null && is_readable($maaliJonoFile)) {
+            require_once $maaliJonoFile;
+            if (function_exists('maaliJonoPaivitaLeimaAjasta')) {
+                maaliJonoPaivitaLeimaAjasta($pdo, $kid, $ajatId, $maaliAt);
+            }
+        }
         $auditFile = __DIR__ . '/ajanotto_audit.php';
         if (is_readable($auditFile)) {
             require_once $auditFile;
-            ajanottoAuditKirjaa($pdo, (int) $info['kilpailu_id'], $tapahtuma, [
+            ajanottoAuditKirjaa($pdo, $kid, $tapahtuma, [
                 'kohde' => 'ajat',
                 'numero' => isset($info['numero']) ? (int) $info['numero'] : null,
                 'kilpailija_id' => $kilpailija_id,
@@ -712,9 +754,13 @@ function julkinenLinkit($kilpailu_id, $public = false)
         'live' => $prefix . 'live.php' . $q,
         'ilmoittautuminen' => $prefix . 'ilmoittautuminen.php' . $q,
         'ilmoittautuneet' => $prefix . 'ilmoittautuneet.php' . $q,
+        'paikanpaa_ilmo' => $prefix . 'paikanpaa_ilmo.php' . $q,
+        'paikanpaa' => '/admin/paikanpaa.php',
+        'arvonta' => $prefix . 'arvonta.php' . $q,
         'lahtolista' => $prefix . 'lahtolista.php' . $q,
         'ampuma' => $prefix . 'ampumapaikka.php' . $q,
         'emit_lukija' => $prefix . 'emit_lukija.php' . $q,
+        'viesti_lukija' => $prefix . 'viesti_lukija.php' . $q,
         'leimantarkastus' => $prefix . 'leimantarkastus.php' . $q,
         'automaatti' => $prefix . 'automaatti.php' . $q,
         'mobiili_kilpailija' => $prefix . 'mobiili_kilpailija.php' . $q,
@@ -744,8 +790,7 @@ function kilpailuKuoriUrl(int $kilpailu_id, string $osio = '', array $extra = []
 /** Onko ilmoittautuminen merkitty käyttöön (lippu), riippumatta tilasta. */
 function ilmoittautuminenKaytossa(array $kilpailu): bool
 {
-    return !empty($kilpailu['ilmoittautuminen_auki'])
-        || ($kilpailu['tila'] ?? '') === 'ilmoittautuminen';
+    return !empty($kilpailu['ilmoittautuminen_auki']);
 }
 
 /**
@@ -882,10 +927,6 @@ function kilpailuTilaIlmoAsetuksista(string $valittuTila, array $ilmoKentat, str
  */
 function naytaIlmoittautuminenValikossa(array $kilpailu): bool
 {
-    if (($kilpailu['tila'] ?? '') === 'ilmoittautuminen') {
-        return true;
-    }
-
     return !empty($kilpailu['ilmoittautuminen_auki']);
 }
 
@@ -978,10 +1019,21 @@ function lahtoAikaPoikkeaaKisapaivasta(array $kilpailu, ?string $lahtoaika): boo
 /** Ilmoittautumismaksu euroina, tai null jos maksuton. */
 function ilmoMaksuEur(array $kilpailu): ?float
 {
-    if (!isset($kilpailu['ilmo_maksu_eur']) || $kilpailu['ilmo_maksu_eur'] === null || $kilpailu['ilmo_maksu_eur'] === '') {
+    return ilmoMaksuEurKentasta($kilpailu['ilmo_maksu_eur'] ?? null);
+}
+
+/** Paikan päällä ilmoittautumisen hinta, erillinen verkkomaksusta. Tyhjä = maksuton. */
+function paikanpaaMaksuEur(array $kilpailu): ?float
+{
+    return ilmoMaksuEurKentasta($kilpailu['paikanpaa_maksu_eur'] ?? null);
+}
+
+function ilmoMaksuEurKentasta($raw): ?float
+{
+    if ($raw === null || $raw === '') {
         return null;
     }
-    $eur = (float) $kilpailu['ilmo_maksu_eur'];
+    $eur = (float) $raw;
 
     return $eur > 0 ? $eur : null;
 }
@@ -1091,24 +1143,40 @@ function numeroiPuuttuvatKilpailijat(PDO $pdo, int $kilpailuId): int
         return 0;
     }
     $st = $pdo->prepare('
-        SELECT id FROM kilpailijat
+        SELECT id, sarja_id FROM kilpailijat
         WHERE kilpailu_id = ?
           AND (numero IS NULL OR numero < 1)
         ORDER BY id
     ');
     $st->execute([$kilpailuId]);
-    $rivit = $st->fetchAll(PDO::FETCH_COLUMN);
+    $rivit = $st->fetchAll(PDO::FETCH_ASSOC);
     if ($rivit === []) {
         return 0;
     }
     $upd = $pdo->prepare('UPDATE kilpailijat SET numero = ? WHERE id = ? AND kilpailu_id = ?');
     $n = 0;
-    foreach ($rivit as $id) {
-        $num = seuraavaKilpailijaNumero($pdo, $kilpailuId);
-        if ($num < 1) {
-            break;
+    foreach ($rivit as $rivi) {
+        $id = (int) ($rivi['id'] ?? 0);
+        $sarjaId = (int) ($rivi['sarja_id'] ?? 0);
+        $num = 0;
+        $valit = ($sarjaId > 0 && function_exists('sarjaHaeNumeroValit'))
+            ? sarjaHaeNumeroValit($pdo, $sarjaId)
+            : [];
+        if ($valit !== [] && function_exists('seuraavaSarjanNumero')) {
+            $num = seuraavaSarjanNumero($pdo, $kilpailuId, $sarjaId);
+            if ($num < 1) {
+                continue;
+            }
+        } elseif ($sarjaId > 0 && function_exists('seuraavaSarjanNumero')) {
+            $num = seuraavaSarjanNumero($pdo, $kilpailuId, $sarjaId);
         }
-        $upd->execute([$num, (int) $id, $kilpailuId]);
+        if ($num < 1) {
+            $num = seuraavaKilpailijaNumero($pdo, $kilpailuId);
+        }
+        if ($num < 1) {
+            continue;
+        }
+        $upd->execute([$num, $id, $kilpailuId]);
         $n++;
     }
 
@@ -4857,6 +4925,10 @@ function jarjestaLiveVertailu(array $maalissa, array $maastossa, array $status =
     }
 
     return $rivit;
+}
+
+if (is_readable(__DIR__ . '/sarja_numerot.php')) {
+    require_once __DIR__ . '/sarja_numerot.php';
 }
 
 ?>
