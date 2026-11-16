@@ -45,6 +45,7 @@ function isIltarastiOfflinePath(pathname) {
     pathname.indexOf('/public/emit_lukija.php') === 0 ||
     pathname.indexOf('/public/viesti_lukija.php') === 0 ||
     pathname.indexOf('/public/automaatti.php') === 0 ||
+    pathname.indexOf('/public/omat_tapahtumat.php') === 0 ||
     pathname.indexOf('/public/iltarastit.php') === 0 ||
     pathname.indexOf('/public/kilpailijat.php') === 0 ||
     pathname.indexOf('/public/iltarasti_') === 0 ||

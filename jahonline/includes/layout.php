@@ -322,7 +322,7 @@ function pageStart($title, array $opts = [])
     }
     $brandHref = $admin ? '/admin/index.php' : '/public/index.php';
     if ($palveluAktiivinen === 'iltarastit' || (function_exists('onIltarasti') && onIltarasti() && !(function_exists('voiKisahallintaan') && voiKisahallintaan()))) {
-        $brandHref = '/public/iltarastit.php';
+        $brandHref = '/public/omat_tapahtumat.php';
     }
     echo '<a class="site-brand" href="' . htmlspecialchars($brandHref) . '">';
     echo '<img class="site-brand-logo" src="/assets/img/logo.png?v=5" width="116" height="116" alt="">';
@@ -331,21 +331,32 @@ function pageStart($title, array $opts = [])
     if ($admin) {
         echo '<span class="site-topbar-sub">Hallinta</span>';
     }
-    if ($kirjautunut) {
+    $etusivu = $palveluAktiivinen === 'julkinen';
+    if ($kirjautunut && !$etusivu) {
         jahPalveluValitsin($palveluAktiivinen !== '' ? $palveluAktiivinen : null, $pdo instanceof PDO ? $pdo : null);
     }
     echo '</div>';
     echo '<div class="site-topbar-actions">';
     if ($kirjautunut) {
         require_once __DIR__ . '/seura_kisavalikko.php';
+        $naytaOmat = !$admin && function_exists('jahNaytaOmatTapahtumat')
+            && jahNaytaOmatTapahtumat($pdo instanceof PDO ? $pdo : null);
+        if ($naytaOmat) {
+            echo '<a class="site-topbar-btn site-topbar-btn--primary" href="/public/omat_tapahtumat.php">Omat tapahtumat</a>';
+        }
         $tyokalu = seuraRooliTyokalu();
-        if ($tyokalu && !$admin) {
+        if ($etusivu && !$naytaOmat && $tyokalu && !$admin) {
+            echo '<a class="site-topbar-btn site-topbar-btn--primary" href="'
+                . htmlspecialchars($tyokalu['href']) . '">'
+                . htmlspecialchars($tyokalu['label']) . '</a>';
+        }
+        if (!$etusivu && $tyokalu && !$admin && (!$naytaOmat || ($tyokalu['href'] ?? '') !== '/admin/index.php')) {
             echo '<a class="site-topbar-btn site-topbar-btn--primary" href="'
                 . htmlspecialchars($tyokalu['href']) . '">'
                 . htmlspecialchars($tyokalu['label']) . '</a>';
         }
         // Hallinta-linkki myös muille sivuille (ei piilota admin-valikkoa)
-        if (!$admin && function_exists('voiKisahallintaan') && voiKisahallintaan()) {
+        if (!$etusivu && !$admin && function_exists('voiKisahallintaan') && voiKisahallintaan()) {
             $hallintaHref = '/admin/index.php';
             if (!$tyokalu || ($tyokalu['href'] ?? '') !== $hallintaHref) {
                 echo '<a class="site-topbar-btn site-topbar-btn--primary" href="'

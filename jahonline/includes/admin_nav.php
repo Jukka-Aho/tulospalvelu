@@ -247,7 +247,7 @@ function adminShell($active, $pdo = null)
     echo '<div class="section-label">Asetukset</div>';
     echo '<nav class="admin-nav">';
     if (function_exists('iltarastiVoiPalvelun') ? iltarastiVoiPalvelun() : $vainIltarasti) {
-        echo '<a href="/public/iltarastit.php"' . ($active === 'iltarastit' ? ' class="active"' : '') . '>Iltarastit</a>';
+        echo '<a href="/public/omat_tapahtumat.php"' . ($active === 'iltarastit' || $active === 'omat_tapahtumat' ? ' class="active"' : '') . '>Omat tapahtumat</a>';
     }
     if ($kilpailu && $pirila && !$vainIltarasti) {
         echo '<a href="/admin/pirila.php"' . ($active === 'pirila' ? ' class="active"' : '') . '>Pirilä-asetukset</a>';

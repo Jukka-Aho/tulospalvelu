@@ -360,7 +360,8 @@
             }
             var p = u.pathname;
             return (
-                p.indexOf('/public/iltarastit.php') === 0
+                p.indexOf('/public/omat_tapahtumat.php') === 0
+                || p.indexOf('/public/iltarastit.php') === 0
                 || p.indexOf('/public/kilpailijat.php') === 0
                 || p.indexOf('/public/iltarasti_') === 0
                 || p.indexOf('/public/radat.php') === 0
@@ -430,6 +431,7 @@
                 urls[new URL(href, window.location.href).href] = true;
             } catch (e) { /* */ }
         }
+        lisaa('/public/omat_tapahtumat.php');
         lisaa('/public/iltarastit.php');
         var kid = 0;
         try {

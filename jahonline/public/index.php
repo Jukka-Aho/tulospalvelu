@@ -13,21 +13,35 @@ kisaLiputVarmista($pdo);
 
 $kirjautunut = !empty($_SESSION['user']);
 $rooliTyokalu = $kirjautunut ? seuraRooliTyokalu() : null;
-$omatKisat = [];
 
-if ($kirjautunut) {
-    try {
-        $omatKisat = haeKayttajanKilpailut(
-            $pdo,
-            "CASE k.tila WHEN 'kaynnissa' THEN 0 WHEN 'tulossa' THEN 1 WHEN 'ilmoittautuminen' THEN 2 WHEN 'luonnos' THEN 3 ELSE 4 END, k.paiva DESC, k.id DESC"
-        );
-        $omatKisat = array_values(array_filter(
-            $omatKisat,
-            static fn(array $k): bool => ($k['tila'] ?? '') !== 'arkisto'
-        ));
-    } catch (Throwable $e) {
-        $omatKisat = [];
+/**
+ * Julkinen etusivu: ei luonnoksia, demo/testikisoja eikä nimeltään testejä.
+ */
+function etusivuKisaNaytaJulkisesti(array $k): bool
+{
+    $tila = (string) ($k['tila'] ?? '');
+    if (!in_array($tila, ['kaynnissa', 'tulossa', 'ilmoittautuminen', 'valmis'], true)) {
+        return false;
     }
+    if (!empty($k['testikisa'])) {
+        return false;
+    }
+    if (array_key_exists('julkinen', $k) && (int) $k['julkinen'] !== 1) {
+        return false;
+    }
+    $nimi = mb_strtolower(trim((string) ($k['nimi'] ?? '')), 'UTF-8');
+    if ($nimi === '') {
+        return false;
+    }
+    if (preg_match('/jono-testi|testikisa|testijuoksu|^(jono-)?testi(\b|$)/u', $nimi)) {
+        return false;
+    }
+    // Ilmoittautuminen-sarakkeeseen vain kun täppä on päällä
+    if ($tila === 'ilmoittautuminen' && empty($k['ilmoittautuminen_auki'])) {
+        return false;
+    }
+
+    return true;
 }
 
 try {
@@ -48,21 +62,7 @@ try {
     ")->fetchAll(PDO::FETCH_ASSOC);
 }
 
-if ($kirjautunut && $omatKisat !== []) {
-    $naytetyt = [];
-    foreach ($kilpailut as $k) {
-        $naytetyt[(int) $k['id']] = true;
-    }
-    foreach ($omatKisat as $k) {
-        if (empty($k['testikisa']) || !empty($naytetyt[(int) $k['id']])) {
-            continue;
-        }
-        if (!in_array((string) ($k['tila'] ?? ''), ['kaynnissa', 'tulossa', 'ilmoittautuminen', 'valmis'], true)) {
-            continue;
-        }
-        $kilpailut[] = $k;
-    }
-}
+$kilpailut = array_values(array_filter($kilpailut, 'etusivuKisaNaytaJulkisesti'));
 
 $sarjaLkm = [];
 if ($kilpailut !== [] && function_exists('kilpailujenSarjaLkm')) {
@@ -112,7 +112,7 @@ function etusivuJaaSarakkeisiin(array $kisat, array $sarakkeet): array
     }
     foreach ($kisat as $k) {
         $tila = (string) ($k['tila'] ?? '');
-        if ($tila === 'ilmoittautuminen' && empty($k['_sarjoja'])) {
+        if ($tila === 'ilmoittautuminen' && (empty($k['_sarjoja']) || empty($k['ilmoittautuminen_auki']))) {
             $tila = 'tulossa';
         }
         foreach ($sarakkeet as $avain => $sarake) {
@@ -182,7 +182,11 @@ function etusivuKisaHref(array $k, array $linkit): string
     if ($tila === 'kaynnissa' || $tila === 'valmis') {
         return (string) ($linkit['seuranta'] ?? $linkit['kilpailu']);
     }
-    if ($tila === 'ilmoittautuminen' && !empty($k['_sarjoja']) && !empty($linkit['ilmoittautuminen'])) {
+    if ($tila === 'ilmoittautuminen'
+        && !empty($k['ilmoittautuminen_auki'])
+        && !empty($k['_sarjoja'])
+        && !empty($linkit['ilmoittautuminen'])
+    ) {
         return (string) $linkit['ilmoittautuminen'];
     }
 
@@ -313,39 +317,15 @@ window.addEventListener("beforeinstallprompt",function(e){e.preventDefault();win
 </script>
 
 <?php
-$etusivuPalvelut = ($kirjautunut && function_exists('jahPalveluOikeudet'))
-    ? jahPalveluOikeudet($pdo instanceof PDO ? $pdo : null)
-    : ['gps' => false, 'tulokset' => false, 'iltarastit' => false];
-$etusivuSivut = function_exists('jahPalveluEtusivut')
-    ? jahPalveluEtusivut()
-    : [
-        'iltarastit' => ['href' => '/public/iltarastit.php', 'label' => 'Iltarastit'],
-        'tulokset' => ['href' => '/admin/index.php', 'label' => 'Kilpailut'],
-        'gps' => ['href' => '/gps/index.php', 'label' => 'GPS-seuranta'],
-    ];
-$naytaEtusivuPalvelut = $kirjautunut && (
-    !empty($etusivuPalvelut['iltarastit'])
-    || !empty($etusivuPalvelut['tulokset'])
-    || !empty($etusivuPalvelut['gps'])
-);
+$naytaEtusivuTyokalu = $rooliTyokalu
+    && !(
+        $kirjautunut
+        && function_exists('jahNaytaOmatTapahtumat')
+        && jahNaytaOmatTapahtumat($pdo instanceof PDO ? $pdo : null)
+    );
 ?>
-<?php if ($naytaEtusivuPalvelut): ?>
-<section class="home-palvelut">
-    <h2>Palvelut</h2>
-    <p class="muted">Siirry seuran palvelun etusivulle. Hallintavalikko pysyy mukana.</p>
-    <div class="home-palvelut-napit">
-        <?php foreach (['iltarastit', 'tulokset', 'gps'] as $palveluAvain): ?>
-            <?php if (!empty($etusivuPalvelut[$palveluAvain])): ?>
-                <a class="btn home-palvelu-btn" href="<?= htmlspecialchars($etusivuSivut[$palveluAvain]['href']) ?>">
-                    <?= htmlspecialchars($etusivuSivut[$palveluAvain]['label']) ?>
-                </a>
-            <?php endif; ?>
-        <?php endforeach; ?>
-    </div>
-</section>
-<?php endif; ?>
 
-<?php if ($rooliTyokalu): ?>
+<?php if ($naytaEtusivuTyokalu): ?>
 <section class="home-rooli-tyokalu">
     <h2><?= htmlspecialchars($rooliTyokalu['label']) ?></h2>
     <p class="muted"><?= htmlspecialchars($rooliTyokalu['desc']) ?></p>
@@ -372,7 +352,7 @@ $naytaEtusivuPalvelut = $kirjautunut && (
         </div>
     <?php endif; ?>
 </section>
-<?php elseif ($kirjautunut && function_exists('voiKisahallintaan') && voiKisahallintaan()): ?>
+<?php elseif ($kirjautunut && function_exists('voiKisahallintaan') && voiKisahallintaan() && !(function_exists('jahNaytaOmatTapahtumat') && jahNaytaOmatTapahtumat($pdo instanceof PDO ? $pdo : null))): ?>
 <section class="home-rooli-tyokalu">
     <h2>Hallinta</h2>
     <p class="muted">Oman seuran kilpailujen hallinta.</p>
