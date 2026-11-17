@@ -21,6 +21,11 @@ $kartta = substr($helpers, $karttaPos, 1600);
 str_contains($kartta, 'rasti_koodi IS NOT NULL')
     || fail('rastiväliajat vain Emit-leimoista');
 
+$haeVa = strpos($helpers, 'function haeValiajat(');
+$haeVa !== false || fail('haeValiajat puuttuu');
+str_contains(substr($helpers, $haeVa, 800), 'rasti_koodi IS NOT NULL')
+    || fail('haeValiajat vain Emit');
+
 $nav = file_get_contents(__DIR__ . '/../includes/tulospalvelu.php');
 str_contains($nav, "'label' => 'Online tulokset'") || fail('nav Online tulokset');
 str_contains($nav, 'Online-väliajat') && fail('nav vanha Online-väliajat');

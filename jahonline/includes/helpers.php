@@ -4018,13 +4018,25 @@ function paivitaSarjojenValiaLkm(PDO $pdo, int $kilpailu_id): void
 
 function haeValiajat(PDO $pdo, $kilpailija_id)
 {
-    $stmt = $pdo->prepare('
+    $sql = '
         SELECT piste, rasti_koodi, aika_sec, sija, punch_at
         FROM valiajat
         WHERE kilpailija_id = ?
+          AND rasti_koodi IS NOT NULL AND rasti_koodi <> \'\'
         ORDER BY piste ASC
-    ');
-    $stmt->execute([$kilpailija_id]);
+    ';
+    try {
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([$kilpailija_id]);
+    } catch (Throwable $e) {
+        $stmt = $pdo->prepare('
+            SELECT piste, rasti_koodi, aika_sec, sija, punch_at
+            FROM valiajat
+            WHERE kilpailija_id = ?
+            ORDER BY piste ASC
+        ');
+        $stmt->execute([$kilpailija_id]);
+    }
 
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
