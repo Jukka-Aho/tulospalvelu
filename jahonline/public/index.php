@@ -222,6 +222,8 @@ pageStart('Etusivu', [
 .home-kartta{width:100%;height:70vh;min-height:16rem;border-radius:12px;border:1px solid var(--border);overflow:hidden;background:var(--card)}
 .home-kartta-tyhja{position:absolute;left:.75rem;right:.75rem;bottom:.75rem;margin:0;padding:.55rem .7rem;border-radius:8px;background:color-mix(in srgb,var(--card) 88%,transparent)}
 .home-kartta-popup{font:inherit}
+.home-kartta-merkki{background:none;border:none}
+.leaflet-container .home-kartta-merkki svg{display:block;filter:drop-shadow(0 1px 2px rgba(0,0,0,.45))}
 @media (max-width:900px){
 .home-kisa-nakyma.is-lista .home-kartta-wrap{display:none}
 .home-kisa-nakyma.is-kartta .home-kisa-board{display:none}
@@ -461,7 +463,7 @@ $naytaEtusivuTyokalu = $rooliTyokalu
     })();
     </script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="/assets/js/etusivu_kartta.js?v=20261117kartta"></script>
+    <script src="/assets/js/etusivu_kartta.js?v=20261117kartta2"></script>
 <?php endif; ?>
 
 <?php pageEnd(); ?>

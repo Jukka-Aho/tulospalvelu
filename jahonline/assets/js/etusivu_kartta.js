@@ -17,8 +17,8 @@
         merkit = [];
     }
 
-    var suomi = [64.8, 26.0];
-    var map = L.map(karttaEl, { scrollWheelZoom: true }).setView(suomi, 5);
+    var suomiRajat = L.latLngBounds([[59.6, 19.0], [70.1, 31.6]]);
+    var map = L.map(karttaEl, { scrollWheelZoom: true }).fitBounds(suomiRajat);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 18,
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -26,6 +26,16 @@
 
     var layer = L.layerGroup().addTo(map);
     var merkitKartalla = [];
+    var merkkiIkoni = L.divIcon({
+        className: 'home-kartta-merkki',
+        html: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 40" width="28" height="40" aria-hidden="true">'
+            + '<path d="M14 1.6C7.4 1.6 2 7 2 13.6c0 9.2 12 24 12 24s12-14.8 12-24C26 7 20.6 1.6 14 1.6z" fill="#c49a22" stroke="#111" stroke-width="2.2"/>'
+            + '<circle cx="14" cy="13.6" r="4.4" fill="#111"/>'
+            + '</svg>',
+        iconSize: [28, 40],
+        iconAnchor: [14, 38],
+        popupAnchor: [0, -34]
+    });
 
     function popupHtml(m) {
         var nimi = String(m.nimi || '');
@@ -61,7 +71,7 @@
             if (typeof m.lat !== 'number' || typeof m.lng !== 'number') {
                 return;
             }
-            var mk = L.marker([m.lat, m.lng]);
+            var mk = L.marker([m.lat, m.lng], { icon: merkkiIkoni });
             mk.bindPopup(popupHtml(m));
             mk.addTo(layer);
             merkitKartalla.push(mk);
@@ -73,12 +83,8 @@
     }
 
     function sovi() {
-        if (merkitKartalla.length === 0) {
-            map.setView(suomi, 5);
-            return;
-        }
-        if (merkitKartalla.length === 1) {
-            map.setView(merkitKartalla[0].getLatLng(), 12);
+        if (merkitKartalla.length <= 1) {
+            map.fitBounds(suomiRajat);
             return;
         }
         var g = L.featureGroup(merkitKartalla);

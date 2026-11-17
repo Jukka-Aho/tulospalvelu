@@ -48,6 +48,11 @@ $js = file_get_contents(__DIR__ . '/../assets/js/etusivu_kartta.js');
 str_contains($js, 'jah-etusivu-nakyma') || fail('muisti');
 str_contains($js, 'min-width: 901px') || fail('js desktop');
 str_contains($js, 'jahKarttaSuodata') || fail('haku kartta');
+str_contains($js, 'setView(merkitKartalla[0]') && fail('yksi merkki ei zoomaa lahelle');
+str_contains($js, 'suomiRajat') || fail('suomi rajat');
+str_contains($js, 'length <= 1') || fail('yksi merkki koko suomi');
+str_contains($js, '#c49a22') || fail('kulta');
+str_contains($js, '#111') || fail('musta');
 ok('kartta js');
 
 $omat = file_get_contents(__DIR__ . '/../public/omat_tapahtumat.php');
