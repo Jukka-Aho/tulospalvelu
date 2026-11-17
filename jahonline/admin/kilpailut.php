@@ -6,6 +6,9 @@ require_once __DIR__ . '/../includes/kilpailu_context.php';
 require_once __DIR__ . '/../includes/pirila_mode.php';
 require_once __DIR__ . '/../includes/layout.php';
 require_once __DIR__ . '/../includes/acl.php';
+if (is_readable(__DIR__ . '/../includes/kilpailu_poisto.php')) {
+    require_once __DIR__ . '/../includes/kilpailu_poisto.php';
+}
 if (is_readable(__DIR__ . '/../includes/kilpailu_aikavali.php')) {
     require_once __DIR__ . '/../includes/kilpailu_aikavali.php';
 }
@@ -241,12 +244,23 @@ function kilpailuListaKortti(array $k, int $valittu_id, array $seuraNimet): void
                 </form>
                 <a class="btn-small btn-secondary kisa-btn-muokkaa" href="kilpailut.php?muokkaa=<?= $kid ?>">Muokkaa</a>
             <?php endif; ?>
+            <?php if (function_exists('kilpailuPoistoLomakeHtml')): ?>
+                <?= kilpailuPoistoLomakeHtml($k, [
+                    'action_name' => 'action',
+                    'action_value' => 'delete',
+                    'id_name' => 'id',
+                    'kohde' => (function_exists('kisaOnIltarasti') && kisaOnIltarasti($k)) ? 'tapahtuman' : 'kilpailun',
+                    'btn_class' => 'btn-danger btn-small kisa-btn-poista',
+                ]) ?>
+            <?php else: ?>
             <form method="post" class="inline-form" data-poista-kisa data-kisa-nimi="<?= htmlspecialchars((string) $k['nimi'], ENT_QUOTES, 'UTF-8') ?>">
                 <?= csrfKentta() ?>
                 <input type="hidden" name="action" value="delete">
                 <input type="hidden" name="id" value="<?= $kid ?>">
+                <input type="hidden" name="vahvista_nimi" value="">
                 <button type="submit" class="btn-danger btn-small kisa-btn-poista">Poista</button>
             </form>
+            <?php endif; ?>
         </div>
     </article>
     <?php
@@ -422,6 +436,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($action === 'delete') {
         $id = (int) ($_POST['id'] ?? 0);
+        if (function_exists('kilpailuPoistaHallinnasta')) {
+            try {
+                kilpailuPoistaHallinnasta($pdo, $id, $_POST);
+            } catch (Throwable $e) {
+                header('Location: kilpailut.php?virhe=' . urlencode($e->getMessage()));
+                exit;
+            }
+            header('Location: kilpailut.php');
+            exit;
+        }
         $k = haeKilpailuHallintaan($pdo, $id);
         if (!$k) {
             die('Ei käyttöoikeutta');
@@ -798,6 +822,9 @@ function naytaKopioIlmoitus() {
     el._hideTimer = setTimeout(() => el.classList.remove('show'), 2500);
 }
 
+<?php if (function_exists('kilpailuPoistoVahvistusJs')): ?>
+<?= kilpailuPoistoVahvistusJs() ?>
+<?php else: ?>
 document.querySelectorAll('form[data-poista-kisa]').forEach(function (form) {
     form.addEventListener('submit', function (ev) {
         var nimi = form.getAttribute('data-kisa-nimi') || '';
@@ -820,6 +847,7 @@ document.querySelectorAll('form[data-poista-kisa]').forEach(function (form) {
         }
     });
 });
+<?php endif; ?>
 </script>
 
 <?php pageEnd(); ?>

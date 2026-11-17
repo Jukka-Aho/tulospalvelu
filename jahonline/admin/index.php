@@ -4,6 +4,9 @@ require_once __DIR__ . '/../includes/auth.php';
 vaadiKirjautuminen();
 require_once __DIR__ . '/../db.php';
 require_once __DIR__ . '/../includes/tili.php';
+if (is_readable(__DIR__ . '/../includes/kilpailu_poisto.php')) {
+    require_once __DIR__ . '/../includes/kilpailu_poisto.php';
+}
 
 tiliVarmistaTaulut($pdo);
 tiliLataaKayttajaSessioon($pdo);
@@ -70,6 +73,19 @@ if ($hasLayout && $_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($toiminto === 'vaihda_kilpailu') {
         tyhjennaValittuKilpailu();
         header('Location: index.php');
+        exit;
+    }
+    if ($toiminto === 'poista_kilpailu') {
+        $kid = (int) ($_POST['kilpailu_id'] ?? 0);
+        if ($kid < 1 || !function_exists('kilpailuPoistaHallinnasta')) {
+            die('Ei käyttöoikeutta');
+        }
+        try {
+            kilpailuPoistaHallinnasta($pdo, $kid, $_POST);
+            header('Location: index.php?viesti=' . urlencode('Kilpailu poistettu.'));
+        } catch (Throwable $e) {
+            header('Location: index.php?viesti=' . urlencode($e->getMessage()) . '&virhe=1');
+        }
         exit;
     }
     if ($toiminto === 'tyhjenna_testidata') {
@@ -290,6 +306,12 @@ if ($hasLayout) {
                     <input type="hidden" name="toiminto" value="vaihda_kilpailu">
                     <button type="submit" class="btn-small btn-secondary kisa-btn-muokkaa">Vaihda kilpailua</button>
                 </form>
+                <?php if ($vkKaikki && function_exists('kilpailuPoistoLomakeHtml')): ?>
+                    <?= kilpailuPoistoLomakeHtml($kilpailu, [
+                        'kohde' => (!empty($iltarasti) ? 'tapahtuman' : 'kilpailun'),
+                        'btn_class' => 'btn-danger btn-small kisa-btn-poista',
+                    ]) ?>
+                <?php endif; ?>
             </div>
         </div>
 
@@ -739,6 +761,12 @@ if ($hasLayout) {
                                 <input type="hidden" name="kilpailu_id" value="<?= $kid ?>">
                                 <button type="submit" class="btn-small kisa-btn-valitse">Valitse</button>
                             </form>
+                            <?php if (function_exists('voiHallitaKilpailua') && voiHallitaKilpailua($k) && function_exists('kilpailuPoistoLomakeHtml')): ?>
+                                <?= kilpailuPoistoLomakeHtml($k, [
+                                    'kohde' => (function_exists('kisaOnIltarasti') && kisaOnIltarasti($k)) ? 'tapahtuman' : 'kilpailun',
+                                    'btn_class' => 'btn-danger btn-small kisa-btn-poista',
+                                ]) ?>
+                            <?php endif; ?>
                         </div>
                     </article>
                 <?php endforeach; ?>
@@ -794,6 +822,9 @@ if ($hasLayout) {
 <?php endif; ?>
 
 <?php
+if (function_exists('kilpailuPoistoVahvistusScriptti')) {
+    kilpailuPoistoVahvistusScriptti();
+}
 if ($hasLayout) {
     pageEnd();
 } else {

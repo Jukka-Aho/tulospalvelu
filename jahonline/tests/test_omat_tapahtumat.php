@@ -19,6 +19,8 @@ str_contains($sivu, 'value="henkilokohtainen"') || fail('henkilo');
 str_contains($sivu, 'value="viesti"') || fail('viesti');
 str_contains($sivu, 'luo_paikallinen') || fail('luo suunnistus');
 str_contains($sivu, 'luo_juoksu') || fail('luo juoksu');
+str_contains($sivu, 'poista_kilpailu') || fail('poista');
+str_contains($sivu, 'kilpailuPoistoLomakeHtml') || fail('poisto lomake');
 str_contains($sivu, 'tiliKayttajaViestiPaalla') || fail('viesti oikeus');
 str_contains($sivu, 'Luo rastilipputapahtuma') && fail('ei luo rastilipusta');
 str_contains($sivu, 'name="rastilippu_event_id"') && fail('rastilippu asetuksissa');

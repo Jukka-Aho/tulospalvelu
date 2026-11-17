@@ -7,6 +7,9 @@ require_once __DIR__ . '/../includes/kilpailu_context.php';
 require_once __DIR__ . '/../includes/layout.php';
 require_once __DIR__ . '/../includes/radat.php';
 require_once __DIR__ . '/../includes/iltarasti.php';
+if (is_readable(__DIR__ . '/../includes/kilpailu_poisto.php')) {
+    require_once __DIR__ . '/../includes/kilpailu_poisto.php';
+}
 require_once __DIR__ . '/../db.php';
 if (is_readable(__DIR__ . '/../includes/tili.php')) {
     require_once __DIR__ . '/../includes/tili.php';
@@ -48,6 +51,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     $toiminto = (string) ($_POST['toiminto'] ?? 'tallenna');
     try {
+        if ($toiminto === 'poista_kilpailu') {
+            if (!function_exists('kilpailuPoistaHallinnasta')) {
+                throw new RuntimeException('Poisto ei ole käytössä.');
+            }
+            kilpailuPoistaHallinnasta($pdo, $kilpailu_id, $_POST);
+            header('Location: /public/omat_tapahtumat.php?viesti=' . urlencode('Tapahtuma poistettu.'));
+            exit;
+        }
         if ($toiminto === 'paivita_tapahtumat') {
             if (!$voiYhdistaa) {
                 throw new RuntimeException('Ei oikeutta päivittää Rastilippu-listaa.');
@@ -396,5 +407,22 @@ if (window.jahRataOffline) {
     window.jahRataOffline.kaynnista(window.JAH_RADAT);
 }
 </script>
+
+<?php if (function_exists('kilpailuPoistoLomakeHtml')): ?>
+<div class="public-card" style="margin-top:1.5rem;max-width:32rem">
+    <h2>Poista tapahtuma</h2>
+    <p class="muted">Poistaa tapahtuman pysyvästi. Vahvista kirjoittamalla nimi täsmälleen.</p>
+    <?= kilpailuPoistoLomakeHtml($kilpailu, [
+        'kohde' => 'tapahtuman',
+        'label' => 'Poista tapahtuma',
+        'btn_class' => 'btn-danger',
+    ]) ?>
+</div>
+<?php
+if (function_exists('kilpailuPoistoVahvistusScriptti')) {
+    kilpailuPoistoVahvistusScriptti();
+}
+endif;
+?>
 
 <?php pageEnd(); ?>

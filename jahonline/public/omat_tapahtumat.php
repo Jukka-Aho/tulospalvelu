@@ -7,6 +7,9 @@ require_once __DIR__ . '/../includes/helpers.php';
 require_once __DIR__ . '/../includes/acl.php';
 require_once __DIR__ . '/../includes/layout.php';
 require_once __DIR__ . '/../includes/kilpailu_context.php';
+if (is_readable(__DIR__ . '/../includes/kilpailu_poisto.php')) {
+    require_once __DIR__ . '/../includes/kilpailu_poisto.php';
+}
 require_once __DIR__ . '/../includes/iltarasti.php';
 require_once __DIR__ . '/../includes/kisa_luonne.php';
 if (is_readable(__DIR__ . '/../includes/palvelu_valitsin.php')) {
@@ -193,6 +196,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             header('Location: /admin/index.php');
             exit;
         }
+        if ($toiminto === 'poista_kilpailu') {
+            $kid = (int) ($_POST['kilpailu_id'] ?? 0);
+            if ($kid < 1 || !function_exists('kilpailuPoistaHallinnasta')) {
+                throw new RuntimeException('Kilpailua ei löydy.');
+            }
+            kilpailuPoistaHallinnasta($pdo, $kid, $_POST);
+            header('Location: omat_tapahtumat.php?viesti=' . urlencode('Kilpailu poistettu.'));
+            exit;
+        }
         if ($toiminto === 'valitse_tapahtuma') {
             $kid = (int) ($_POST['kilpailu_id'] ?? 0);
             $k = $kid > 0 ? haeKilpailu($pdo, $kid) : null;
@@ -220,6 +232,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($voiSuunnistus && $seuraId > 0) {
             $suunnistukset = iltarastiHaeSeuran($pdo, $seuraId);
         }
+        if ($voiKilpailut && function_exists('haeKayttajanKilpailut')) {
+            $kilpailut = [];
+            foreach (haeKayttajanKilpailut($pdo, 'k.paiva DESC, k.id DESC') as $k) {
+                if (function_exists('kisaOnIltarasti') && kisaOnIltarasti($k)) {
+                    continue;
+                }
+                if (($k['tila'] ?? '') === 'arkisto') {
+                    continue;
+                }
+                $kilpailut[] = $k;
+            }
+        }
     }
 }
 
@@ -235,6 +259,9 @@ pageStart('Omat tapahtumat', [
 .omat-lista a,.omat-lista button.omat-rivi{display:flex;flex-wrap:wrap;align-items:baseline;gap:.35rem .7rem;width:100%;text-align:left;padding:.7rem .85rem;border:1px solid var(--border);border-radius:10px;background:var(--card);color:var(--text);font:inherit;cursor:pointer;text-decoration:none}
 .omat-lista a:hover,.omat-lista button.omat-rivi:hover{border-color:var(--primary);color:var(--primary)}
 .omat-lista .muted{margin:0}
+.omat-kisa{display:flex;gap:.45rem;align-items:stretch}
+.omat-kisa-avaa{flex:1;min-width:0;margin:0}
+.omat-lista .omat-poista{flex:0 0 auto;min-width:4.8rem;align-self:stretch}
 </style>',
 ]);
 ?>
@@ -279,8 +306,8 @@ pageStart('Omat tapahtumat', [
                 $onViesti = function_exists('onkoViestiKilpailu') && onkoViestiKilpailu($k);
                 $pvmTxt = !empty($k['paiva']) && function_exists('formatPaiva') ? formatPaiva($k['paiva']) : '';
                 ?>
-                <li>
-                    <form method="post">
+                <li class="omat-kisa">
+                    <form method="post" class="omat-kisa-avaa">
                         <?= csrfKentta() ?>
                         <input type="hidden" name="toiminto" value="valitse_tapahtuma">
                         <input type="hidden" name="kilpailu_id" value="<?= (int) $k['id'] ?>">
@@ -291,6 +318,12 @@ pageStart('Omat tapahtumat', [
                             <span class="muted"><?= htmlspecialchars(kilpailuTilaLabel($k['tila'] ?? '')) ?></span>
                         </button>
                     </form>
+                    <?php if (function_exists('voiHallitaKilpailua') && voiHallitaKilpailua($k) && function_exists('kilpailuPoistoLomakeHtml')): ?>
+                        <?= kilpailuPoistoLomakeHtml($k, [
+                            'kohde' => 'tapahtuman',
+                            'btn_class' => 'btn-danger btn-small omat-poista',
+                        ]) ?>
+                    <?php endif; ?>
                 </li>
             <?php endforeach; ?>
         </ul>
@@ -341,8 +374,8 @@ pageStart('Omat tapahtumat', [
                 $pvmTxt = !empty($k['paiva']) && function_exists('formatPaiva') ? formatPaiva($k['paiva']) : '';
                 $luonne = function_exists('kisaLuonneLabel') ? kisaLuonneLabel($k['luonne'] ?? null) : '';
                 ?>
-                <li>
-                    <form method="post">
+                <li class="omat-kisa">
+                    <form method="post" class="omat-kisa-avaa">
                         <?= csrfKentta() ?>
                         <input type="hidden" name="toiminto" value="valitse_kilpailu">
                         <input type="hidden" name="kilpailu_id" value="<?= (int) $k['id'] ?>">
@@ -353,6 +386,12 @@ pageStart('Omat tapahtumat', [
                             <span class="muted"><?= htmlspecialchars(kilpailuTilaLabel($k['tila'] ?? '')) ?></span>
                         </button>
                     </form>
+                    <?php if (function_exists('voiHallitaKilpailua') && voiHallitaKilpailua($k) && function_exists('kilpailuPoistoLomakeHtml')): ?>
+                        <?= kilpailuPoistoLomakeHtml($k, [
+                            'kohde' => 'kilpailun',
+                            'btn_class' => 'btn-danger btn-small omat-poista',
+                        ]) ?>
+                    <?php endif; ?>
                 </li>
             <?php endforeach; ?>
         </ul>
@@ -427,4 +466,9 @@ pageStart('Omat tapahtumat', [
     <?php endif; ?>
 <?php endif; ?>
 
-<?php pageEnd(); ?>
+<?php
+if (function_exists('kilpailuPoistoVahvistusScriptti')) {
+    kilpailuPoistoVahvistusScriptti();
+}
+pageEnd();
+?>
