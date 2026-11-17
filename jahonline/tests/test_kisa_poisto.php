@@ -44,6 +44,8 @@ str_contains($omat, 'kilpailuPoistoLomakeHtml') || fail('omat lomake');
 substr_count($omat, 'kilpailuPoistoLomakeHtml') >= 2 || fail('omat molemmat listat');
 str_contains($omat, '>Avaa</button>') || fail('omat avaa');
 str_contains($omat, 'omat-kisa-tiedot') || fail('omat kehys');
+str_contains($omat, '#15803d') || fail('avaa vihrea');
+str_contains($omat, '#dc2626') || fail('poista punainen');
 ok('omat tapahtumat');
 
 $index = file_get_contents(__DIR__ . '/../admin/index.php');

@@ -24,6 +24,8 @@ str_contains($sivu, 'kilpailuPoistoLomakeHtml') || fail('poisto lomake');
 str_contains($sivu, '>Avaa</button>') || fail('avaa nappi');
 str_contains($sivu, 'omat-kisa-tiedot') || fail('kisa kehys');
 str_contains($sivu, 'omat-kisa-toiminnot') || fail('napit kehyksessa');
+str_contains($sivu, '#15803d') || fail('avaa vihrea');
+str_contains($sivu, '#dc2626') || fail('poista punainen');
 str_contains($sivu, 'tiliKayttajaViestiPaalla') || fail('viesti oikeus');
 str_contains($sivu, 'Luo rastilipputapahtuma') && fail('ei luo rastilipusta');
 str_contains($sivu, 'name="rastilippu_event_id"') && fail('rastilippu asetuksissa');

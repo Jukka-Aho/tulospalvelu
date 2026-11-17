@@ -262,6 +262,10 @@ pageStart('Omat tapahtumat', [
 .omat-kisa-toiminnot{display:flex;flex-direction:column;gap:.35rem;flex:0 0 auto;min-width:5.2rem}
 .omat-kisa-toiminnot form{margin:0}
 .omat-kisa-toiminnot .omat-avaa,.omat-kisa-toiminnot .omat-poista{width:100%;min-width:5.2rem}
+.omat-kisa-toiminnot .omat-avaa{background:#15803d;color:#fff}
+.omat-kisa-toiminnot .omat-avaa:hover{background:#166534}
+.omat-kisa-toiminnot .omat-poista{background:#dc2626;color:#fff}
+.omat-kisa-toiminnot .omat-poista:hover{background:#b91c1c;filter:none}
 </style>',
 ]);
 ?>

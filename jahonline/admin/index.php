@@ -230,6 +230,12 @@ if ($hasLayout) {
 .kisa-lista-toiminnot-pino{flex-direction:column;flex-wrap:nowrap;align-items:stretch;min-width:5.4rem}
 .kisa-lista-toiminnot-pino form,.kisa-lista-toiminnot-pino .inline-form{width:100%;margin:0}
 .kisa-lista-toiminnot-pino .btn-small,.kisa-lista-toiminnot-pino button{width:100%}
+.kisa-lista-toiminnot-pino .kisa-btn-valitse{background:#15803d;color:#fff}
+.kisa-lista-toiminnot-pino .kisa-btn-valitse:hover{background:#166534}
+.kisa-lista-toiminnot-pino .kisa-btn-poista,.kisa-lista-toiminnot-pino .btn-danger{background:#dc2626;color:#fff}
+.kisa-lista-toiminnot-pino .kisa-btn-poista:hover,.kisa-lista-toiminnot-pino .btn-danger:hover{background:#b91c1c;filter:none}
+.hallinta-kisa-toiminnot .kisa-btn-poista,.hallinta-kisa-toiminnot .btn-danger{background:#dc2626;color:#fff}
+.hallinta-kisa-toiminnot .kisa-btn-poista:hover,.hallinta-kisa-toiminnot .btn-danger:hover{background:#b91c1c;filter:none}
 </style>',
     ]);
 } else {
