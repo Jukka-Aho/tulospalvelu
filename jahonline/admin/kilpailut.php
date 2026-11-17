@@ -23,6 +23,9 @@ require_once __DIR__ . '/../includes/kisa_liput.php';
 kisaLiputVarmista($pdo);
 require_once __DIR__ . '/../includes/kisa_luonne.php';
 kisaLuonneVarmista($pdo);
+if (is_readable(__DIR__ . '/../includes/kisa_osoite.php')) {
+    require_once __DIR__ . '/../includes/kisa_osoite.php';
+}
 require_once __DIR__ . '/../includes/maksu.php';
 maksuVarmista($pdo);
 tiliVaadiTulospalvelu($pdo);
@@ -343,6 +346,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $uusiId = (int) $pdo->lastInsertId();
         asetaValittuKilpailu($uusiId);
+        if (function_exists('kisaOsoiteTallenna')) {
+            kisaOsoiteTallenna($pdo, $uusiId, (string) ($_POST['osoite'] ?? ''), null);
+        }
         $virhe = !empty($ilmo['iban_virhe']) ? '&virhe=' . urlencode('Tilinumero ei ole kelvollinen IBAN.') : '';
         header('Location: kilpailut.php?muokkaa=' . $uusiId . $virhe);
         exit;
@@ -405,6 +411,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             !empty($_POST['ampumapaikat']) ? 1 : 0,
             $id,
         ]);
+
+        if (function_exists('kisaOsoiteTallenna')) {
+            kisaOsoiteTallenna($pdo, $id, (string) ($_POST['osoite'] ?? ''), $olemassa);
+        }
 
         $virhe = !empty($ilmo['iban_virhe']) ? '&virhe=' . urlencode('Tilinumero ei ole kelvollinen IBAN.') : '';
         header('Location: kilpailut.php?muokkaa=' . $id . $virhe);
@@ -624,6 +634,12 @@ ob_start();
 
     <label>Paikka</label>
     <input type="text" name="paikka" value="<?= htmlspecialchars($muokattava['paikka'] ?? '') ?>">
+    <p class="muted form-hint">Paikan nimi listoissa, esim. urheilupuisto tai kaupunki.</p>
+
+    <label>Osoite</label>
+    <input type="text" name="osoite" maxlength="255" placeholder="Katuosoite, postitoimipaikka"
+        value="<?= htmlspecialchars((string) ($muokattava['osoite'] ?? '')) ?>">
+    <p class="muted form-hint">Katuosoite etusivun karttaa varten. Tapahtuma näkyy kartalla, kun osoite löytyy.</p>
 
     <label>Seura</label>
     <?php if (onAdmin()): ?>

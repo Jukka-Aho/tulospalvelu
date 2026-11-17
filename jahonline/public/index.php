@@ -9,9 +9,15 @@ require_once __DIR__ . '/../includes/etusivu.php';
 if (is_readable(__DIR__ . '/../includes/seura_logo.php')) {
     require_once __DIR__ . '/../includes/seura_logo.php';
 }
+if (is_readable(__DIR__ . '/../includes/kisa_osoite.php')) {
+    require_once __DIR__ . '/../includes/kisa_osoite.php';
+}
 
 kilpailuVarmistaTilaEnum($pdo);
 kilpailuSynkkaaTilaIlmosta($pdo);
+if (function_exists('kisaOsoiteVarmista')) {
+    kisaOsoiteVarmista($pdo);
+}
 require_once __DIR__ . '/../includes/kisa_liput.php';
 kisaLiputVarmista($pdo);
 
@@ -97,6 +103,7 @@ function etusivuKisaRivi(array $k): void
         (string) ($k['nimi'] ?? ''),
         (string) ($k['seura_nimi'] ?? ''),
         (string) ($k['paikka'] ?? ''),
+        (string) ($k['osoite'] ?? ''),
         (string) ($k['paiva'] ?? ''),
         $laji,
     ]))), 'UTF-8');
@@ -107,7 +114,7 @@ function etusivuKisaRivi(array $k): void
     ];
     $naytaLogo = $seura['nimi'] !== '' || $seura['id'] > 0 || $seura['logo'] !== '';
     ?>
-    <li data-home-kisa-item data-haku="<?= htmlspecialchars($haku, ENT_QUOTES, 'UTF-8') ?>">
+    <li data-home-kisa-item data-kisa-id="<?= (int) ($k['id'] ?? 0) ?>" data-haku="<?= htmlspecialchars($haku, ENT_QUOTES, 'UTF-8') ?>">
         <a href="<?= htmlspecialchars($href) ?>" class="home-kisa<?= $live ? ' is-live' : '' ?><?= $naytaLogo ? '' : ' ei-logoa' ?>">
             <?php if ($naytaLogo && function_exists('seuraLogoHtml')): ?>
                 <?php seuraLogoHtml($seura, 'home-kisa-logo seura-logo--kisa'); ?>
@@ -149,6 +156,43 @@ function etusivuKisaRivi(array $k): void
     <?php
 }
 
+/**
+ * @param list<array> $kisat
+ * @return list<array{id:int,nimi:string,href:string,lat:float,lng:float,pvm:string,tila:string,live:bool,haku:string}>
+ */
+function etusivuKarttaMerkit(array $kisat): array
+{
+    $out = [];
+    foreach ($kisat as $k) {
+        if (function_exists('kisaOsoiteOnPiste') ? !kisaOsoiteOnPiste($k) : (empty($k['lat']) || empty($k['lng']))) {
+            continue;
+        }
+        $linkit = function_exists('julkinenLinkit') ? julkinenLinkit($k['id'], true) : [];
+        $laji = function_exists('etusivuKisaTyyppiLabel') ? etusivuKisaTyyppiLabel($k) : '';
+        $out[] = [
+            'id' => (int) ($k['id'] ?? 0),
+            'nimi' => (string) ($k['nimi'] ?? ''),
+            'href' => etusivuKisaHref($k, $linkit),
+            'lat' => (float) $k['lat'],
+            'lng' => (float) $k['lng'],
+            'pvm' => !empty($k['paiva']) && function_exists('formatPaiva') ? formatPaiva($k['paiva']) : '',
+            'tila' => function_exists('kilpailuTilaLabel') ? kilpailuTilaLabel($k['tila'] ?? '') : '',
+            'live' => etusivuKisaLive($k),
+            'haku' => mb_strtolower(trim(implode(' ', array_filter([
+                (string) ($k['nimi'] ?? ''),
+                (string) ($k['seura_nimi'] ?? ''),
+                (string) ($k['paikka'] ?? ''),
+                (string) ($k['osoite'] ?? ''),
+                $laji,
+            ]))), 'UTF-8'),
+        ];
+    }
+
+    return $out;
+}
+
+$karttaMerkit = etusivuKarttaMerkit($kilpailut);
+
 pageStart('Etusivu', [
     'base' => '../',
     'class' => 'home-page',
@@ -171,7 +215,25 @@ pageStart('Etusivu', [
 .seura-logo--kisa{width:2.75rem;height:2.75rem;border-radius:8px}
 .seura-logo--kisa .seura-logo-kirjaimet{font-size:.92rem}
 @media (max-width:400px){.home-page .home-kisa{flex-wrap:nowrap}}
+.home-nakyma-valinta{display:flex;gap:.4rem;margin:0 0 .75rem}
+.home-nakyma-valinta button{font:inherit;font-weight:700;border-radius:8px;padding:.45rem .85rem;cursor:pointer;border:1px solid color-mix(in srgb,var(--text) 22%,transparent);background:var(--card,#fff);color:var(--text)}
+.home-nakyma-valinta button.is-valittu{background:var(--primary);color:var(--on-primary,#fff);border-color:transparent}
+.home-kartta-wrap{position:relative;min-width:0}
+.home-kartta{width:100%;height:70vh;min-height:16rem;border-radius:12px;border:1px solid var(--border);overflow:hidden;background:var(--card)}
+.home-kartta-tyhja{position:absolute;left:.75rem;right:.75rem;bottom:.75rem;margin:0;padding:.55rem .7rem;border-radius:8px;background:color-mix(in srgb,var(--card) 88%,transparent)}
+.home-kartta-popup{font:inherit}
+@media (max-width:900px){
+.home-kisa-nakyma.is-lista .home-kartta-wrap{display:none}
+.home-kisa-nakyma.is-kartta .home-kisa-board{display:none}
+}
+@media (min-width:901px){
+.home-nakyma-valinta{display:none}
+.home-kisa-nakyma{display:grid;grid-template-columns:minmax(18rem,32rem) minmax(16rem,1fr);gap:1rem;align-items:start}
+.home-kisa-ryhma.is-yksi .home-kisa-ryhma-sarakkeet{grid-template-columns:1fr}
+.home-kartta{height:min(70vh,38rem)}
+}
 </style>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script>
 window.jahAsennus=null;
 window.addEventListener("beforeinstallprompt",function(e){e.preventDefault();window.jahAsennus=e;var b=document.getElementById("asenna-sovellus");if(b)b.classList.add("is-auki");});
@@ -298,6 +360,11 @@ $naytaEtusivuTyokalu = $rooliTyokalu
         </div>
         <p class="home-kisa-haku-tyhja muted" data-home-haku-tyhja hidden>Ei osumia.</p>
     </div>
+    <div class="home-nakyma-valinta" role="tablist" aria-label="Tapahtumanäkymä">
+        <button type="button" role="tab" data-nakyma="lista" class="is-valittu" aria-selected="true">Lista</button>
+        <button type="button" role="tab" data-nakyma="kartta" aria-selected="false">Kartta</button>
+    </div>
+    <div class="home-kisa-nakyma is-lista" data-home-nakyma>
     <div class="home-kisa-board" data-home-kisa-board>
         <section class="home-kisa-ryhma is-yksi" data-home-kisa-ryhma data-ryhma="tapahtumat">
             <h2 class="home-kisa-ryhma-otsikko">
@@ -317,6 +384,12 @@ $naytaEtusivuTyokalu = $rooliTyokalu
             </div>
         </section>
     </div>
+    <div class="home-kartta-wrap">
+        <div id="home-kartta" class="home-kartta" role="region" aria-label="Tapahtumat kartalla"></div>
+        <p class="home-kartta-tyhja muted" data-home-kartta-tyhja hidden>Ei tapahtumia kartalla. Lisää osoite tapahtuman asetuksiin.</p>
+    </div>
+    </div>
+    <script type="application/json" id="home-kartta-data"><?= json_encode($karttaMerkit, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP) ?></script>
     <script>
     (function () {
         var input = document.getElementById('home-kisa-haku');
@@ -374,6 +447,7 @@ $naytaEtusivuTyokalu = $rooliTyokalu
                 ryhma.hidden = !!q && !nakyvissa;
             });
             if (tyhja) tyhja.hidden = naytetyt > 0 || !q;
+            if (typeof window.jahKarttaSuodata === 'function') window.jahKarttaSuodata(q);
         }
 
         input.addEventListener('input', suodata);
@@ -386,6 +460,8 @@ $naytaEtusivuTyokalu = $rooliTyokalu
         }
     })();
     </script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="/assets/js/etusivu_kartta.js?v=20261117kartta"></script>
 <?php endif; ?>
 
 <?php pageEnd(); ?>

@@ -87,6 +87,8 @@ str_contains($sivu, 's.logo AS seura_logo') || fail('seura logo sql');
 str_contains($sivu, 'seuraLogoHtml') || fail('seura logo html');
 str_contains($sivu, 'home-kisa-tila') || fail('tila kehys');
 str_contains($sivu, 'align-self:start') || fail('tila oikea yla');
+str_contains($sivu, 'home-kartta') || fail('kartta');
+str_contains($sivu, 'data-nakyma="kartta"') || fail('kartta valinta');
 ok('index');
 
 require_once __DIR__ . '/../includes/kisa_luonne.php';

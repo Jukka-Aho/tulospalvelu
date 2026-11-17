@@ -12,6 +12,9 @@ if (is_readable(__DIR__ . '/../includes/kilpailu_poisto.php')) {
 }
 require_once __DIR__ . '/../includes/iltarasti.php';
 require_once __DIR__ . '/../includes/kisa_luonne.php';
+if (is_readable(__DIR__ . '/../includes/kisa_osoite.php')) {
+    require_once __DIR__ . '/../includes/kisa_osoite.php';
+}
 if (is_readable(__DIR__ . '/../includes/palvelu_valitsin.php')) {
     require_once __DIR__ . '/../includes/palvelu_valitsin.php';
 }
@@ -206,6 +209,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $omistaja,
                     $tyyppi
                 );
+                if (function_exists('kisaOsoiteTallenna')) {
+                    kisaOsoiteTallenna($pdo, (int) $kisa['id'], (string) ($_POST['osoite'] ?? ''), null);
+                }
                 asetaValittuKilpailu((int) $kisa['id']);
                 header('Location: ' . iltarastiTulospalveluUrl((int) $kisa['id']));
                 exit;
@@ -222,6 +228,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     (string) ($_POST['paikka'] ?? ''),
                     $omistaja
                 );
+                if (function_exists('kisaOsoiteTallenna')) {
+                    kisaOsoiteTallenna($pdo, (int) $kisa['id'], (string) ($_POST['osoite'] ?? ''), null);
+                }
                 asetaValittuKilpailu((int) $kisa['id']);
                 header('Location: /admin/index.php');
                 exit;
@@ -237,6 +246,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 (string) ($_POST['paikka'] ?? ''),
                 $omistaja
             );
+            if (function_exists('kisaOsoiteTallenna')) {
+                kisaOsoiteTallenna($pdo, (int) $kisa['id'], (string) ($_POST['osoite'] ?? ''), null);
+            }
             asetaValittuKilpailu((int) $kisa['id']);
             header('Location: /admin/index.php');
             exit;
@@ -417,6 +429,7 @@ pageStart('Omat tapahtumat', [
                 $luoPaiva = iltarastiTanaan();
             }
             $luoPaikka = trim((string) ($_POST['paikka'] ?? $_GET['paikka'] ?? ''));
+            $luoOsoite = trim((string) ($_POST['osoite'] ?? $_GET['osoite'] ?? ''));
             ?>
             <?php if (isset($_GET['irma'])): ?>
                 <p class="notice">Tiedot täytetty IRMA-kalenterista. Tarkista tyyppi ja luo tapahtuma.</p>
@@ -424,6 +437,8 @@ pageStart('Omat tapahtumat', [
             <label>Nimi <input name="nimi" required maxlength="255" placeholder="Tapahtuman nimi" value="<?= htmlspecialchars($luoNimi) ?>"></label>
             <label>Päivä <input type="date" name="paiva" required value="<?= htmlspecialchars($luoPaiva) ?>"></label>
             <label>Paikka <input name="paikka" maxlength="255" value="<?= htmlspecialchars($luoPaikka) ?>"></label>
+            <label>Osoite <input name="osoite" maxlength="255" placeholder="Katuosoite, postitoimipaikka" value="<?= htmlspecialchars($luoOsoite) ?>"></label>
+            <p class="muted">Osoite näyttää tapahtuman etusivun kartalla.</p>
             <fieldset class="omat-tyyppi">
                 <legend>Tapahtuman tyyppi</legend>
                 <?php foreach ($sallitutMallit as $arvo => $label): ?>

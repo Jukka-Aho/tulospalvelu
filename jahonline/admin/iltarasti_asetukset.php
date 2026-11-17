@@ -7,6 +7,9 @@ require_once __DIR__ . '/../includes/kilpailu_context.php';
 require_once __DIR__ . '/../includes/layout.php';
 require_once __DIR__ . '/../includes/radat.php';
 require_once __DIR__ . '/../includes/iltarasti.php';
+if (is_readable(__DIR__ . '/../includes/kisa_osoite.php')) {
+    require_once __DIR__ . '/../includes/kisa_osoite.php';
+}
 if (is_readable(__DIR__ . '/../includes/kilpailu_poisto.php')) {
     require_once __DIR__ . '/../includes/kilpailu_poisto.php';
 }
@@ -87,6 +90,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             (string) ($_POST['paikka'] ?? ''),
             (string) ($_POST['paiva'] ?? '')
         );
+        if (function_exists('kisaOsoiteTallenna')) {
+            kisaOsoiteTallenna($pdo, $kilpailu_id, (string) ($_POST['osoite'] ?? ''), $kilpailu);
+        }
         if ($onViesti && function_exists('viestiSarjatTallenna')) {
             viestiSarjatTallenna(
                 $pdo,
@@ -173,6 +179,8 @@ pageStart('Asetukset', iltarastiKuoriOpts($pdo, $kilpailu, 'asetukset'));
     <input type="hidden" name="toiminto" value="tallenna">
     <label>Nimi <input name="nimi" required maxlength="255" value="<?= htmlspecialchars((string) ($kilpailu['nimi'] ?? '')) ?>"></label>
     <label>Paikka <input name="paikka" maxlength="255" value="<?= htmlspecialchars((string) ($kilpailu['paikka'] ?? '')) ?>"></label>
+    <label>Osoite <input name="osoite" maxlength="255" placeholder="Katuosoite, postitoimipaikka" value="<?= htmlspecialchars((string) ($kilpailu['osoite'] ?? '')) ?>"></label>
+    <p class="muted">Osoite näyttää tapahtuman etusivun kartalla.</p>
     <label>Päivä <input type="date" name="paiva" required value="<?= htmlspecialchars($pvmLomake) ?>"></label>
     <?php if (!empty($onViesti)): ?>
         <p class="muted">Rastilippu-liitäntä on toistaiseksi vain henkilökohtaisissa tapahtumissa.</p>

@@ -22,6 +22,7 @@ str_contains($sivu, 'Suunnistus-Pirilä') || fail('pirila label');
 str_contains($sivu, 'value="henkilokohtainen"') || fail('henkilo');
 str_contains($sivu, 'value="viesti"') || fail('viesti');
 str_contains($sivu, 'luo_tapahtuma') || fail('luo tapahtuma');
+str_contains($sivu, 'name="osoite"') || fail('osoite');
 str_contains($sivu, 'luo_paikallinen') || fail('luo suunnistus alias');
 str_contains($sivu, 'luo_juoksu') || fail('luo juoksu alias');
 str_contains($sivu, 'kisaLuoPirila') || fail('luo pirila');

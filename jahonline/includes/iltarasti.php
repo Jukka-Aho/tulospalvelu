@@ -232,7 +232,7 @@ function iltarastiTallennaAsetukset(
     $pdo->prepare('
         UPDATE kilpailut
         SET nimi = ?, paikka = ?, paiva = ?, alku_at = NULL, loppu_at = NULL, tila = ?
-        WHERE id = ? AND luonne = \'iltarasti\'
+        WHERE id = ?
     ')->execute([
         mb_substr($nimi, 0, 255),
         $paikka !== '' ? mb_substr($paikka, 0, 255) : null,
