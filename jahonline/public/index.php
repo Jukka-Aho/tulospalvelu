@@ -6,6 +6,9 @@ require_once __DIR__ . '/../includes/layout.php';
 require_once __DIR__ . '/../includes/acl.php';
 require_once __DIR__ . '/../includes/seura_kisavalikko.php';
 require_once __DIR__ . '/../includes/etusivu.php';
+if (is_readable(__DIR__ . '/../includes/seura_logo.php')) {
+    require_once __DIR__ . '/../includes/seura_logo.php';
+}
 
 kilpailuVarmistaTilaEnum($pdo);
 kilpailuSynkkaaTilaIlmosta($pdo);
@@ -17,7 +20,7 @@ $rooliTyokalu = $kirjautunut ? seuraRooliTyokalu() : null;
 
 try {
     $kilpailut = $pdo->query("
-        SELECT k.*, s.nimi AS seura_nimi
+        SELECT k.*, s.nimi AS seura_nimi, s.logo AS seura_logo
         FROM kilpailut k
         LEFT JOIN seurat s ON s.id = k.seura_id
         WHERE COALESCE(k.julkinen, 1) = 1
@@ -97,9 +100,18 @@ function etusivuKisaRivi(array $k): void
         (string) ($k['paiva'] ?? ''),
         $laji,
     ]))), 'UTF-8');
+    $seura = [
+        'id' => (int) ($k['seura_id'] ?? 0),
+        'nimi' => (string) ($k['seura_nimi'] ?? ''),
+        'logo' => (string) ($k['seura_logo'] ?? ''),
+    ];
+    $naytaLogo = $seura['nimi'] !== '' || $seura['id'] > 0 || $seura['logo'] !== '';
     ?>
     <li data-home-kisa-item data-haku="<?= htmlspecialchars($haku, ENT_QUOTES, 'UTF-8') ?>">
-        <a href="<?= htmlspecialchars($href) ?>" class="home-kisa<?= $live ? ' is-live' : '' ?>">
+        <a href="<?= htmlspecialchars($href) ?>" class="home-kisa<?= $live ? ' is-live' : '' ?><?= $naytaLogo ? '' : ' ei-logoa' ?>">
+            <?php if ($naytaLogo && function_exists('seuraLogoHtml')): ?>
+                <?php seuraLogoHtml($seura, 'home-kisa-logo seura-logo--kisa'); ?>
+            <?php endif; ?>
             <div class="home-kisa-body">
                 <strong class="home-kisa-nimi"><?= htmlspecialchars($k['nimi']) ?></strong>
                 <?php if (!empty($k['testikisa'])): ?><span class="badge badge-demo">DEMO - Ei julkinen</span><?php endif; ?>
@@ -121,15 +133,17 @@ function etusivuKisaRivi(array $k): void
                     <?php endif; ?>
                 </span>
             </div>
-            <?php if ($live): ?>
-                <span class="live-badge">LIVE</span>
-            <?php elseif ($ilmo): ?>
-                <span class="status-badge status-ilmoittautuminen">Ilmoittautuminen</span>
-            <?php else: ?>
-                <span class="status-badge status-<?= htmlspecialchars((string) $k['tila']) ?>">
-                    <?= htmlspecialchars(kilpailuTilaLabel($k['tila'])) ?>
-                </span>
-            <?php endif; ?>
+            <span class="home-kisa-tila">
+                <?php if ($live): ?>
+                    <span class="live-badge">LIVE</span>
+                <?php elseif ($ilmo): ?>
+                    <span class="status-badge status-ilmoittautuminen">Ilmoittautuminen</span>
+                <?php else: ?>
+                    <span class="status-badge status-<?= htmlspecialchars((string) $k['tila']) ?>">
+                        <?= htmlspecialchars(kilpailuTilaLabel($k['tila'])) ?>
+                    </span>
+                <?php endif; ?>
+            </span>
         </a>
     </li>
     <?php
@@ -139,7 +153,7 @@ pageStart('Etusivu', [
     'base' => '../',
     'class' => 'home-page',
     'palvelu' => 'julkinen',
-    'extraHead' => '<style>
+    'extraHead' => (function_exists('seuraLogoTyylit') ? seuraLogoTyylit() : '') . '<style>
 .asenna-sovellus{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.7rem;margin:0 0 1rem;padding:.8rem .95rem;border-radius:12px;background:color-mix(in srgb,var(--primary) 14%,var(--bg));border:1px solid color-mix(in srgb,var(--primary) 45%,transparent);color:var(--text)}
 .asenna-sovellus strong{display:block;font-size:1.08rem}
 .asenna-sovellus p{margin:.25rem 0 0}
@@ -149,6 +163,14 @@ pageStart('Etusivu', [
 #asenna-sulje{background:transparent;color:var(--text);border:1px solid color-mix(in srgb,var(--text) 30%,transparent)}
 @media (min-width:901px){.asenna-sovellus{display:none}.asenna-sovellus.is-auki{display:flex}}
 .home-kisa-ryhma.is-yksi .home-kisa-ryhma-sarakkeet{grid-template-columns:minmax(260px,48rem)}
+.home-page .home-kisa{display:grid;grid-template-columns:2.75rem minmax(0,1fr) auto;align-items:start;column-gap:12px;flex-wrap:nowrap}
+.home-page .home-kisa.ei-logoa{grid-template-columns:minmax(0,1fr) auto}
+.home-page .home-kisa-logo{align-self:center}
+.home-page .home-kisa-tila{justify-self:end;align-self:start;margin:0;flex-shrink:0}
+.home-page .home-kisa-tila .live-badge,.home-page .home-kisa-tila .status-badge{display:inline-block;white-space:nowrap}
+.seura-logo--kisa{width:2.75rem;height:2.75rem;border-radius:8px}
+.seura-logo--kisa .seura-logo-kirjaimet{font-size:.92rem}
+@media (max-width:400px){.home-page .home-kisa{flex-wrap:nowrap}}
 </style>
 <script>
 window.jahAsennus=null;

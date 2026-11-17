@@ -93,6 +93,8 @@ function seuraLogoTyylit(): string
 }
 .seura-logo--iso { width:5.5rem; height:5.5rem; border-radius:16px; }
 .seura-logo--iso .seura-logo-kirjaimet { font-size:1.6rem; }
+.seura-logo--kisa { width:2.75rem; height:2.75rem; border-radius:8px; }
+.seura-logo--kisa .seura-logo-kirjaimet { font-size:0.92rem; }
 .seura-kortti-lista {
   display:grid;
   grid-template-columns:repeat(auto-fill, minmax(16.5rem, 1fr));

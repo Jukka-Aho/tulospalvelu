@@ -23,6 +23,7 @@ seuraLogoKirjaimet('') === '?' || fail('kirjaimet tyhja');
 seuraLogoTiedostoOk('12-ab12cd.png') || fail('tiedosto ok');
 seuraLogoTiedostoOk('../x.php') && fail('tiedosto polku');
 seuraLogoUrl(['logo' => '12-ab12cd.png']) === '' || fail('url ilman tiedostoa');
+str_contains(seuraLogoTyylit(), 'seura-logo--kisa') || fail('kisa logo koko');
 ok('logo apurit');
 
 $vanha = $_SESSION ?? [];
