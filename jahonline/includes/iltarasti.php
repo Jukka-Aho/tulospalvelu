@@ -268,7 +268,7 @@ function iltarastiYhdistaRastilippuun(PDO $pdo, int $kilpailuId, int $seuraId, ?
         $pdo->prepare("
             UPDATE kilpailut
             SET rastilippu_event_id = NULL, rastilippu_event_uuid = NULL, rastilippu_series_id = NULL
-            WHERE id = ? AND luonne = 'iltarasti'
+            WHERE id = ? AND luonne IN ('iltarasti','suunnistus') AND COALESCE(pirila_synkka,0) = 0
         ")->execute([$kilpailuId]);
 
         return;
@@ -287,7 +287,7 @@ function iltarastiYhdistaRastilippuun(PDO $pdo, int $kilpailuId, int $seuraId, ?
         $pdo->prepare("
             UPDATE kilpailut
             SET rastilippu_event_id = ?, rastilippu_event_uuid = ?, rastilippu_series_id = ?
-            WHERE id = ? AND luonne = 'iltarasti'
+            WHERE id = ? AND luonne IN ('iltarasti','suunnistus') AND COALESCE(pirila_synkka,0) = 0
         ")->execute([
             $eventId,
             $uuid !== '' ? mb_substr($uuid, 0, 64) : null,
@@ -547,7 +547,8 @@ function iltarastiHaeSeuran(PDO $pdo, int $seuraId): array
     }
     $sql = '
         SELECT * FROM kilpailut
-        WHERE luonne = \'iltarasti\'
+        WHERE luonne IN (\'iltarasti\',\'suunnistus\')
+          AND COALESCE(pirila_synkka, 0) = 0
     ';
     $params = [];
     if ($seuraId > 0) {
@@ -615,7 +616,7 @@ function iltarastiLuoTapahtumasta(PDO $pdo, int $seuraId, array $tapahtuma, ?int
             (nimi, paiva, paikka, tila, kisa_tyyppi, api_token, pirila_synkka, paakayttaja_id, seura_id,
              ilmoittautuminen_auki, testikisa, jaettu_jono,
              luonne, rastilippu_event_id, rastilippu_event_uuid, rastilippu_series_id, alku_at, loppu_at)
-        VALUES (?, ?, ?, ?, \'normaali\', ?, 0, ?, ?, 0, 0, 0, \'iltarasti\', ?, ?, ?, NULL, NULL)
+        VALUES (?, ?, ?, ?, \'normaali\', ?, 0, ?, ?, 0, 0, 0, \'suunnistus\', ?, ?, ?, NULL, NULL)
     ')->execute([
         mb_substr($nimi, 0, 255),
         $pvm ?: null,
@@ -1153,17 +1154,20 @@ function iltarastiPaivitaSeuranTilat(PDO $pdo, int $seuraId): void
         $tanaan = iltarastiTanaan();
         $pdo->prepare("
             UPDATE kilpailut SET tila = 'tulossa'
-            WHERE luonne = 'iltarasti' AND seura_id = ? AND paiva > ?
+            WHERE luonne IN ('iltarasti','suunnistus') AND COALESCE(pirila_synkka,0) = 0
+              AND seura_id = ? AND paiva > ?
               AND tila NOT IN ('arkisto')
         ")->execute([$seuraId, $tanaan]);
         $pdo->prepare("
             UPDATE kilpailut SET tila = 'kaynnissa'
-            WHERE luonne = 'iltarasti' AND seura_id = ? AND paiva = ?
+            WHERE luonne IN ('iltarasti','suunnistus') AND COALESCE(pirila_synkka,0) = 0
+              AND seura_id = ? AND paiva = ?
               AND tila NOT IN ('arkisto')
         ")->execute([$seuraId, $tanaan]);
         $pdo->prepare("
             UPDATE kilpailut SET tila = 'valmis'
-            WHERE luonne = 'iltarasti' AND seura_id = ? AND paiva < ?
+            WHERE luonne IN ('iltarasti','suunnistus') AND COALESCE(pirila_synkka,0) = 0
+              AND seura_id = ? AND paiva < ?
               AND tila NOT IN ('arkisto')
         ")->execute([$seuraId, $tanaan]);
     } catch (Throwable $e) {
@@ -1202,7 +1206,7 @@ function iltarastiLuoPaikallinen(
         INSERT INTO kilpailut
             (nimi, paiva, paikka, tila, kisa_tyyppi, api_token, pirila_synkka, paakayttaja_id, seura_id,
              ilmoittautuminen_auki, testikisa, jaettu_jono, luonne, tyyppi, alku_at, loppu_at)
-        VALUES (?, ?, ?, ?, \'normaali\', ?, 0, ?, ?, 0, 0, 0, \'iltarasti\', ?, NULL, NULL)
+        VALUES (?, ?, ?, ?, \'normaali\', ?, 0, ?, ?, 0, 0, 0, \'suunnistus\', ?, NULL, NULL)
     ')->execute([
         mb_substr($nimi, 0, 255),
         $pvm ?: null,

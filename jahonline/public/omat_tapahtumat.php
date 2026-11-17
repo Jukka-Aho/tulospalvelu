@@ -28,7 +28,8 @@ $oikeudet = function_exists('jahPalveluOikeudet')
     : ['gps' => false, 'tulokset' => false, 'iltarastit' => false];
 $voiSuunnistus = !empty($oikeudet['iltarastit']) || (function_exists('iltarastiVoiPalvelun') && iltarastiVoiPalvelun());
 $voiKilpailut = !empty($oikeudet['tulokset']) || (function_exists('voiKisahallintaan') && voiKisahallintaan());
-if (!$voiSuunnistus && !$voiKilpailut && !(function_exists('onAdmin') && onAdmin())) {
+$voiPirila = function_exists('tiliKayttajaPirilaPaalla') && tiliKayttajaPirilaPaalla();
+if (!$voiSuunnistus && !$voiKilpailut && !$voiPirila && !(function_exists('onAdmin') && onAdmin())) {
     http_response_code(403);
     die('Ei käyttöoikeutta omiin tapahtumiin.');
 }
@@ -58,7 +59,7 @@ if ($voiSuunnistus && $seuraId > 0) {
     iltarastiPaivitaSeuranTilat($pdo, $seuraId);
     $suunnistukset = iltarastiHaeSeuran($pdo, $seuraId);
 }
-if ($voiKilpailut && function_exists('haeKayttajanKilpailut')) {
+if (($voiKilpailut || $voiPirila) && function_exists('haeKayttajanKilpailut')) {
     foreach (haeKayttajanKilpailut($pdo, 'k.paiva DESC, k.id DESC') as $k) {
         if (function_exists('kisaOnIltarasti') && kisaOnIltarasti($k)) {
             continue;
@@ -66,9 +67,49 @@ if ($voiKilpailut && function_exists('haeKayttajanKilpailut')) {
         if (($k['tila'] ?? '') === 'arkisto') {
             continue;
         }
+        $onPirila = function_exists('kisaOnPirila') && kisaOnPirila($k);
+        if ($onPirila && !$voiPirila && !$voiKilpailut) {
+            continue;
+        }
+        if (!$onPirila && !$voiKilpailut) {
+            continue;
+        }
         $kilpailut[] = $k;
     }
 }
+
+$lataaOmatListat = static function () use (
+    &$suunnistukset,
+    &$kilpailut,
+    $voiSuunnistus,
+    $voiKilpailut,
+    $voiPirila,
+    $seuraId,
+    $pdo
+): void {
+    if ($voiSuunnistus && $seuraId > 0) {
+        $suunnistukset = iltarastiHaeSeuran($pdo, $seuraId);
+    }
+    if (($voiKilpailut || $voiPirila) && function_exists('haeKayttajanKilpailut')) {
+        $kilpailut = [];
+        foreach (haeKayttajanKilpailut($pdo, 'k.paiva DESC, k.id DESC') as $k) {
+            if (function_exists('kisaOnIltarasti') && kisaOnIltarasti($k)) {
+                continue;
+            }
+            if (($k['tila'] ?? '') === 'arkisto') {
+                continue;
+            }
+            $onPirila = function_exists('kisaOnPirila') && kisaOnPirila($k);
+            if ($onPirila && !$voiPirila && !$voiKilpailut) {
+                continue;
+            }
+            if (!$onPirila && !$voiKilpailut) {
+                continue;
+            }
+            $kilpailut[] = $k;
+        }
+    }
+};
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!tarkistaCsrf($_POST['csrf'] ?? '')) {
@@ -130,69 +171,73 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             header('Location: omat_tapahtumat.php?viesti=' . urlencode('Rastilippu-avain tallennettu. Tapahtumia: ' . (int) $testi['lkm'] . '.'));
             exit;
         }
-        if ($toiminto === 'luo_paikallinen') {
-            if (!$voiSuunnistus) {
-                throw new RuntimeException('Ei oikeutta suunnistustapahtumiin.');
-            }
+        if ($toiminto === 'luo_tapahtuma' || $toiminto === 'luo_paikallinen' || $toiminto === 'luo_juoksu') {
             if ($seuraId < 1) {
                 throw new RuntimeException('Seura puuttuu.');
             }
-            $tyyppi = (string) ($_POST['tyyppi'] ?? 'henkilokohtainen');
-            if ($tyyppi !== 'viesti') {
-                $tyyppi = 'henkilokohtainen';
+            $malli = (string) ($_POST['malli'] ?? '');
+            if ($toiminto === 'luo_paikallinen' && $malli === '') {
+                $malli = 'suunnistus';
             }
-            if ($tyyppi === 'viesti' && !$voiViesti) {
-                throw new RuntimeException('Viestikilpailu ei ole käytössä tällä tunnuksella.');
+            if ($toiminto === 'luo_juoksu' && $malli === '') {
+                $malli = 'juoksu';
             }
-            $kisa = iltarastiLuoPaikallinen(
+            if (!in_array($malli, ['suunnistus', 'juoksu', 'pirila'], true)) {
+                throw new RuntimeException('Valitse tapahtuman tyyppi.');
+            }
+            $omistaja = (int) (paakayttajaId() ?? kayttajaId() ?? 0);
+            if ($malli === 'suunnistus') {
+                if (!$voiSuunnistus) {
+                    throw new RuntimeException('Ei oikeutta suunnistustapahtumiin.');
+                }
+                $tyyppi = (string) ($_POST['tyyppi'] ?? 'henkilokohtainen');
+                if ($tyyppi !== 'viesti') {
+                    $tyyppi = 'henkilokohtainen';
+                }
+                if ($tyyppi === 'viesti' && !$voiViesti) {
+                    throw new RuntimeException('Viestikilpailu ei ole käytössä tällä tunnuksella.');
+                }
+                $kisa = iltarastiLuoPaikallinen(
+                    $pdo,
+                    $seuraId,
+                    (string) ($_POST['nimi'] ?? ''),
+                    (string) ($_POST['paiva'] ?? ''),
+                    (string) ($_POST['paikka'] ?? ''),
+                    $omistaja,
+                    $tyyppi
+                );
+                asetaValittuKilpailu((int) $kisa['id']);
+                header('Location: ' . iltarastiTulospalveluUrl((int) $kisa['id']));
+                exit;
+            }
+            if ($malli === 'juoksu') {
+                if (!$voiKilpailut) {
+                    throw new RuntimeException('Ei oikeutta juoksukilpailuihin.');
+                }
+                $kisa = kisaLuoJuoksu(
+                    $pdo,
+                    $seuraId,
+                    (string) ($_POST['nimi'] ?? ''),
+                    (string) ($_POST['paiva'] ?? ''),
+                    (string) ($_POST['paikka'] ?? ''),
+                    $omistaja
+                );
+                asetaValittuKilpailu((int) $kisa['id']);
+                header('Location: /admin/index.php');
+                exit;
+            }
+            if (!$voiPirila) {
+                throw new RuntimeException('Ei oikeutta Suunnistus-Pirilä-tapahtumiin.');
+            }
+            $kisa = kisaLuoPirila(
                 $pdo,
                 $seuraId,
                 (string) ($_POST['nimi'] ?? ''),
                 (string) ($_POST['paiva'] ?? ''),
                 (string) ($_POST['paikka'] ?? ''),
-                (int) (paakayttajaId() ?? kayttajaId() ?? 0),
-                $tyyppi
+                $omistaja
             );
             asetaValittuKilpailu((int) $kisa['id']);
-            header('Location: ' . iltarastiTulospalveluUrl((int) $kisa['id']));
-            exit;
-        }
-        if ($toiminto === 'luo_juoksu') {
-            if (!$voiKilpailut) {
-                throw new RuntimeException('Ei oikeutta juoksukilpailuihin.');
-            }
-            if ($seuraId < 1) {
-                throw new RuntimeException('Seura puuttuu.');
-            }
-            $nimi = trim((string) ($_POST['nimi'] ?? ''));
-            if ($nimi === '') {
-                throw new RuntimeException('Anna kilpailun nimi.');
-            }
-            $pvm = function_exists('iltarastiPvmKannasta')
-                ? iltarastiPvmKannasta((string) ($_POST['paiva'] ?? ''))
-                : trim((string) ($_POST['paiva'] ?? ''));
-            if ($pvm === null || $pvm === '') {
-                throw new RuntimeException('Anna kilpailun päivämäärä.');
-            }
-            $paikka = trim((string) ($_POST['paikka'] ?? ''));
-            $token = function_exists('generoiApiToken') ? generoiApiToken() : bin2hex(random_bytes(16));
-            $omistaja = (int) (paakayttajaId() ?? kayttajaId() ?? 0);
-            $pdo->prepare('
-                INSERT INTO kilpailut
-                    (nimi, paiva, paikka, tila, kisa_tyyppi, api_token, pirila_synkka, paakayttaja_id, seura_id,
-                     ilmoittautuminen_auki, testikisa, jaettu_jono, luonne, tyyppi)
-                VALUES (?, ?, ?, ?, \'normaali\', ?, 0, ?, ?, 0, 0, 0, \'juoksu\', \'henkilokohtainen\')
-            ')->execute([
-                mb_substr($nimi, 0, 255),
-                $pvm,
-                $paikka !== '' ? mb_substr($paikka, 0, 255) : null,
-                function_exists('iltarastiTilaPaivasta') ? iltarastiTilaPaivasta($pvm) : 'tulossa',
-                $token,
-                $omistaja > 0 ? $omistaja : null,
-                $seuraId,
-            ]);
-            $id = (int) $pdo->lastInsertId();
-            asetaValittuKilpailu($id);
             header('Location: /admin/index.php');
             exit;
         }
@@ -229,29 +274,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     } catch (Throwable $e) {
         $virhe = $e->getMessage();
-        if ($voiSuunnistus && $seuraId > 0) {
-            $suunnistukset = iltarastiHaeSeuran($pdo, $seuraId);
-        }
-        if ($voiKilpailut && function_exists('haeKayttajanKilpailut')) {
-            $kilpailut = [];
-            foreach (haeKayttajanKilpailut($pdo, 'k.paiva DESC, k.id DESC') as $k) {
-                if (function_exists('kisaOnIltarasti') && kisaOnIltarasti($k)) {
-                    continue;
-                }
-                if (($k['tila'] ?? '') === 'arkisto') {
-                    continue;
-                }
-                $kilpailut[] = $k;
-            }
-        }
+        $lataaOmatListat();
     }
 }
+
+$sallitutMallit = [];
+if ($voiSuunnistus) {
+    $sallitutMallit['suunnistus'] = 'Suunnistus';
+}
+if ($voiKilpailut) {
+    $sallitutMallit['juoksu'] = 'Juoksu';
+}
+if ($voiPirila) {
+    $sallitutMallit['pirila'] = 'Suunnistus-Pirilä';
+}
+$oletusMalli = array_key_first($sallitutMallit) ?: 'suunnistus';
+
+$tapahtumat = [];
+foreach ($suunnistukset as $k) {
+    $tapahtumat[(int) $k['id']] = $k;
+}
+foreach ($kilpailut as $k) {
+    $tapahtumat[(int) $k['id']] = $k;
+}
+$tapahtumat = array_values($tapahtumat);
+usort($tapahtumat, static function (array $a, array $b): int {
+    $pa = (string) ($a['paiva'] ?? '');
+    $pb = (string) ($b['paiva'] ?? '');
+    if ($pa !== $pb) {
+        return $pb <=> $pa;
+    }
+
+    return ((int) ($b['id'] ?? 0)) <=> ((int) ($a['id'] ?? 0));
+});
 
 pageStart('Omat tapahtumat', [
     'admin' => true,
     'active' => 'omat_tapahtumat',
     'pdo' => $pdo,
-    'palvelu' => $voiSuunnistus && !$voiKilpailut ? 'iltarastit' : 'tulokset',
+    'palvelu' => $voiSuunnistus && !$voiKilpailut && !$voiPirila ? 'iltarastit' : 'tulokset',
     'extraHead' => '<style>
 .omat-tyyppi{display:flex;flex-wrap:wrap;gap:.75rem 1.25rem;margin:.35rem 0 .6rem}
 .omat-tyyppi label{display:flex;align-items:center;gap:.4rem;font-weight:600}
@@ -266,14 +327,16 @@ pageStart('Omat tapahtumat', [
 .omat-kisa-toiminnot .omat-avaa:hover{background:#166534}
 .omat-kisa-toiminnot .omat-poista{background:#dc2626;color:#fff}
 .omat-kisa-toiminnot .omat-poista:hover{background:#b91c1c;filter:none}
+.pirila-kehys{border:1px solid var(--border);border-radius:10px;padding:.75rem 1rem;margin:.5rem 0 1rem}
 </style>',
 ]);
 ?>
 
 <h1>Omat tapahtumat</h1>
 <p class="muted">
-    Suunnistustapahtumat ja juoksukilpailut oman seuran oikeuksien mukaan.
-    Rastilippu-liitäntä valitaan henkilökohtaisen suunnistustapahtuman asetuksista.
+    Luo tapahtuma yhdellä lomakkeella. Tyypit näkyvät seuran ja tunnuksen oikeuksien mukaan:
+    suunnistus, juoksu ja Suunnistus-Pirilä. Rastilippu-liitäntä valitaan henkilökohtaisen
+    suunnistustapahtuman asetuksista. Pirilä-asetukset ovat kisan asetuksissa vain Pirilä-tapahtumalle.
 </p>
 
 <?php if ($viesti !== ''): ?>
@@ -298,35 +361,39 @@ pageStart('Omat tapahtumat', [
     </div>
 <?php endif; ?>
 
-<?php if ($voiSuunnistus): ?>
 <div class="public-card" style="margin-bottom:1.25rem">
-    <h2>Suunnistustapahtumat</h2>
-    <?php if ($suunnistukset === []): ?>
-        <p class="muted">Ei suunnistustapahtumia vielä.</p>
+    <h2>Tapahtumat</h2>
+    <?php if ($tapahtumat === []): ?>
+        <p class="muted">Ei tapahtumia vielä.</p>
     <?php else: ?>
         <ul class="omat-lista">
-            <?php foreach ($suunnistukset as $k): ?>
+            <?php foreach ($tapahtumat as $k): ?>
                 <?php
-                $onViesti = function_exists('onkoViestiKilpailu') && onkoViestiKilpailu($k);
+                $onIltarasti = function_exists('kisaOnIltarasti') && kisaOnIltarasti($k);
+                $onViesti = $onIltarasti && function_exists('onkoViestiKilpailu') && onkoViestiKilpailu($k);
                 $pvmTxt = !empty($k['paiva']) && function_exists('formatPaiva') ? formatPaiva($k['paiva']) : '';
+                $malliTxt = function_exists('tapahtumaMalliLabel') ? tapahtumaMalliLabel($k) : '';
                 ?>
                 <li class="omat-kisa">
                     <div class="omat-kisa-tiedot">
                         <strong><?= htmlspecialchars((string) $k['nimi']) ?></strong>
                         <?php if ($pvmTxt !== ''): ?><span class="muted"><?= htmlspecialchars($pvmTxt) ?></span><?php endif; ?>
-                        <span class="muted"><?= $onViesti ? 'Viesti' : 'Henkilökohtainen' ?></span>
+                        <?php if ($malliTxt !== ''): ?><span class="muted"><?= htmlspecialchars($malliTxt) ?></span><?php endif; ?>
+                        <?php if ($onIltarasti): ?>
+                            <span class="muted"><?= $onViesti ? 'Viesti' : 'Henkilökohtainen' ?></span>
+                        <?php endif; ?>
                         <span class="muted"><?= htmlspecialchars(kilpailuTilaLabel($k['tila'] ?? '')) ?></span>
                     </div>
                     <div class="omat-kisa-toiminnot">
                         <form method="post">
                             <?= csrfKentta() ?>
-                            <input type="hidden" name="toiminto" value="valitse_tapahtuma">
+                            <input type="hidden" name="toiminto" value="<?= $onIltarasti ? 'valitse_tapahtuma' : 'valitse_kilpailu' ?>">
                             <input type="hidden" name="kilpailu_id" value="<?= (int) $k['id'] ?>">
                             <button type="submit" class="btn-small omat-avaa">Avaa</button>
                         </form>
                         <?php if (function_exists('voiHallitaKilpailua') && voiHallitaKilpailua($k) && function_exists('kilpailuPoistoLomakeHtml')): ?>
                             <?= kilpailuPoistoLomakeHtml($k, [
-                                'kohde' => 'tapahtuman',
+                                'kohde' => $onIltarasti ? 'tapahtuman' : 'kilpailun',
                                 'btn_class' => 'btn-danger btn-small omat-poista',
                             ]) ?>
                         <?php endif; ?>
@@ -336,17 +403,26 @@ pageStart('Omat tapahtumat', [
         </ul>
     <?php endif; ?>
 
-    <?php if ($seuraId > 0): ?>
-        <h3 style="margin-top:1.2rem">Luo suunnistustapahtuma</h3>
-        <p class="muted">Valitse henkilökohtainen tai viesti. Rastilippu-liitäntä on toistaiseksi vain henkilökohtaisissa, ja se kytketään tapahtuman asetuksista.</p>
-        <form method="post" class="form-grid">
+    <?php if ($seuraId > 0 && $sallitutMallit !== []): ?>
+        <h3 style="margin-top:1.2rem">Luo tapahtuma</h3>
+        <p class="muted">Valitse tyyppi oikeuksiesi mukaan. Rastilippu-liitäntä on toistaiseksi vain henkilökohtaisessa suunnistuksessa, ja se kytketään tapahtuman asetuksista.</p>
+        <form method="post" class="form-grid" id="luo-tapahtuma">
             <?= csrfKentta() ?>
-            <input type="hidden" name="toiminto" value="luo_paikallinen">
-            <label>Nimi <input name="nimi" required maxlength="255" placeholder="Suunnistustapahtuma"></label>
+            <input type="hidden" name="toiminto" value="luo_tapahtuma">
+            <label>Nimi <input name="nimi" required maxlength="255" placeholder="Tapahtuman nimi"></label>
             <label>Päivä <input type="date" name="paiva" required value="<?= htmlspecialchars(iltarastiTanaan()) ?>"></label>
             <label>Paikka <input name="paikka" maxlength="255"></label>
             <fieldset class="omat-tyyppi">
-                <legend>Tapahtuman malli</legend>
+                <legend>Tapahtuman tyyppi</legend>
+                <?php foreach ($sallitutMallit as $arvo => $label): ?>
+                    <label>
+                        <input type="radio" name="malli" value="<?= htmlspecialchars($arvo) ?>"<?= $arvo === $oletusMalli ? ' checked' : '' ?>>
+                        <?= htmlspecialchars($label) ?>
+                    </label>
+                <?php endforeach; ?>
+            </fieldset>
+            <fieldset class="omat-tyyppi" id="omat-viesti-malli"<?= $oletusMalli !== 'suunnistus' ? ' hidden' : '' ?>>
+                <legend>Suunnistuksen malli</legend>
                 <label>
                     <input type="radio" name="tyyppi" value="henkilokohtainen" checked>
                     Henkilökohtainen
@@ -358,70 +434,34 @@ pageStart('Omat tapahtumat', [
                     </label>
                 <?php endif; ?>
             </fieldset>
-            <?php if (!$voiViesti): ?>
-                <p class="muted">Viestikilpailu on lisäominaisuus käyttäjätunnuksella. Pääkäyttäjä kytkee sen käyttäjähallinnassa.</p>
+            <?php if ($voiSuunnistus && !$voiViesti): ?>
+                <p class="muted" id="omat-viesti-ohje"<?= $oletusMalli !== 'suunnistus' ? ' hidden' : '' ?>>Viestikilpailu on lisäominaisuus käyttäjätunnuksella. Pääkäyttäjä kytkee sen käyttäjähallinnassa.</p>
             <?php endif; ?>
             <div class="form-actions">
                 <button type="submit">Luo tapahtuma</button>
             </div>
         </form>
+        <script>
+        (function () {
+            var form = document.getElementById('luo-tapahtuma');
+            if (!form) return;
+            var viesti = document.getElementById('omat-viesti-malli');
+            var ohje = document.getElementById('omat-viesti-ohje');
+            function paivita() {
+                var val = form.querySelector('input[name="malli"]:checked');
+                var koodi = val ? val.value : '';
+                var nayta = koodi === 'suunnistus';
+                if (viesti) viesti.hidden = !nayta;
+                if (ohje) ohje.hidden = !nayta;
+            }
+            form.querySelectorAll('input[name="malli"]').forEach(function (el) {
+                el.addEventListener('change', paivita);
+            });
+            paivita();
+        })();
+        </script>
     <?php endif; ?>
 </div>
-<?php endif; ?>
-
-<?php if ($voiKilpailut): ?>
-<div class="public-card" style="margin-bottom:1.25rem">
-    <h2>Juoksukilpailut</h2>
-    <?php if ($kilpailut === []): ?>
-        <p class="muted">Ei juoksukilpailuja vielä.</p>
-    <?php else: ?>
-        <ul class="omat-lista">
-            <?php foreach ($kilpailut as $k): ?>
-                <?php
-                $pvmTxt = !empty($k['paiva']) && function_exists('formatPaiva') ? formatPaiva($k['paiva']) : '';
-                $luonne = function_exists('kisaLuonneLabel') ? kisaLuonneLabel($k['luonne'] ?? null) : '';
-                ?>
-                <li class="omat-kisa">
-                    <div class="omat-kisa-tiedot">
-                        <strong><?= htmlspecialchars((string) $k['nimi']) ?></strong>
-                        <?php if ($pvmTxt !== ''): ?><span class="muted"><?= htmlspecialchars($pvmTxt) ?></span><?php endif; ?>
-                        <?php if ($luonne !== ''): ?><span class="muted"><?= htmlspecialchars($luonne) ?></span><?php endif; ?>
-                        <span class="muted"><?= htmlspecialchars(kilpailuTilaLabel($k['tila'] ?? '')) ?></span>
-                    </div>
-                    <div class="omat-kisa-toiminnot">
-                        <form method="post">
-                            <?= csrfKentta() ?>
-                            <input type="hidden" name="toiminto" value="valitse_kilpailu">
-                            <input type="hidden" name="kilpailu_id" value="<?= (int) $k['id'] ?>">
-                            <button type="submit" class="btn-small omat-avaa">Avaa</button>
-                        </form>
-                        <?php if (function_exists('voiHallitaKilpailua') && voiHallitaKilpailua($k) && function_exists('kilpailuPoistoLomakeHtml')): ?>
-                            <?= kilpailuPoistoLomakeHtml($k, [
-                                'kohde' => 'kilpailun',
-                                'btn_class' => 'btn-danger btn-small omat-poista',
-                            ]) ?>
-                        <?php endif; ?>
-                    </div>
-                </li>
-            <?php endforeach; ?>
-        </ul>
-    <?php endif; ?>
-
-    <?php if ($seuraId > 0): ?>
-        <h3 style="margin-top:1.2rem">Luo juoksukilpailu</h3>
-        <form method="post" class="form-grid">
-            <?= csrfKentta() ?>
-            <input type="hidden" name="toiminto" value="luo_juoksu">
-            <label>Nimi <input name="nimi" required maxlength="255" placeholder="Juoksukilpailu"></label>
-            <label>Päivä <input type="date" name="paiva" required value="<?= htmlspecialchars(iltarastiTanaan()) ?>"></label>
-            <label>Paikka <input name="paikka" maxlength="255"></label>
-            <div class="form-actions">
-                <button type="submit">Luo kilpailu</button>
-            </div>
-        </form>
-    <?php endif; ?>
-</div>
-<?php endif; ?>
 
 <?php if ($voiSuunnistus && $voiAvaimen): ?>
     <?php if (!$liitanta): ?>

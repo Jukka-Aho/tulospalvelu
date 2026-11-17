@@ -85,9 +85,11 @@ function etusivuKisaRivi(array $k): void
     $ilmo = !$live && etusivuKisaIlmoAuki($k);
     $linkit = julkinenLinkit($k['id'], true);
     $href = etusivuKisaHref($k, $linkit);
-    $laji = etusivuOnIltarasti($k)
-        ? 'Iltarastit'
-        : (function_exists('kisaLuonneLabel') ? kisaLuonneLabel($k['luonne'] ?? null) : '');
+    $laji = function_exists('etusivuKisaTyyppiLabel')
+        ? etusivuKisaTyyppiLabel($k)
+        : (etusivuOnIltarasti($k)
+            ? 'Suunnistus'
+            : (function_exists('kisaLuonneLabel') ? kisaLuonneLabel($k['luonne'] ?? null) : ''));
     $haku = mb_strtolower(trim(implode(' ', array_filter([
         (string) ($k['nimi'] ?? ''),
         (string) ($k['seura_nimi'] ?? ''),

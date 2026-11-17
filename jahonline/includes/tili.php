@@ -41,6 +41,7 @@ function tiliVarmistaTaulut(PDO $pdo): void
     tiliVarmistaSarake($pdo, 'users', 'viimeisin_seura_id', 'INT NULL');
     tiliVarmistaSarake($pdo, 'users', 'api_token', 'VARCHAR(64) NULL');
     tiliVarmistaSarake($pdo, 'users', 'viesti_kilpailu', 'TINYINT(1) NOT NULL DEFAULT 0');
+    tiliVarmistaSarake($pdo, 'users', 'suunnistus_pirila', 'TINYINT(1) NOT NULL DEFAULT 0');
     tiliVarmistaSarake($pdo, 'kilpailut', 'seura_id', 'INT NULL');
     tiliVarmistaSarake($pdo, 'kilpailut', 'paakayttaja_id', 'INT NULL');
 
@@ -282,7 +283,7 @@ function tiliSeuraNimiTasmaa(string $seuraNimi, string $kirjoitettu): bool
 /** Seurakohtaiset palvelut (erillään GPS-paketin rajoista). */
 function tiliSeuraPalveluAvaimet(): array
 {
-    return ['gps', 'kilpailut', 'iltarastit'];
+    return ['gps', 'kilpailut', 'iltarastit', 'pirila'];
 }
 
 function tiliSeuraPalveluSarake(string $palvelu): string
@@ -290,11 +291,14 @@ function tiliSeuraPalveluSarake(string $palvelu): string
     if ($palvelu === 'gps') {
         return 'palvelu_gps';
     }
-    if ($palvelu === 'kilpailut' || $palvelu === 'tulokset' || $palvelu === 'tulospalvelu') {
+    if ($palvelu === 'kilpailut' || $palvelu === 'tulokset' || $palvelu === 'tulospalvelu' || $palvelu === 'juoksu') {
         return 'palvelu_kilpailut';
     }
-    if ($palvelu === 'iltarastit') {
+    if ($palvelu === 'iltarastit' || $palvelu === 'suunnistus') {
         return 'palvelu_iltarastit';
+    }
+    if ($palvelu === 'pirila' || $palvelu === 'suunnistus_pirila') {
+        return 'palvelu_pirila';
     }
 
     return '';
@@ -305,11 +309,14 @@ function tiliSeuraPalveluOtsikko(string $palvelu): string
     if ($palvelu === 'gps') {
         return 'GPS';
     }
-    if ($palvelu === 'kilpailut' || $palvelu === 'tulokset' || $palvelu === 'tulospalvelu') {
-        return 'Kilpailut';
+    if ($palvelu === 'kilpailut' || $palvelu === 'tulokset' || $palvelu === 'tulospalvelu' || $palvelu === 'juoksu') {
+        return 'Juoksu';
     }
-    if ($palvelu === 'iltarastit') {
-        return 'Iltarastit';
+    if ($palvelu === 'iltarastit' || $palvelu === 'suunnistus') {
+        return 'Suunnistus';
+    }
+    if ($palvelu === 'pirila' || $palvelu === 'suunnistus_pirila') {
+        return 'Suunnistus-Pirilä';
     }
 
     return $palvelu;
@@ -420,6 +427,13 @@ function tiliVarmistaSeuraPalvelut(PDO $pdo): void
         } catch (Throwable $e) {
         }
     }
+    $uusiPirila = tiliVarmistaSarake($pdo, 'seurat', 'palvelu_pirila', 'TINYINT(1) NOT NULL DEFAULT 0');
+    if ($uusiPirila) {
+        try {
+            $pdo->exec('UPDATE seurat SET palvelu_pirila = 1 WHERE palvelu_kilpailut = 1');
+        } catch (Throwable $e) {
+        }
+    }
     $uusiLiit = tiliVarmistaSarake($pdo, 'seurat', 'rastilippu_liitanta', 'TINYINT(1) NOT NULL DEFAULT 0');
     tiliVarmistaSarake($pdo, 'seurat', 'viesti_kilpailu', 'TINYINT(1) NOT NULL DEFAULT 0');
     tiliVarmistaSarake($pdo, 'seurat', 'laskutus_email', 'VARCHAR(255) NULL');
@@ -451,7 +465,11 @@ function tiliSeuraPalveluPaalla(array $seura, string $palvelu): bool
         return true;
     }
     if (!array_key_exists($col, $seura)) {
-        return $palvelu !== 'iltarastit';
+        if ($palvelu === 'pirila' || $palvelu === 'suunnistus_pirila') {
+            return tiliSeuraPalveluPaalla($seura, 'kilpailut');
+        }
+
+        return $palvelu !== 'iltarastit' && $palvelu !== 'suunnistus';
     }
 
     return (int) $seura[$col] === 1;
@@ -468,7 +486,11 @@ function tiliSessioSeuraPalvelu(string $palvelu): bool
     }
     $avain = 'seura_' . $col;
     if (!array_key_exists($avain, $_SESSION)) {
-        return $palvelu !== 'iltarastit';
+        if ($palvelu === 'pirila' || $palvelu === 'suunnistus_pirila') {
+            return tiliSessioSeuraPalvelu('kilpailut');
+        }
+
+        return $palvelu !== 'iltarastit' && $palvelu !== 'suunnistus';
     }
 
     return !empty($_SESSION[$avain]);
@@ -483,11 +505,12 @@ function tiliTallennaSeuraPalvelut(PDO $pdo, int $seuraId, array $palvelut): voi
     $gps = !empty($palvelut['gps']) ? 1 : 0;
     $kisat = !empty($palvelut['kilpailut']) ? 1 : 0;
     $illat = !empty($palvelut['iltarastit']) ? 1 : 0;
+    $pirila = !empty($palvelut['pirila']) ? 1 : 0;
     $pdo->prepare('
         UPDATE seurat
-        SET palvelu_gps = ?, palvelu_kilpailut = ?, palvelu_iltarastit = ?
+        SET palvelu_gps = ?, palvelu_kilpailut = ?, palvelu_iltarastit = ?, palvelu_pirila = ?
         WHERE id = ?
-    ')->execute([$gps, $kisat, $illat, $seuraId]);
+    ')->execute([$gps, $kisat, $illat, $pirila, $seuraId]);
 }
 
 function tiliSeuraRastilippuPaalla(array $seura): bool
@@ -730,7 +753,8 @@ function tiliRastilippuTapahtumaLkm(PDO $pdo, int $seuraId, $jakso): int
             $st = $pdo->prepare("
                 SELECT COUNT(*) FROM kilpailut
                 WHERE seura_id = ?
-                  AND luonne = 'iltarasti'
+                  AND luonne IN ('iltarasti','suunnistus')
+                  AND COALESCE(pirila_synkka,0) = 0
                   AND rastilippu_event_id IS NOT NULL
                   AND rastilippu_event_id > 0
                   {$ehto}
@@ -1249,6 +1273,7 @@ function tiliKirjauduSessioon(array $user, ?array $seura = null, ?array $jasenys
     $_SESSION['role'] = $user['role'] ?? 'ajanottaja';
     $_SESSION['user_nimi'] = $user['nimi'] ?? $user['username'];
     tiliTallennaSessioViesti($user);
+    tiliTallennaSessioPirila($user);
     if ($seura) {
         $_SESSION['seura_id'] = (int) $seura['id'];
         $_SESSION['seura_nimi'] = $seura['nimi'];
@@ -1262,6 +1287,7 @@ function tiliKirjauduSessioon(array $user, ?array $seura = null, ?array $jasenys
             $_SESSION['seura_palvelu_gps'],
             $_SESSION['seura_palvelu_kilpailut'],
             $_SESSION['seura_palvelu_iltarastit'],
+            $_SESSION['seura_palvelu_pirila'],
             $_SESSION['seura_rastilippu_liitanta'],
             $_SESSION['seura_viesti_kilpailu'],
             $_SESSION['seura_kisa_valikot'],
@@ -1509,6 +1535,7 @@ function tiliLataaKayttajaSessioon(PDO $pdo): void
     $oma = tiliHaeKayttajaIdlla($pdo, (int) $_SESSION['user_id']);
     if ($oma) {
         tiliTallennaSessioViesti($oma);
+        tiliTallennaSessioPirila($oma);
         $_SESSION['role'] = $oma['role'] ?? ($_SESSION['role'] ?? 'ajanottaja');
     }
     if (!empty($_SESSION['role']) && $_SESSION['role'] === 'admin' && empty($_SESSION['seura_id'])) {
@@ -1537,6 +1564,7 @@ function tiliLataaKayttajaSessioon(PDO $pdo): void
             $_SESSION['seura_palvelu_gps'],
             $_SESSION['seura_palvelu_kilpailut'],
             $_SESSION['seura_palvelu_iltarastit'],
+            $_SESSION['seura_palvelu_pirila'],
             $_SESSION['seura_rastilippu_liitanta'],
             $_SESSION['seura_viesti_kilpailu']
         );
@@ -1548,6 +1576,7 @@ function tiliTallennaSessioSeuraPalvelut(array $seura): void
     $_SESSION['seura_palvelu_gps'] = tiliSeuraPalveluPaalla($seura, 'gps') ? 1 : 0;
     $_SESSION['seura_palvelu_kilpailut'] = tiliSeuraPalveluPaalla($seura, 'kilpailut') ? 1 : 0;
     $_SESSION['seura_palvelu_iltarastit'] = tiliSeuraPalveluPaalla($seura, 'iltarastit') ? 1 : 0;
+    $_SESSION['seura_palvelu_pirila'] = tiliSeuraPalveluPaalla($seura, 'pirila') ? 1 : 0;
     $_SESSION['seura_rastilippu_liitanta'] = tiliSeuraRastilippuPaalla($seura) ? 1 : 0;
     $_SESSION['seura_viesti_kilpailu'] = tiliSeuraViestiPaalla($seura) ? 1 : 0;
 }
@@ -1555,6 +1584,33 @@ function tiliTallennaSessioSeuraPalvelut(array $seura): void
 function tiliTallennaSessioViesti(array $user): void
 {
     $_SESSION['viesti_kilpailu'] = !empty($user['viesti_kilpailu']) ? 1 : 0;
+}
+
+function tiliTallennaSessioPirila(array $user): void
+{
+    $_SESSION['suunnistus_pirila'] = !empty($user['suunnistus_pirila']) ? 1 : 0;
+}
+
+/** Suunnistus-Pirilä: seuran palvelu + käyttäjän lippu, pääkäyttäjä perii seuran. */
+function tiliKayttajaPirilaPaalla(?array $user = null): bool
+{
+    if (function_exists('onAdmin') && onAdmin()) {
+        return true;
+    }
+    if (!tiliSessioSeuraPalvelu('pirila')) {
+        return false;
+    }
+    if (!empty($_SESSION['suunnistus_pirila'])) {
+        return true;
+    }
+    if ($user !== null && !empty($user['suunnistus_pirila'])) {
+        return true;
+    }
+    if (function_exists('onPaakayttaja') && onPaakayttaja()) {
+        return true;
+    }
+
+    return false;
 }
 
 /** Viestikilpailu on käyttäjätunnuksen lisäominaisuus. */
@@ -2356,12 +2412,18 @@ function tiliVaadiTulospalvelu(PDO $pdo): void
 {
     tiliVarmistaTaulut($pdo);
     tiliLataaKayttajaSessioon($pdo);
-    if (!tiliSessioSeuraPalvelu('kilpailut')) {
+    $juoksu = tiliSessioSeuraPalvelu('kilpailut');
+    $pirila = function_exists('tiliKayttajaPirilaPaalla')
+        ? tiliKayttajaPirilaPaalla()
+        : tiliSessioSeuraPalvelu('pirila');
+    if (!$juoksu && !$pirila) {
         http_response_code(403);
         header('Content-Type: text/plain; charset=utf-8');
-        echo 'Kilpailut-palvelu ei ole käytössä tällä seuralla.';
+        echo 'Juoksu- tai Suunnistus-Pirilä-palvelu ei ole käytössä tällä seuralla.';
         exit;
     }
-    tiliVaadiPalvelu('tulokset');
-    tiliVaadiOminaisuus($pdo, 'tulospalvelu', 'Tulospalvelu ei kuulu nykyiseen pakettiin.');
+    if ($juoksu) {
+        tiliVaadiPalvelu('tulokset');
+        tiliVaadiOminaisuus($pdo, 'tulospalvelu', 'Tulospalvelu ei kuulu nykyiseen pakettiin.');
+    }
 }

@@ -143,6 +143,35 @@ function kilpailuIlmoDatetimeLocal(?string $db): string
 }
 
 /**
+ * Pirilä-synkka lomakkeesta. Uusi kisa ei muutu Piriläksi tältä sivulta
+ * (luonti Omissa tapahtumissa). Olemassa oleva ei-Pirilä säilyy ennallaan.
+ *
+ * @return array{pirila_synkka:int,kisa_tyyppi:string}
+ */
+function kilpailuParsePirilaKentat(?array $olemassa): array
+{
+    $onPirila = is_array($olemassa)
+        && (
+            (function_exists('kisaOnPirila') && kisaOnPirila($olemassa))
+            || (function_exists('pirilaSynkkaPaalla') && pirilaSynkkaPaalla($olemassa))
+            || (($olemassa['kisa_tyyppi'] ?? '') === 'pirila')
+            || !empty($olemassa['pirila_synkka'])
+        );
+    if (!$onPirila) {
+        return ['pirila_synkka' => 0, 'kisa_tyyppi' => 'normaali'];
+    }
+    if (function_exists('kilpailuParsePirilaSynkka')) {
+        return kilpailuParsePirilaSynkka();
+    }
+    $synkka = !empty($_POST['pirila_synkka']) ? 1 : 0;
+
+    return [
+        'pirila_synkka' => $synkka,
+        'kisa_tyyppi' => $synkka ? 'pirila' : 'normaali',
+    ];
+}
+
+/**
  * Yksi kilpailurivi hallinnan listassa.
  *
  * @param array<string,mixed> $k
@@ -194,26 +223,6 @@ function kilpailuListaKortti(array $k, int $valittu_id, array $seuraNimet): void
                     <span class="badge badge-muted">Jaettu lista</span>
                 <?php endif; ?>
             </div>
-            <?php if ($valittu && !empty($k['api_token']) && onAdmin()): ?>
-                <details class="kisa-lista-api">
-                    <summary>Vanha kilpailukohtainen avain</summary>
-                    <code class="token"><?= htmlspecialchars((string) $k['api_token']) ?></code>
-                    <button
-                        type="button"
-                        class="btn-small"
-                        onclick="kopioiApiAvain(this)"
-                        data-token="<?= htmlspecialchars((string) $k['api_token'], ENT_QUOTES, 'UTF-8') ?>"
-                    >Kopioi avain</button>
-                    <?php if (onAdmin()): ?>
-                        <form method="post" class="inline-form" onsubmit="return confirm('Luodaanko uusi API-avain?\n\nVanha avain lakkaa toimimasta heti. Mobiiliajanotto ja Pirilän JAHOnline API pitää päivittää uudella avaimella.');">
-                            <?= csrfKentta() ?>
-                            <input type="hidden" name="action" value="regenerate_token">
-                            <input type="hidden" name="id" value="<?= $kid ?>">
-                            <button type="submit" class="btn-small btn-secondary">Uusi avain</button>
-                        </form>
-                    <?php endif; ?>
-                </details>
-            <?php endif; ?>
         </div>
         <div class="kisa-lista-toiminnot" role="group" aria-label="Kilpailun toiminnot">
             <?php if ($tila !== 'arkisto'): ?>
@@ -288,9 +297,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'create') {
 
         $token = generoiApiToken();
-        $pirilaKentat = function_exists('kilpailuParsePirilaSynkka')
-            ? kilpailuParsePirilaSynkka()
-            : ['pirila_synkka' => 0, 'kisa_tyyppi' => 'normaali'];
+        $pirilaKentat = kilpailuParsePirilaKentat(null);
         $kisa_tyyppi = $pirilaKentat['kisa_tyyppi'];
         $seuraId = kilpailuParsiseuraId($pdo, null);
         $ownerId = (int) paakayttajaId();
@@ -349,9 +356,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             die('Ei käyttöoikeutta');
         }
 
-        $pirilaKentat = function_exists('kilpailuParsePirilaSynkka')
-            ? kilpailuParsePirilaSynkka()
-            : ['pirila_synkka' => 0, 'kisa_tyyppi' => 'normaali'];
+        $pirilaKentat = kilpailuParsePirilaKentat($olemassa);
         $kisa_tyyppi = $pirilaKentat['kisa_tyyppi'];
         $seuraId = kilpailuParsiseuraId($pdo, $olemassa);
         $ilmo = kilpailuParseIlmoAsetukset($kisa_tyyppi);
@@ -536,11 +541,6 @@ pageStart($uusiTila ? 'Uusi kilpailu' : 'Kilpailut', ['admin' => true, 'active' 
 <h1>Uusi kilpailu</h1>
 <?php else: ?>
 <h1>Kilpailut</h1>
-
-<?php
-require_once __DIR__ . '/../includes/api_avain_kortti.php';
-apiAvainKortti($pdo);
-?>
 <?php endif; ?>
 
 
@@ -672,12 +672,32 @@ ob_start();
     </select>
     <p class="muted form-hint">Ilmo auki → tila Ilmoittautuminen; ilmoaika ohi → Tulossa. Käynnissä ja Valmis asetetaan manuaalisesti. Arkistointi listan Arkistoi-napilla.</p>
 
-    <label class="checkbox-label" style="display:flex;gap:8px;align-items:center;font-weight:500">
-        <input type="checkbox" name="pirila_synkka" value="1" id="pirila_synkka"
-            <?= ($muokkaaTila && function_exists('pirilaSynkkaPaalla') && pirilaSynkkaPaalla($muokattava)) ? 'checked' : '' ?>>
-        Pirilä-synkka
-    </label>
-    <p class="muted form-hint">Kun päällä, kisa näkyy Pirilä-kilpailuna: sarjat, radat, kilpailijat ja ajat tulevat HkKisaWinistä tai ViestiWinistä. Kun pois, kisa tehdään tässä sovelluksessa ja luonne valitsee valikot.</p>
+    <?php
+    $naytaPirilaKehys = $muokkaaTila && (
+        (function_exists('kisaOnPirila') && kisaOnPirila($muokattava))
+        || (function_exists('pirilaSynkkaPaalla') && pirilaSynkkaPaalla($muokattava))
+        || (($muokattava['kisa_tyyppi'] ?? '') === 'pirila')
+        || !empty($muokattava['pirila_synkka'])
+    );
+    ?>
+    <?php if ($naytaPirilaKehys): ?>
+    <fieldset class="pirila-kehys" style="border:1px solid var(--border,#c5d0c8);border-radius:10px;padding:.85rem 1rem;margin:1rem 0">
+        <legend style="font-weight:600">Pirilä</legend>
+        <p class="muted form-hint" style="margin-top:0">HkKisaWin / ViestiWin -synkka. Sarjat, radat, kilpailijat ja ajat tulevat Pirilästä. Etusivulla tyyppi on Suunnistus.</p>
+        <label class="checkbox-label" style="display:flex;gap:8px;align-items:center;font-weight:500">
+            <input type="checkbox" name="pirila_synkka" value="1" id="pirila_synkka"
+                <?= (function_exists('pirilaSynkkaPaalla') ? pirilaSynkkaPaalla($muokattava) : !empty($muokattava['pirila_synkka'])) ? 'checked' : '' ?>>
+            Pirilä-synkka
+        </label>
+        <p class="muted form-hint">Kun pois, kisa tehdään tässä sovelluksessa ja luonne valitsee valikot.</p>
+        <label class="checkbox-label" style="display:flex;gap:8px;align-items:center;font-weight:500">
+            <input type="checkbox" name="jaettu_jono" value="1"
+                <?= !empty($muokattava['jaettu_jono']) ? 'checked' : '' ?>>
+            Jaettu ajanottolista Pirilän kanssa
+        </label>
+        <p class="muted form-hint">Pirilä-kisassa avautuu Numerot-sivu: ajat tulevat Pirilästä, numerot selaimesta.</p>
+    </fieldset>
+    <?php endif; ?>
 
     <label>Kisan luonne</label>
     <select name="luonne">
@@ -710,12 +730,14 @@ ob_start();
     </label>
     <p class="muted form-hint">Kaikki toimii normaalisti, mutta kisa ei nouse etusivun julkiseen listaan. Se näkyy sinulle, ja kisassa lukee että kyseessä on demokisa.</p>
 
+    <?php if (!$naytaPirilaKehys): ?>
     <label class="checkbox-label" style="display:flex;gap:8px;align-items:center;font-weight:500">
         <input type="checkbox" name="jaettu_jono" value="1"
             <?= !empty($muokattava['jaettu_jono']) ? 'checked' : '' ?>>
         Jaettu ajanottolista Pirilän kanssa
     </label>
-    <p class="muted form-hint">Juoksun numeroiden syöttö ja Pirilän maaliajat menevät samaan listaan. Pirilä-kisassa avautuu Numerot-sivu: ajat tulevat Pirilästä, numerot selaimesta. Juoksukisa toimii yhä myös ilman Pirilää.</p>
+    <p class="muted form-hint">Juoksun numeroiden syöttö ja Pirilän maaliajat menevät samaan listaan. Juoksukisa toimii yhä myös ilman Pirilää.</p>
+    <?php endif; ?>
 
     <div id="ilmo-asetukset" class="ilmo-asetukset">
         <label>Ilmoittautuminen</label>

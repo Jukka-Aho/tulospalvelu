@@ -31,6 +31,7 @@ $voiHallita = $seura && in_array($seura['jasen_rooli'] ?? '', ['omistaja', 'admi
 $gpsPaalla = $seura && tiliSeuraPalveluPaalla($seura, 'gps');
 $kisatPaalla = $seura && tiliSeuraPalveluPaalla($seura, 'kilpailut');
 $illatPaalla = $seura && tiliSeuraPalveluPaalla($seura, 'iltarastit');
+$pirilaPaalla = $seura && tiliSeuraPalveluPaalla($seura, 'pirila');
 $vainIltarastit = $seura && tiliSeuraVainIltarastit($seura);
 $sallitutPalvelut = $seura ? tiliSeuraSallitutJasenPalvelut($seura) : [];
 $ominaisuudet = ($seura && $gpsPaalla) ? tiliPakettiOminaisuudet([
@@ -264,6 +265,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $gpsPaalla = $seura && tiliSeuraPalveluPaalla($seura, 'gps');
     $kisatPaalla = $seura && tiliSeuraPalveluPaalla($seura, 'kilpailut');
     $illatPaalla = $seura && tiliSeuraPalveluPaalla($seura, 'iltarastit');
+    $pirilaPaalla = $seura && tiliSeuraPalveluPaalla($seura, 'pirila');
     $vainIltarastit = $seura && tiliSeuraVainIltarastit($seura);
     $sallitutPalvelut = $seura ? tiliSeuraSallitutJasenPalvelut($seura) : [];
     $ominaisuudet = ($seura && $gpsPaalla) ? tiliPakettiOminaisuudet([
@@ -304,9 +306,9 @@ $labels = [
 ];
 $palveluNimet = [
     'gps' => 'GPS',
-    'tulokset' => 'Kilpailut',
-    'molemmat' => 'GPS + kilpailut',
-    'iltarastit' => 'Iltarastit',
+    'tulokset' => 'Juoksu',
+    'molemmat' => 'GPS + juoksu',
+    'iltarastit' => 'Suunnistus',
 ];
 
 $jasenTauluCss = <<<'CSS'
@@ -433,10 +435,13 @@ if ($hasLayout) {
                 $nimet[] = 'GPS';
             }
             if ($kisatPaalla) {
-                $nimet[] = 'Kilpailut';
+                $nimet[] = 'Juoksu';
             }
             if ($illatPaalla) {
-                $nimet[] = 'Iltarastit';
+                $nimet[] = 'Suunnistus';
+            }
+            if (!empty($pirilaPaalla)) {
+                $nimet[] = 'Suunnistus-Pirilä';
             }
             echo $nimet ? htmlspecialchars(implode(' · ', $nimet)) : '–';
             ?>

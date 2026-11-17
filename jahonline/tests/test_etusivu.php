@@ -81,6 +81,24 @@ str_contains($sivu, 'etusivuValitseLista') || fail('index kayttaa valintaa');
 str_contains($sivu, 'data-ryhma="tapahtumat"') || fail('yksi lista');
 str_contains($sivu, "etusivuJaaSarakkeisiin") && fail('ei sarakkeita');
 str_contains($sivu, "'avain' => 'iltarastit'") && fail('ei erillista iltarastit-ryhmaa');
+str_contains($sivu, 'etusivuKisaTyyppiLabel') || fail('index tyyppi label');
+str_contains($sivu, "'Iltarastit'") && fail('ei iltarastit-leimaa etusivulla');
 ok('index');
+
+require_once __DIR__ . '/../includes/kisa_luonne.php';
+etusivuKisaTyyppiLabel(['luonne' => 'iltarasti', 'pirila_synkka' => 0, 'kisa_tyyppi' => 'normaali']) === 'Suunnistus'
+    || fail('iltarasti etusivu suunnistus');
+etusivuKisaTyyppiLabel(['luonne' => 'suunnistus', 'pirila_synkka' => 1, 'kisa_tyyppi' => 'pirila']) === 'Suunnistus'
+    || fail('pirila etusivu suunnistus');
+etusivuKisaTyyppiLabel(['luonne' => 'juoksu', 'pirila_synkka' => 0, 'kisa_tyyppi' => 'normaali']) === 'Juoksu'
+    || fail('juoksu etusivu');
+kisaOnIltarasti(['luonne' => 'suunnistus', 'pirila_synkka' => 0]) || fail('paikallinen suunnistus on iltarasti-ui');
+kisaOnIltarasti(['luonne' => 'suunnistus', 'pirila_synkka' => 1, 'kisa_tyyppi' => 'pirila']) && fail('pirila ei iltarasti-ui');
+kisaOnPirila(['luonne' => 'suunnistus', 'pirila_synkka' => 1, 'kisa_tyyppi' => 'pirila']) || fail('pirila tunnistus');
+tapahtumaMalliKoodi(['luonne' => 'iltarasti', 'pirila_synkka' => 0]) === 'suunnistus' || fail('malli suunnistus');
+tapahtumaMalliLabel(['luonne' => 'juoksu']) === 'Juoksu' || fail('malli juoksu');
+tapahtumaMalliLabel(['luonne' => 'suunnistus', 'pirila_synkka' => 1, 'kisa_tyyppi' => 'pirila']) === 'Suunnistus-Pirilä'
+    || fail('malli pirila');
+ok('tyypit');
 
 echo "all tests passed\n";

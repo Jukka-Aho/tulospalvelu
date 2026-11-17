@@ -73,6 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'gps' => !empty($_POST['palvelu_gps']),
                 'kilpailut' => !empty($_POST['palvelu_kilpailut']),
                 'iltarastit' => !empty($_POST['palvelu_iltarastit']),
+                'pirila' => !empty($_POST['palvelu_pirila']),
             ]);
             tiliTallennaSeuraEiLaskutusta(
                 $pdo,
@@ -223,15 +224,23 @@ if ($hasLayout) {
                     <p style="margin:0.35rem 0">
                         <label>
                             <input type="checkbox" name="palvelu_kilpailut" value="1"<?= tiliSeuraPalveluPaalla($s, 'kilpailut') ? ' checked' : '' ?>>
-                            Kilpailut
+                            Juoksu
                         </label>
-                        <span class="muted">· <?= $kisat ?> kilpailua (ei iltarasteja)</span>
+                        <span class="muted">· <?= $kisat ?> juoksukilpailua</span>
                     </p>
                     <p style="margin:0.35rem 0">
                         <label>
                             <input type="checkbox" name="palvelu_iltarastit" value="1"<?= tiliSeuraPalveluPaalla($s, 'iltarastit') ? ' checked' : '' ?>>
-                            Iltarastit
+                            Suunnistus
                         </label>
+                        <span class="muted">· paikallinen suunnistus (radat, Emit, Rastilippu)</span>
+                    </p>
+                    <p style="margin:0.35rem 0">
+                        <label>
+                            <input type="checkbox" name="palvelu_pirila" value="1"<?= tiliSeuraPalveluPaalla($s, 'pirila') ? ' checked' : '' ?>>
+                            Suunnistus-Pirilä
+                        </label>
+                        <span class="muted">· HkKisaWin / ViestiWin -synkka</span>
                     </p>
                     <p style="margin:0.35rem 0">
                         <label>

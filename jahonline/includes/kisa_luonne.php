@@ -98,11 +98,11 @@ function kisaLuonneNormalisoi($arvo): ?string
     return array_key_exists($v, kisaLuonteet()) ? $v : null;
 }
 
-/** Uuden JAHOnline-kisan oletusluonne. Pirilä jättää tyhjäksi (laji tulee synkasta). */
+/** Uuden JAHOnline-kisan oletusluonne. Pirilä-suunnistus saa luonteen suunnistus. */
 function kisaLuonneOletusUudelle(string $kisaTyyppi = 'normaali'): ?string
 {
     if ($kisaTyyppi === 'pirila') {
-        return null;
+        return 'suunnistus';
     }
 
     return 'juoksu';
@@ -135,9 +135,210 @@ function kisaLuonneLabel($luonne): string
     return $v === null ? '' : kisaLuonteet()[$v];
 }
 
+function kisaOnPirila(array $kilpailu): bool
+{
+    if (function_exists('pirilaSynkkaPaalla')) {
+        return pirilaSynkkaPaalla($kilpailu);
+    }
+    if (array_key_exists('pirila_synkka', $kilpailu) && $kilpailu['pirila_synkka'] !== null && $kilpailu['pirila_synkka'] !== '') {
+        return (int) $kilpailu['pirila_synkka'] > 0;
+    }
+
+    return ($kilpailu['kisa_tyyppi'] ?? 'normaali') === 'pirila';
+}
+
+/**
+ * Paikallinen suunnistus (ent. iltarastit): Emit, radat, Rastilippu. Ei Pirilä-synkkaa.
+ */
 function kisaOnIltarasti(array $kilpailu): bool
 {
-    return kisaLuonneNormalisoi($kilpailu['luonne'] ?? null) === 'iltarasti';
+    if (kisaOnPirila($kilpailu)) {
+        return false;
+    }
+    $luonne = kisaLuonneNormalisoi($kilpailu['luonne'] ?? null);
+
+    return $luonne === 'iltarasti' || $luonne === 'suunnistus';
+}
+
+/** SQL-ehto paikalliselle suunnistukselle (alias esim. k tai tyhjä). */
+function kisaPaikallinenSuunnistusSql(string $alias = ''): string
+{
+    $a = $alias === '' ? '' : $alias . '.';
+
+    return "({$a}luonne IN ('iltarasti','suunnistus') AND COALESCE({$a}pirila_synkka,0) = 0"
+        . " AND COALESCE({$a}kisa_tyyppi,'normaali') <> 'pirila')";
+}
+
+function etusivuKisaTyyppiLabel(array $k): string
+{
+    if (kisaOnIltarasti($k) || kisaOnPirila($k)) {
+        return 'Suunnistus';
+    }
+    $l = kisaLuonneLabel($k['luonne'] ?? null);
+
+    return $l !== '' ? $l : 'Juoksu';
+}
+
+/** @return array<string,string> malli => näyttönimi */
+function tapahtumaMallit(): array
+{
+    return [
+        'suunnistus' => 'Suunnistus',
+        'juoksu' => 'Juoksu',
+        'pirila' => 'Suunnistus-Pirilä',
+    ];
+}
+
+function tapahtumaMalliKoodi(array $kilpailu): string
+{
+    if (kisaOnPirila($kilpailu)) {
+        return 'pirila';
+    }
+    if (kisaOnIltarasti($kilpailu)) {
+        return 'suunnistus';
+    }
+
+    return 'juoksu';
+}
+
+function tapahtumaMalliLabel(array $kilpailu): string
+{
+    $koodi = tapahtumaMalliKoodi($kilpailu);
+
+    return tapahtumaMallit()[$koodi] ?? 'Juoksu';
+}
+
+function kisaTapahtumaPvmKannasta(?string $pvm): ?string
+{
+    if (function_exists('iltarastiPvmKannasta')) {
+        $p = iltarastiPvmKannasta((string) $pvm);
+        if ($p !== null && $p !== '') {
+            return $p;
+        }
+    }
+    $s = trim((string) $pvm);
+    if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $s)) {
+        return $s;
+    }
+
+    return kisaPvmIso($s);
+}
+
+function kisaLuoJuoksu(
+    PDO $pdo,
+    int $seuraId,
+    string $nimi,
+    ?string $pvm,
+    ?string $paikka,
+    ?int $omistajaId = null
+): array {
+    kisaLuonneVarmista($pdo);
+    if ($seuraId < 1) {
+        throw new RuntimeException('Seura puuttuu.');
+    }
+    if (function_exists('tiliSeuraSallii') && !tiliSeuraSallii($pdo, $seuraId, 'kilpailut')) {
+        throw new RuntimeException('Juoksu-palvelu ei ole käytössä tällä seuralla.');
+    }
+    $nimi = trim($nimi);
+    if ($nimi === '') {
+        throw new RuntimeException('Anna kilpailun nimi.');
+    }
+    $pvmStr = kisaTapahtumaPvmKannasta($pvm);
+    if ($pvmStr === null || $pvmStr === '') {
+        throw new RuntimeException('Anna kilpailun päivämäärä.');
+    }
+    $paikka = trim((string) $paikka);
+    $tila = function_exists('iltarastiTilaPaivasta') ? iltarastiTilaPaivasta($pvmStr) : 'tulossa';
+    $token = function_exists('generoiApiToken') ? generoiApiToken() : bin2hex(random_bytes(16));
+    $pdo->prepare('
+        INSERT INTO kilpailut
+            (nimi, paiva, paikka, tila, kisa_tyyppi, api_token, pirila_synkka, paakayttaja_id, seura_id,
+             ilmoittautuminen_auki, testikisa, jaettu_jono, luonne, tyyppi)
+        VALUES (?, ?, ?, ?, \'normaali\', ?, 0, ?, ?, 0, 0, 0, \'juoksu\', \'henkilokohtainen\')
+    ')->execute([
+        mb_substr($nimi, 0, 255),
+        $pvmStr,
+        $paikka !== '' ? mb_substr($paikka, 0, 255) : null,
+        $tila,
+        $token,
+        $omistajaId && $omistajaId > 0 ? $omistajaId : null,
+        $seuraId,
+    ]);
+
+    return kisaHaeLuotu($pdo, (int) $pdo->lastInsertId());
+}
+
+function kisaLuoPirila(
+    PDO $pdo,
+    int $seuraId,
+    string $nimi,
+    ?string $pvm,
+    ?string $paikka,
+    ?int $omistajaId = null
+): array {
+    kisaLuonneVarmista($pdo);
+    if ($seuraId < 1) {
+        throw new RuntimeException('Seura puuttuu.');
+    }
+    if (function_exists('tiliSeuraSallii') && !tiliSeuraSallii($pdo, $seuraId, 'pirila')) {
+        throw new RuntimeException('Suunnistus-Pirilä ei ole käytössä tällä seuralla.');
+    }
+    $nimi = trim($nimi);
+    if ($nimi === '') {
+        $nimi = 'Suunnistus';
+    }
+    $pvmStr = kisaTapahtumaPvmKannasta($pvm);
+    if ($pvmStr === null || $pvmStr === '') {
+        throw new RuntimeException('Anna tapahtuman päivämäärä.');
+    }
+    $paikka = trim((string) $paikka);
+    $tila = function_exists('iltarastiTilaPaivasta') ? iltarastiTilaPaivasta($pvmStr) : 'tulossa';
+    $token = function_exists('generoiApiToken') ? generoiApiToken() : bin2hex(random_bytes(16));
+    $pdo->prepare('
+        INSERT INTO kilpailut
+            (nimi, paiva, paikka, tila, kisa_tyyppi, api_token, pirila_synkka, paakayttaja_id, seura_id,
+             ilmoittautuminen_auki, testikisa, jaettu_jono, luonne, tyyppi)
+        VALUES (?, ?, ?, ?, \'pirila\', ?, 1, ?, ?, 0, 0, 0, \'suunnistus\', \'henkilokohtainen\')
+    ')->execute([
+        mb_substr($nimi, 0, 255),
+        $pvmStr,
+        $paikka !== '' ? mb_substr($paikka, 0, 255) : null,
+        $tila,
+        $token,
+        $omistajaId && $omistajaId > 0 ? $omistajaId : null,
+        $seuraId,
+    ]);
+
+    return kisaHaeLuotu($pdo, (int) $pdo->lastInsertId());
+}
+
+function kisaHaeLuotu(PDO $pdo, int $id): array
+{
+    if ($id < 1) {
+        throw new RuntimeException('Tapahtuman luonti epäonnistui.');
+    }
+    $st = $pdo->prepare('SELECT * FROM kilpailut WHERE id = ?');
+    $st->execute([$id]);
+    $row = $st->fetch(PDO::FETCH_ASSOC);
+    if (!$row) {
+        throw new RuntimeException('Tapahtuman luonti epäonnistui.');
+    }
+
+    return $row;
+}
+
+function kisaOnJuoksu(array $kilpailu): bool
+{
+    return kisaLuonneNormalisoi($kilpailu['luonne'] ?? null) === 'juoksu';
+}
+
+/**
+ * Juoksun TV/online: älä listaa kesken olevia (ei rastiseurantaa).
+ * Suunnistuksessa «maastossa» jää. Hallinnan kilpailijalista ei käytä tätä.
+ */
+function kisaPiilotaMatkalla(array $kilpailu): bool
+{
+    return kisaOnJuoksu($kilpailu);
 }
 
 /**

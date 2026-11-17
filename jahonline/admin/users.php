@@ -74,9 +74,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $email = tiliValidoiSahkoposti($pdo, (string) ($_POST['email'] ?? ''), null, $emailSeuraKonteksti);
             tiliValidoiSalasana((string) ($_POST['password'] ?? ''));
             $viestiKisa = !empty($_POST['viesti_kilpailu']) ? 1 : 0;
+            $pirilaKisa = !empty($_POST['suunnistus_pirila']) ? 1 : 0;
             $stmt = $pdo->prepare('
-                INSERT INTO users (username, password, role, paakayttaja_id, aktiivinen, email, viesti_kilpailu)
-                VALUES (?, ?, ?, ?, 1, ?, ?)
+                INSERT INTO users (username, password, role, paakayttaja_id, aktiivinen, email, viesti_kilpailu, suunnistus_pirila)
+                VALUES (?, ?, ?, ?, 1, ?, ?, ?)
             ');
             $stmt->execute([
                 trim($_POST['username']),
@@ -85,6 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $parent,
                 $email,
                 $viestiKisa,
+                $pirilaKisa,
             ]);
             $uusiId = (int) $pdo->lastInsertId();
             if ($valittuSeuraId && $uusiId > 0) {
@@ -128,13 +130,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             $viestiKisa = !empty($_POST['viesti_kilpailu']) ? 1 : 0;
+            $pirilaKisa = !empty($_POST['suunnistus_pirila']) ? 1 : 0;
             if (!empty($_POST['password'])) {
                 tiliValidoiSalasana((string) $_POST['password']);
-                $sql = 'UPDATE users SET username = ?, password = ?, role = ?, email = ?, viesti_kilpailu = ?' . $parentSql . ' WHERE id = ?';
-                $params = [trim($_POST['username']), password_hash($_POST['password'], PASSWORD_DEFAULT), $rooli, $email, $viestiKisa];
+                $sql = 'UPDATE users SET username = ?, password = ?, role = ?, email = ?, viesti_kilpailu = ?, suunnistus_pirila = ?' . $parentSql . ' WHERE id = ?';
+                $params = [trim($_POST['username']), password_hash($_POST['password'], PASSWORD_DEFAULT), $rooli, $email, $viestiKisa, $pirilaKisa];
             } else {
-                $sql = 'UPDATE users SET username = ?, role = ?, email = ?, viesti_kilpailu = ?' . $parentSql . ' WHERE id = ?';
-                $params = [trim($_POST['username']), $rooli, $email, $viestiKisa];
+                $sql = 'UPDATE users SET username = ?, role = ?, email = ?, viesti_kilpailu = ?, suunnistus_pirila = ?' . $parentSql . ' WHERE id = ?';
+                $params = [trim($_POST['username']), $rooli, $email, $viestiKisa, $pirilaKisa];
             }
             if ($parentSql !== '') {
                 $params[] = $parentVal;
@@ -371,11 +374,20 @@ pageStart('Käyttäjät', ['admin' => true, 'active' => 'users', 'pdo' => $pdo])
         <?php endforeach; ?>
     </select>
 
-    <label class="checkbox-label">
-        <input type="checkbox" name="viesti_kilpailu" value="1"<?= !empty($muokattava['viesti_kilpailu']) ? ' checked' : '' ?>>
-        Viestikilpailu
-    </label>
-    <p class="muted">Lisäominaisuus: suunnistustapahtumaa luodessa voi valita henkilökohtaisen tai viestin. Rastilippu on toistaiseksi vain henkilökohtaisissa.</p>
+    <fieldset class="omat-tyyppi" style="border:1px solid var(--border);border-radius:10px;padding:.75rem 1rem;margin:.5rem 0 1rem">
+        <legend>Tapahtumatyypit</legend>
+        <p class="muted" style="margin-top:0">Seuran palvelut määräävät mitä voi luoda. Alla käyttäjäkohtaiset lisäominaisuudet.</p>
+        <label class="checkbox-label">
+            <input type="checkbox" name="viesti_kilpailu" value="1"<?= !empty($muokattava['viesti_kilpailu']) ? ' checked' : '' ?>>
+            Viestikilpailu
+        </label>
+        <p class="muted">Suunnistusta luodessa voi valita henkilökohtaisen tai viestin. Rastilippu on toistaiseksi vain henkilökohtaisissa.</p>
+        <label class="checkbox-label">
+            <input type="checkbox" name="suunnistus_pirila" value="1"<?= !empty($muokattava['suunnistus_pirila']) ? ' checked' : '' ?>>
+            Suunnistus-Pirilä
+        </label>
+        <p class="muted">Saa luoda Pirilä-synkattuja suunnistustapahtumia, kun seuran Suunnistus-Pirilä on päällä. Pääkäyttäjä perii seuran oikeuden.</p>
+    </fieldset>
 
     <?php if (onAdmin()): ?>
     <label>Pääkäyttäjä (aliakäyttäjälle)</label>
