@@ -222,7 +222,16 @@ if ($hasLayout && function_exists('haeValittuKilpailu')) {
 }
 
 if ($hasLayout) {
-    pageStart('Hallinta', ['admin' => true, 'active' => 'index', 'pdo' => $pdo]);
+    pageStart('Hallinta', [
+        'admin' => true,
+        'active' => 'index',
+        'pdo' => $pdo,
+        'extraHead' => '<style>
+.kisa-lista-toiminnot-pino{flex-direction:column;flex-wrap:nowrap;align-items:stretch;min-width:5.4rem}
+.kisa-lista-toiminnot-pino form,.kisa-lista-toiminnot-pino .inline-form{width:100%;margin:0}
+.kisa-lista-toiminnot-pino .btn-small,.kisa-lista-toiminnot-pino button{width:100%}
+</style>',
+    ]);
 } else {
     echo '<!DOCTYPE html><html lang="fi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Hallinta</title><link rel="stylesheet" href="../assets/css/style.css"></head><body><div class="container">';
 }
@@ -754,12 +763,12 @@ if ($hasLayout) {
                                 <?php endif; ?>
                             </div>
                         </div>
-                        <div class="kisa-lista-toiminnot">
+                        <div class="kisa-lista-toiminnot kisa-lista-toiminnot-pino">
                             <form method="post" class="inline-form">
                                 <?php if (function_exists('csrfKentta')): ?><?= csrfKentta() ?><?php endif; ?>
                                 <input type="hidden" name="toiminto" value="valitse_kilpailu">
                                 <input type="hidden" name="kilpailu_id" value="<?= $kid ?>">
-                                <button type="submit" class="btn-small kisa-btn-valitse">Valitse</button>
+                                <button type="submit" class="btn-small kisa-btn-valitse">Avaa</button>
                             </form>
                             <?php if (function_exists('voiHallitaKilpailua') && voiHallitaKilpailua($k) && function_exists('kilpailuPoistoLomakeHtml')): ?>
                                 <?= kilpailuPoistoLomakeHtml($k, [

@@ -256,12 +256,12 @@ pageStart('Omat tapahtumat', [
 .omat-tyyppi{display:flex;flex-wrap:wrap;gap:.75rem 1.25rem;margin:.35rem 0 .6rem}
 .omat-tyyppi label{display:flex;align-items:center;gap:.4rem;font-weight:600}
 .omat-lista{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:.55rem}
-.omat-lista a,.omat-lista button.omat-rivi{display:flex;flex-wrap:wrap;align-items:baseline;gap:.35rem .7rem;width:100%;text-align:left;padding:.7rem .85rem;border:1px solid var(--border);border-radius:10px;background:var(--card);color:var(--text);font:inherit;cursor:pointer;text-decoration:none}
-.omat-lista a:hover,.omat-lista button.omat-rivi:hover{border-color:var(--primary);color:var(--primary)}
 .omat-lista .muted{margin:0}
-.omat-kisa{display:flex;gap:.45rem;align-items:stretch}
-.omat-kisa-avaa{flex:1;min-width:0;margin:0}
-.omat-lista .omat-poista{flex:0 0 auto;min-width:4.8rem;align-self:stretch}
+.omat-kisa{display:flex;flex-wrap:wrap;gap:.75rem 1rem;align-items:center;justify-content:space-between;padding:.75rem .9rem;border:1px solid var(--border);border-radius:10px;background:var(--card)}
+.omat-kisa-tiedot{flex:1;min-width:0;display:flex;flex-wrap:wrap;align-items:baseline;gap:.35rem .7rem}
+.omat-kisa-toiminnot{display:flex;flex-direction:column;gap:.35rem;flex:0 0 auto;min-width:5.2rem}
+.omat-kisa-toiminnot form{margin:0}
+.omat-kisa-toiminnot .omat-avaa,.omat-kisa-toiminnot .omat-poista{width:100%;min-width:5.2rem}
 </style>',
 ]);
 ?>
@@ -307,23 +307,26 @@ pageStart('Omat tapahtumat', [
                 $pvmTxt = !empty($k['paiva']) && function_exists('formatPaiva') ? formatPaiva($k['paiva']) : '';
                 ?>
                 <li class="omat-kisa">
-                    <form method="post" class="omat-kisa-avaa">
-                        <?= csrfKentta() ?>
-                        <input type="hidden" name="toiminto" value="valitse_tapahtuma">
-                        <input type="hidden" name="kilpailu_id" value="<?= (int) $k['id'] ?>">
-                        <button type="submit" class="omat-rivi">
-                            <strong><?= htmlspecialchars((string) $k['nimi']) ?></strong>
-                            <?php if ($pvmTxt !== ''): ?><span class="muted"><?= htmlspecialchars($pvmTxt) ?></span><?php endif; ?>
-                            <span class="muted"><?= $onViesti ? 'Viesti' : 'Henkilökohtainen' ?></span>
-                            <span class="muted"><?= htmlspecialchars(kilpailuTilaLabel($k['tila'] ?? '')) ?></span>
-                        </button>
-                    </form>
-                    <?php if (function_exists('voiHallitaKilpailua') && voiHallitaKilpailua($k) && function_exists('kilpailuPoistoLomakeHtml')): ?>
-                        <?= kilpailuPoistoLomakeHtml($k, [
-                            'kohde' => 'tapahtuman',
-                            'btn_class' => 'btn-danger btn-small omat-poista',
-                        ]) ?>
-                    <?php endif; ?>
+                    <div class="omat-kisa-tiedot">
+                        <strong><?= htmlspecialchars((string) $k['nimi']) ?></strong>
+                        <?php if ($pvmTxt !== ''): ?><span class="muted"><?= htmlspecialchars($pvmTxt) ?></span><?php endif; ?>
+                        <span class="muted"><?= $onViesti ? 'Viesti' : 'Henkilökohtainen' ?></span>
+                        <span class="muted"><?= htmlspecialchars(kilpailuTilaLabel($k['tila'] ?? '')) ?></span>
+                    </div>
+                    <div class="omat-kisa-toiminnot">
+                        <form method="post">
+                            <?= csrfKentta() ?>
+                            <input type="hidden" name="toiminto" value="valitse_tapahtuma">
+                            <input type="hidden" name="kilpailu_id" value="<?= (int) $k['id'] ?>">
+                            <button type="submit" class="btn-small omat-avaa">Avaa</button>
+                        </form>
+                        <?php if (function_exists('voiHallitaKilpailua') && voiHallitaKilpailua($k) && function_exists('kilpailuPoistoLomakeHtml')): ?>
+                            <?= kilpailuPoistoLomakeHtml($k, [
+                                'kohde' => 'tapahtuman',
+                                'btn_class' => 'btn-danger btn-small omat-poista',
+                            ]) ?>
+                        <?php endif; ?>
+                    </div>
                 </li>
             <?php endforeach; ?>
         </ul>
@@ -375,23 +378,26 @@ pageStart('Omat tapahtumat', [
                 $luonne = function_exists('kisaLuonneLabel') ? kisaLuonneLabel($k['luonne'] ?? null) : '';
                 ?>
                 <li class="omat-kisa">
-                    <form method="post" class="omat-kisa-avaa">
-                        <?= csrfKentta() ?>
-                        <input type="hidden" name="toiminto" value="valitse_kilpailu">
-                        <input type="hidden" name="kilpailu_id" value="<?= (int) $k['id'] ?>">
-                        <button type="submit" class="omat-rivi">
-                            <strong><?= htmlspecialchars((string) $k['nimi']) ?></strong>
-                            <?php if ($pvmTxt !== ''): ?><span class="muted"><?= htmlspecialchars($pvmTxt) ?></span><?php endif; ?>
-                            <?php if ($luonne !== ''): ?><span class="muted"><?= htmlspecialchars($luonne) ?></span><?php endif; ?>
-                            <span class="muted"><?= htmlspecialchars(kilpailuTilaLabel($k['tila'] ?? '')) ?></span>
-                        </button>
-                    </form>
-                    <?php if (function_exists('voiHallitaKilpailua') && voiHallitaKilpailua($k) && function_exists('kilpailuPoistoLomakeHtml')): ?>
-                        <?= kilpailuPoistoLomakeHtml($k, [
-                            'kohde' => 'kilpailun',
-                            'btn_class' => 'btn-danger btn-small omat-poista',
-                        ]) ?>
-                    <?php endif; ?>
+                    <div class="omat-kisa-tiedot">
+                        <strong><?= htmlspecialchars((string) $k['nimi']) ?></strong>
+                        <?php if ($pvmTxt !== ''): ?><span class="muted"><?= htmlspecialchars($pvmTxt) ?></span><?php endif; ?>
+                        <?php if ($luonne !== ''): ?><span class="muted"><?= htmlspecialchars($luonne) ?></span><?php endif; ?>
+                        <span class="muted"><?= htmlspecialchars(kilpailuTilaLabel($k['tila'] ?? '')) ?></span>
+                    </div>
+                    <div class="omat-kisa-toiminnot">
+                        <form method="post">
+                            <?= csrfKentta() ?>
+                            <input type="hidden" name="toiminto" value="valitse_kilpailu">
+                            <input type="hidden" name="kilpailu_id" value="<?= (int) $k['id'] ?>">
+                            <button type="submit" class="btn-small omat-avaa">Avaa</button>
+                        </form>
+                        <?php if (function_exists('voiHallitaKilpailua') && voiHallitaKilpailua($k) && function_exists('kilpailuPoistoLomakeHtml')): ?>
+                            <?= kilpailuPoistoLomakeHtml($k, [
+                                'kohde' => 'kilpailun',
+                                'btn_class' => 'btn-danger btn-small omat-poista',
+                            ]) ?>
+                        <?php endif; ?>
+                    </div>
                 </li>
             <?php endforeach; ?>
         </ul>
