@@ -376,6 +376,12 @@ function kisaOnAmpumapaikat(array $kilpailu): bool
     return kisaNaytaValikko($kilpailu, 'ampuma');
 }
 
+/** Näytetäänkö ampumasakot tuloslistassa. */
+function kisaNaytaSakot(array $kilpailu): bool
+{
+    return kisaOnAmpumapaikat($kilpailu);
+}
+
 /** Pirilän päivämäärä (d.m.yyyy tai yyyy-mm-dd) -> yyyy-mm-dd. */
 function kisaPvmIso($pvm): ?string
 {
