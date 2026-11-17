@@ -41,7 +41,7 @@ $omat = file_get_contents(__DIR__ . '/../public/omat_tapahtumat.php');
 str_contains($omat, 'kilpailu_poisto.php') || fail('omat include');
 str_contains($omat, 'poista_kilpailu') || fail('omat toiminto');
 str_contains($omat, 'kilpailuPoistoLomakeHtml') || fail('omat lomake');
-substr_count($omat, 'kilpailuPoistoLomakeHtml') >= 2 || fail('omat molemmat listat');
+substr_count($omat, 'kilpailuPoistoLomakeHtml') >= 1 || fail('omat poisto listassa');
 str_contains($omat, '>Avaa</button>') || fail('omat avaa');
 str_contains($omat, 'omat-kisa-tiedot') || fail('omat kehys');
 str_contains($omat, '#15803d') || fail('avaa vihrea');

@@ -277,8 +277,11 @@ function adminShell($active, $pdo = null)
     echo '<div class="admin-section">';
     echo '<div class="section-label">Asetukset</div>';
     echo '<nav class="admin-nav">';
-    if (function_exists('iltarastiVoiPalvelun') ? iltarastiVoiPalvelun() : $vainIltarasti) {
-        echo '<a href="/public/omat_tapahtumat.php"' . ($active === 'iltarastit' || $active === 'omat_tapahtumat' ? ' class="active"' : '') . '>Omat tapahtumat</a>';
+    if (function_exists('jahNaytaOmatTapahtumat')
+        ? jahNaytaOmatTapahtumat($pdo instanceof PDO ? $pdo : null)
+        : (function_exists('iltarastiVoiPalvelun') ? iltarastiVoiPalvelun() : $vainIltarasti)
+    ) {
+        echo '<a href="/public/omat_tapahtumat.php"' . ($active === 'iltarastit' || $active === 'omat_tapahtumat' || $active === 'kilpailut' ? ' class="active"' : '') . '>Omat tapahtumat</a>';
     }
     if ($kilpailu && $pirila && !$vainIltarasti) {
         echo '<a href="/admin/pirila.php"' . ($active === 'pirila' ? ' class="active"' : '') . '>Pirilä-asetukset</a>';
@@ -304,9 +307,6 @@ function adminShell($active, $pdo = null)
     echo '<div class="admin-section">';
     echo '<div class="section-label">Sivusto</div>';
     echo '<nav class="admin-nav">';
-    if (!$vainIltarasti) {
-        echo '<a href="/admin/kilpailut.php"' . ($active === 'kilpailut' ? ' class="active"' : '') . '>Kilpailulista</a>';
-    }
     echo '<a class="admin-nav-ext" href="/public/ohjeet.php" target="_blank" rel="noopener">Ohjeet</a>';
     echo '<a href="/public/index.php">Julkinen etusivu</a>';
     echo '<a href="/auth/logout.php">Ulos</a>';

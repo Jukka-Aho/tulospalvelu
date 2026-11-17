@@ -29,6 +29,8 @@ str_contains($sivu, 'kisaLuoJuoksu') || fail('luo juoksu fn');
 str_contains($sivu, 'poista_kilpailu') || fail('poista');
 str_contains($sivu, 'kilpailuPoistoLomakeHtml') || fail('poisto lomake');
 str_contains($sivu, '>Avaa</button>') || fail('avaa nappi');
+str_contains($sivu, '>Asetukset</a>') || fail('asetukset nappi');
+str_contains($sivu, 'kilpailut.php?muokkaa=') || fail('asetukset muokkaa');
 str_contains($sivu, 'omat-kisa-tiedot') || fail('kisa kehys');
 str_contains($sivu, 'omat-kisa-toiminnot') || fail('napit kehyksessa');
 str_contains($sivu, '#15803d') || fail('avaa vihrea');
@@ -76,11 +78,14 @@ str_contains($luo, 'Rastilippu-liitäntä on toistaiseksi vain henkilökohtaisis
 
 $nav = file_get_contents(__DIR__ . '/../includes/admin_nav.php');
 str_contains($nav, 'Omat tapahtumat') || fail('nav');
+str_contains($nav, '>Kilpailulista<') && fail('nav ei kilpailulistaa');
 
 $asetukset = file_get_contents(__DIR__ . '/../admin/kilpailut.php');
 str_contains($asetukset, 'pirila-kehys') || fail('pirila kehys');
 str_contains($asetukset, '$naytaPirilaKehys') || fail('pirila ehdollinen');
 str_contains($asetukset, 'kilpailuParsePirilaKentat') || fail('pirila parse');
+str_contains($asetukset, "Location: /public/omat_tapahtumat.php") || fail('lista ohjaa omiin');
+str_contains($asetukset, '!isset($_GET[\'muokkaa\'])') || fail('asetukset muokkaa jää');
 
 ok('omat tapahtumat');
 echo "all tests passed\n";

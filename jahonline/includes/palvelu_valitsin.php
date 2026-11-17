@@ -52,6 +52,9 @@ function jahNaytaOmatTapahtumat(?PDO $pdo = null): bool
     if (!empty($oikeudet['iltarastit']) || !empty($oikeudet['tulokset'])) {
         return true;
     }
+    if (function_exists('tiliKayttajaPirilaPaalla') && tiliKayttajaPirilaPaalla()) {
+        return true;
+    }
 
     return function_exists('voiKisahallintaan') && voiKisahallintaan();
 }

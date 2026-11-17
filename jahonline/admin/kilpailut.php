@@ -422,7 +422,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($valittu_id === $id) {
             tyhjennaValittuKilpailu();
         }
-        header('Location: kilpailut.php');
+        header('Location: /public/omat_tapahtumat.php?viesti=' . urlencode('Kilpailu arkistoitu.'));
         exit;
     }
 
@@ -435,7 +435,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Palauta Valmis-tilaan (turvallinen oletus arkistosta)
         $stmt = $pdo->prepare("UPDATE kilpailut SET tila = 'valmis' WHERE id = ? AND tila = 'arkisto'");
         $stmt->execute([$id]);
-        header('Location: kilpailut.php');
+        header('Location: /public/omat_tapahtumat.php?viesti=' . urlencode('Kilpailu palautettu listalle.'));
         exit;
     }
 
@@ -445,10 +445,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             try {
                 kilpailuPoistaHallinnasta($pdo, $id, $_POST);
             } catch (Throwable $e) {
-                header('Location: kilpailut.php?virhe=' . urlencode($e->getMessage()));
+                header('Location: /public/omat_tapahtumat.php?virhe=' . urlencode($e->getMessage()));
                 exit;
             }
-            header('Location: kilpailut.php');
+            header('Location: /public/omat_tapahtumat.php?viesti=' . urlencode('Kilpailu poistettu.'));
             exit;
         }
         $k = haeKilpailuHallintaan($pdo, $id);
@@ -463,7 +463,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             tyhjennaValittuKilpailu();
         }
 
-        header('Location: kilpailut.php');
+        header('Location: /public/omat_tapahtumat.php?viesti=' . urlencode('Kilpailu poistettu.'));
         exit;
     }
 
@@ -477,35 +477,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt = $pdo->prepare('UPDATE kilpailut SET api_token = ? WHERE id = ?');
         $stmt->execute([$token, $_POST['id']]);
 
-        header('Location: kilpailut.php');
+        header('Location: kilpailut.php?muokkaa=' . (int) $_POST['id']);
         exit;
     }
 }
 
-$seuraValinnat = kilpailuSeuraValinnat($pdo);
+if ($_SERVER['REQUEST_METHOD'] !== 'POST' && !isset($_GET['muokkaa'])) {
+    $q = [];
+    foreach (['nimi', 'paiva', 'paikka', 'viesti', 'virhe'] as $kentta) {
+        $v = trim((string) ($_GET[$kentta] ?? ''));
+        if ($v !== '') {
+            $q[$kentta] = $v;
+        }
+    }
+    if (isset($_GET['irma'])) {
+        $q['irma'] = '1';
+    }
+    header('Location: /public/omat_tapahtumat.php' . ($q !== [] ? '?' . http_build_query($q) : ''));
+    exit;
+}
 
-$kisaAikavali = null;
-if (onAdmin() && function_exists('kilpailuParsiaikavali')) {
-    $kisaAikavali = kilpailuParsiaikavali($_GET);
-}
-$kilpailut = haeKayttajanKilpailut($pdo, 'k.paiva DESC, k.id DESC', $kisaAikavali);
-// Liitä seuran nimi listaan
+$seuraValinnat = kilpailuSeuraValinnat($pdo);
+$kilpailut = [];
 $seuraNimet = [];
-if ($kilpailut !== []) {
-    $ids = [];
-    foreach ($kilpailut as $k) {
-        $sid = (int) ($k['seura_id'] ?? 0);
-        if ($sid > 0) {
-            $ids[$sid] = $sid;
-        }
-    }
-    if ($ids !== []) {
-        $in = implode(',', array_map('intval', $ids));
-        foreach ($pdo->query("SELECT id, nimi FROM seurat WHERE id IN ($in)")->fetchAll(PDO::FETCH_ASSOC) as $s) {
-            $seuraNimet[(int) $s['id']] = (string) $s['nimi'];
-        }
-    }
-}
+$kisaAikavali = null;
 
 $muokattava = null;
 $irma_prefill = isset($_GET['irma']);
@@ -533,15 +528,11 @@ if ($muokattavaSeuraId <= 0 && !$muokattava) {
 $muokkaaTila = $muokattava && isset($muokattava['id']);
 $uusiTila = !$muokkaaTila && (isset($_GET['uusi']) || $irma_prefill);
 
-pageStart($uusiTila ? 'Uusi kilpailu' : 'Kilpailut', ['admin' => true, 'active' => 'kilpailut', 'pdo' => $pdo]);
+pageStart($uusiTila ? 'Uusi kilpailu' : 'Kilpailun asetukset', ['admin' => true, 'active' => 'omat_tapahtumat', 'pdo' => $pdo]);
 ?>
 
-<?php if ($uusiTila): ?>
-<p class="kisa-uusi-takaisin"><a href="kilpailut.php">&larr; Kilpailulista</a></p>
-<h1>Uusi kilpailu</h1>
-<?php else: ?>
-<h1>Kilpailut</h1>
-<?php endif; ?>
+<p class="kisa-uusi-takaisin"><a href="/public/omat_tapahtumat.php">&larr; Omat tapahtumat</a></p>
+<h1><?= $uusiTila ? 'Uusi kilpailu' : 'Kilpailun asetukset' ?></h1>
 
 
 <?php pirilaVirheIlmoitus(); ?>
@@ -777,18 +768,32 @@ ob_start();
 
     <div class="form-actions">
         <button type="submit"><?= $muokkaaTila ? 'Tallenna muutokset' : 'Luo kilpailu' ?></button>
-        <a class="btn-secondary" href="kilpailut.php">Peruuta</a>
+        <a class="btn-secondary" href="/public/omat_tapahtumat.php">Peruuta</a>
     </div>
 </form>
+    <?php if ($muokkaaTila): ?>
+        <?php if (($muokattava['tila'] ?? '') !== 'arkisto'): ?>
+            <form method="post" class="inline-form" style="margin-top:1rem" onsubmit="return confirm('Arkistoidaanko kilpailu? Se ei näy enää julkisilla listoilla.');">
+                <?= csrfKentta() ?>
+                <input type="hidden" name="action" value="arkistoi">
+                <input type="hidden" name="id" value="<?= (int) $muokattava['id'] ?>">
+                <button type="submit" class="btn-secondary">Arkistoi kilpailu</button>
+            </form>
+        <?php else: ?>
+            <form method="post" class="inline-form" style="margin-top:1rem">
+                <?= csrfKentta() ?>
+                <input type="hidden" name="action" value="palauta_arkisto">
+                <input type="hidden" name="id" value="<?= (int) $muokattava['id'] ?>">
+                <button type="submit">Palauta listalle</button>
+            </form>
+        <?php endif; ?>
+    <?php endif; ?>
 </section>
 <?php
 $lomakeHtml = ob_get_clean();
 
-if ($uusiTila) {
+if ($uusiTila || $muokkaaTila) {
     echo $lomakeHtml;
-} elseif ($muokkaaTila) {
-    echo $lomakeHtml;
-    echo $listaHtml;
 } else {
     echo $listaHtml;
 }

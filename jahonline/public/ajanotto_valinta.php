@@ -58,7 +58,7 @@ $voiHallintaan = function_exists('voiKisahallintaan') && voiKisahallintaan();
     <p class="tyhja">
         Ei normaalikilpailuja.
         <?php if ($voiHallintaan): ?>
-            <a href="../admin/kilpailut.php?uusi=1">Luo kilpailu hallinnassa</a>.
+            <a href="/public/omat_tapahtumat.php">Luo tapahtuma</a>.
         <?php else: ?>
             Pääkäyttäjä luo kilpailun hallinnassa.
         <?php endif; ?>

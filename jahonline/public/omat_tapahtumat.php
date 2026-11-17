@@ -322,7 +322,7 @@ pageStart('Omat tapahtumat', [
 .omat-kisa-tiedot{flex:1;min-width:0;display:flex;flex-wrap:wrap;align-items:baseline;gap:.35rem .7rem}
 .omat-kisa-toiminnot{display:flex;flex-direction:column;gap:.35rem;flex:0 0 auto;min-width:5.2rem}
 .omat-kisa-toiminnot form{margin:0}
-.omat-kisa-toiminnot .omat-avaa,.omat-kisa-toiminnot .omat-poista{width:100%;min-width:5.2rem}
+.omat-kisa-toiminnot .omat-avaa,.omat-kisa-toiminnot .omat-poista,.omat-kisa-toiminnot .omat-asetukset{width:100%;min-width:5.2rem;text-align:center;box-sizing:border-box}
 .omat-kisa-toiminnot .omat-avaa{background:#15803d;color:#fff}
 .omat-kisa-toiminnot .omat-avaa:hover{background:#166534}
 .omat-kisa-toiminnot .omat-poista{background:#dc2626;color:#fff}
@@ -391,6 +391,7 @@ pageStart('Omat tapahtumat', [
                             <input type="hidden" name="kilpailu_id" value="<?= (int) $k['id'] ?>">
                             <button type="submit" class="btn-small omat-avaa">Avaa</button>
                         </form>
+                        <a class="btn-small btn-secondary omat-asetukset" href="/admin/kilpailut.php?muokkaa=<?= (int) $k['id'] ?>">Asetukset</a>
                         <?php if (function_exists('voiHallitaKilpailua') && voiHallitaKilpailua($k) && function_exists('kilpailuPoistoLomakeHtml')): ?>
                             <?= kilpailuPoistoLomakeHtml($k, [
                                 'kohde' => $onIltarasti ? 'tapahtuman' : 'kilpailun',
@@ -409,9 +410,20 @@ pageStart('Omat tapahtumat', [
         <form method="post" class="form-grid" id="luo-tapahtuma">
             <?= csrfKentta() ?>
             <input type="hidden" name="toiminto" value="luo_tapahtuma">
-            <label>Nimi <input name="nimi" required maxlength="255" placeholder="Tapahtuman nimi"></label>
-            <label>Päivä <input type="date" name="paiva" required value="<?= htmlspecialchars(iltarastiTanaan()) ?>"></label>
-            <label>Paikka <input name="paikka" maxlength="255"></label>
+            <?php
+            $luoNimi = trim((string) ($_POST['nimi'] ?? $_GET['nimi'] ?? ''));
+            $luoPaiva = trim((string) ($_POST['paiva'] ?? $_GET['paiva'] ?? ''));
+            if ($luoPaiva === '') {
+                $luoPaiva = iltarastiTanaan();
+            }
+            $luoPaikka = trim((string) ($_POST['paikka'] ?? $_GET['paikka'] ?? ''));
+            ?>
+            <?php if (isset($_GET['irma'])): ?>
+                <p class="notice">Tiedot täytetty IRMA-kalenterista. Tarkista tyyppi ja luo tapahtuma.</p>
+            <?php endif; ?>
+            <label>Nimi <input name="nimi" required maxlength="255" placeholder="Tapahtuman nimi" value="<?= htmlspecialchars($luoNimi) ?>"></label>
+            <label>Päivä <input type="date" name="paiva" required value="<?= htmlspecialchars($luoPaiva) ?>"></label>
+            <label>Paikka <input name="paikka" maxlength="255" value="<?= htmlspecialchars($luoPaikka) ?>"></label>
             <fieldset class="omat-tyyppi">
                 <legend>Tapahtuman tyyppi</legend>
                 <?php foreach ($sallitutMallit as $arvo => $label): ?>

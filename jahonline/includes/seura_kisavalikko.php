@@ -153,7 +153,7 @@ function seuraKisavalikkoLinkit(array $kilpailu, bool $public = true): array
             ];
         }
         $out[] = [
-            'href' => '/admin/kilpailut.php?valitse=' . $id,
+            'href' => '/admin/index.php?kilpailu_id=' . $id,
             'label' => 'Hallinta',
             'hint' => 'Sarjat, kilpailijat, ajat',
         ];

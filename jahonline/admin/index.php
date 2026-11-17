@@ -729,7 +729,7 @@ if ($hasLayout) {
         <?php if ($omatKisat === []): ?>
             <p class="home-empty muted">
                 <?= $kisaAikavali ? 'Ei kilpailuja näillä suodattimilla.' : 'Ei vielä kilpailuja.' ?>
-                <a href="kilpailut.php?uusi=1">Luo kilpailu</a><?php if ($kisaAikavali && function_exists('kilpailuAikavaliKaikkiHref')): ?>
+                <a href="/public/omat_tapahtumat.php">Luo tapahtuma</a><?php if ($kisaAikavali && function_exists('kilpailuAikavaliKaikkiHref')): ?>
                     · <a href="<?= htmlspecialchars(kilpailuAikavaliKaikkiHref('index.php', $kisaAikavali)) ?>">Näytä kaikki päivät</a>
                 <?php endif; ?>
             </p>
@@ -789,7 +789,7 @@ if ($hasLayout) {
         <?php endif; ?>
 
         <p class="muted" style="margin-top:1rem">
-            <a href="kilpailut.php">Hallitse kilpailulistaa</a>
+            <a href="/public/omat_tapahtumat.php">Omat tapahtumat</a>
             <?php if ($voiGps && !empty($ominaisuudet['gps'])): ?>
                 · <a href="../gps/hallinta.php">GPS-seuranta</a>
             <?php endif; ?>
@@ -830,7 +830,7 @@ if ($hasLayout) {
             <a href="seurat.php">Seurojen hallinta</a>
             <a href="users.php">Käyttäjät</a>
         <?php endif; ?>
-        <a href="kilpailut.php">Kilpailulista</a>
+        <a href="/public/omat_tapahtumat.php">Omat tapahtumat</a>
         <a href="../auth/logout.php">Kirjaudu ulos</a>
     </div>
 </div>

@@ -233,7 +233,7 @@ $naytaEtusivuTyokalu = $rooliTyokalu
     <?php if (function_exists('onPaakayttaja') && onPaakayttaja()): ?>
         <div class="home-seura-actions" style="margin-top:0.75rem">
             <a class="home-seura-action is-primary" href="/admin/index.php">Hallinta</a>
-            <a class="home-seura-action" href="/admin/kilpailut.php">Kilpailut</a>
+            <a class="home-seura-action" href="/public/omat_tapahtumat.php">Omat tapahtumat</a>
             <a class="home-seura-action" href="/admin/users.php">Käyttäjät</a>
             <a class="home-seura-action" href="/admin/oma_seura.php">Oma seura</a>
             <?php if (function_exists('onAdmin') && onAdmin()): ?>
@@ -243,7 +243,7 @@ $naytaEtusivuTyokalu = $rooliTyokalu
     <?php elseif (function_exists('voiKisahallintaan') && voiKisahallintaan()): ?>
         <div class="home-seura-actions" style="margin-top:0.75rem">
             <a class="home-seura-action is-primary" href="/admin/index.php">Hallinta</a>
-            <a class="home-seura-action" href="/admin/kilpailut.php">Kilpailut</a>
+            <a class="home-seura-action" href="/public/omat_tapahtumat.php">Omat tapahtumat</a>
             <a class="home-seura-action" href="/admin/oma_seura.php">Oma seura</a>
         </div>
     <?php endif; ?>
