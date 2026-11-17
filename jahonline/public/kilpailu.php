@@ -324,7 +324,7 @@ tulospalveluYla($kilpailu, $linkit, 'Kilpailu', [
           if ($pirila) {
               $hubLinkit[] = [
                   'href' => kilpailuKuoriUrl((int) $kilpailu_id, 'online', ['nakyma' => 'online']),
-                  'label' => 'Online-väliajat',
+                  'label' => 'Online tulokset',
                   'primary' => false,
               ];
               $hubLinkit[] = [
@@ -344,7 +344,7 @@ tulospalveluYla($kilpailu, $linkit, 'Kilpailu', [
           if ($pirila) {
               $hubLinkit[] = [
                   'href' => kilpailuKuoriUrl((int) $kilpailu_id, 'online', ['nakyma' => 'online']),
-                  'label' => 'Online-väliajat',
+                  'label' => 'Online tulokset',
                   'primary' => false,
               ];
               $hubLinkit[] = [

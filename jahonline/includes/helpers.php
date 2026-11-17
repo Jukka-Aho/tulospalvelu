@@ -3098,80 +3098,25 @@ function viestiOsuusRivit(array $vertailu, int $osuus): array
 
 /**
  * Online-väliaikapisteiden numerot sarjalle (1..N).
- * Pirilä: online-VA = ApiVaNva / p_aika ilman rasti_koodia.
- * Emit-leimat (laskeemitvaliajat + rasti_koodi) → rastiväliajat-näkymä, ei tähän.
- *
- * Ensisijaisesti oikeat online-leimat DB:stä. valia_lkm vain jos ei Emit-RADAT-saastetta
- * (valia_lkm voi olla radan rastimäärä).
+ * Vain hallinnassa määritelty valia_lkm — ei päätellä Emit-/Pirilä-leimoista.
+ * (Pirilä voi tallentaa rastileimoja myös ilman rasti_koodia laji=online.)
  */
 function haeSarjanOnlinePisteet(PDO $pdo, int $sarja_id, int $valia_lkm = 0): array
 {
-    $onlineMax = 0;
-    $emitMax = 0;
-    try {
-        $stmt = $pdo->prepare('
-            SELECT
-                COALESCE(MAX(CASE
-                    WHEN v.rasti_koodi IS NULL OR v.rasti_koodi = \'\' THEN v.piste
-                    ELSE NULL
-                END), 0) AS online_max,
-                COALESCE(MAX(CASE
-                    WHEN v.rasti_koodi IS NOT NULL AND v.rasti_koodi <> \'\' THEN v.piste
-                    ELSE NULL
-                END), 0) AS emit_max
-            FROM valiajat v
-            INNER JOIN kilpailijat k ON k.id = v.kilpailija_id
-            WHERE k.sarja_id = ?
-              AND v.piste > 0
-              AND v.aika_sec IS NOT NULL
-        ');
-        $stmt->execute([$sarja_id]);
-        $row = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
-        $onlineMax = (int) ($row['online_max'] ?? 0);
-        $emitMax = (int) ($row['emit_max'] ?? 0);
-    } catch (Throwable $e) {
-        // Vanha skeema ilman rasti_koodia: kaikki pisteet ovat "online"
-        try {
-            $stmt = $pdo->prepare('
-                SELECT COALESCE(MAX(v.piste), 0)
-                FROM valiajat v
-                INNER JOIN kilpailijat k ON k.id = v.kilpailija_id
-                WHERE k.sarja_id = ?
-                  AND v.piste > 0
-                  AND v.aika_sec IS NOT NULL
-            ');
-            $stmt->execute([$sarja_id]);
-            $onlineMax = (int) $stmt->fetchColumn();
-        } catch (Throwable $e2) {
-            $onlineMax = 0;
-        }
-    }
-
-    if ($valia_lkm <= 0) {
+    if ($valia_lkm <= 0 && $sarja_id > 0) {
         $stmt = $pdo->prepare('SELECT COALESCE(valia_lkm, 0) FROM sarjat WHERE id = ?');
         $stmt->execute([$sarja_id]);
         $valia_lkm = (int) $stmt->fetchColumn();
     }
 
-    $n = 0;
-    if ($onlineMax > 0) {
-        // Online-leimoja on: näytä ne (+ valia_lkm jos odottaa lisää pisteitä)
-        $n = max($onlineMax, $valia_lkm);
-    } elseif ($valia_lkm > 0 && $emitMax <= 0) {
-        // Ei vielä leimoja, mutta admin/tapahtuma asetti online-pisteet (ei Emit-rataa)
-        $n = $valia_lkm;
-    }
-    // else: vain Emit-leimoja / RADAT-valia_lkm → ei online-sarakkeita
-
-    if ($n <= 0) {
+    if ($valia_lkm <= 0) {
         return [];
     }
-
-    if ($n > 60) {
-        $n = 60;
+    if ($valia_lkm > 60) {
+        $valia_lkm = 60;
     }
 
-    return range(1, $n);
+    return range(1, $valia_lkm);
 }
 
 /**
@@ -3869,15 +3814,29 @@ function haeKilpailijoidenRastiPisteet(PDO $pdo, array $kilpailijaIds): array
         return [];
     }
     $placeholders = implode(',', array_fill(0, count($ids), '?'));
-    $stmt = $pdo->prepare("
+    $sql = "
         SELECT DISTINCT piste
         FROM valiajat
         WHERE kilpailija_id IN ($placeholders)
           AND piste > 0
           AND aika_sec IS NOT NULL
+          AND rasti_koodi IS NOT NULL AND rasti_koodi <> ''
         ORDER BY piste
-    ");
-    $stmt->execute($ids);
+    ";
+    try {
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($ids);
+    } catch (Throwable $e) {
+        $stmt = $pdo->prepare("
+            SELECT DISTINCT piste
+            FROM valiajat
+            WHERE kilpailija_id IN ($placeholders)
+              AND piste > 0
+              AND aika_sec IS NOT NULL
+            ORDER BY piste
+        ");
+        $stmt->execute($ids);
+    }
 
     return array_map('intval', $stmt->fetchAll(PDO::FETCH_COLUMN));
 }
@@ -3969,16 +3928,31 @@ function haeSarjanRastiPisteet(PDO $pdo, int $sarja_id, ?array $kilpailijaIds = 
         return haeKilpailijoidenRastiPisteet($pdo, $kilpailijaIds);
     }
 
-    $stmt = $pdo->prepare('
+    $sql = '
         SELECT DISTINCT v.piste
         FROM valiajat v
         JOIN kilpailijat k ON k.id = v.kilpailija_id
         WHERE k.sarja_id = ?
           AND v.piste > 0
           AND v.aika_sec IS NOT NULL
+          AND v.rasti_koodi IS NOT NULL AND v.rasti_koodi <> \'\'
         ORDER BY v.piste
-    ');
-    $stmt->execute([$sarja_id]);
+    ';
+    try {
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([$sarja_id]);
+    } catch (Throwable $e) {
+        $stmt = $pdo->prepare('
+            SELECT DISTINCT v.piste
+            FROM valiajat v
+            JOIN kilpailijat k ON k.id = v.kilpailija_id
+            WHERE k.sarja_id = ?
+              AND v.piste > 0
+              AND v.aika_sec IS NOT NULL
+            ORDER BY v.piste
+        ');
+        $stmt->execute([$sarja_id]);
+    }
 
     return array_map('intval', $stmt->fetchAll(PDO::FETCH_COLUMN));
 }
@@ -3997,17 +3971,28 @@ function haeValiajatKartta(PDO $pdo, array $kilpailijaIds, bool $vainOnline = fa
 
     $ids = array_values(array_unique(array_map('intval', $kilpailijaIds)));
     $placeholders = implode(',', array_fill(0, count($ids), '?'));
-    $onlineEhto = $vainOnline
+    $lajiEhto = $vainOnline
         ? ' AND (rasti_koodi IS NULL OR rasti_koodi = \'\')'
-        : '';
-    $stmt = $pdo->prepare("
+        : ' AND rasti_koodi IS NOT NULL AND rasti_koodi <> \'\'';
+    $sql = "
         SELECT kilpailija_id, piste, aika_sec, sija
         FROM valiajat
         WHERE kilpailija_id IN ($placeholders)
-        $onlineEhto
+        $lajiEhto
         ORDER BY kilpailija_id, piste
-    ");
-    $stmt->execute($ids);
+    ";
+    try {
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($ids);
+    } catch (Throwable $e) {
+        $stmt = $pdo->prepare("
+            SELECT kilpailija_id, piste, aika_sec, sija
+            FROM valiajat
+            WHERE kilpailija_id IN ($placeholders)
+            ORDER BY kilpailija_id, piste
+        ");
+        $stmt->execute($ids);
+    }
 
     foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $r) {
         $kid = (int) $r['kilpailija_id'];

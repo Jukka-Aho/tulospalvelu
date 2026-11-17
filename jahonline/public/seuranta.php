@@ -828,7 +828,7 @@ if (!$fragmentOnly) {
            href="<?= htmlspecialchars($seurantaUrl('tulokset', $sarjaValittu), ENT_QUOTES, 'UTF-8') ?>">Tulokset</a>
         <?php if ($onPirila): ?>
         <a class="lb-chip<?= $nakyma === 'online' ? ' is-active' : '' ?>"
-           href="<?= htmlspecialchars($seurantaUrl('online', $sarjaValittu), ENT_QUOTES, 'UTF-8') ?>">Online</a>
+           href="<?= htmlspecialchars($seurantaUrl('online', $sarjaValittu), ENT_QUOTES, 'UTF-8') ?>">Online tulokset</a>
         <?php endif; ?>
         <a class="lb-chip<?= $nakyma === 'valiajat' ? ' is-active' : '' ?>"
            href="<?= htmlspecialchars($seurantaUrl('valiajat', $sarjaValittu), ENT_QUOTES, 'UTF-8') ?>">Rastiväliajat</a>

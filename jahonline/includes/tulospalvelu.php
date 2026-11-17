@@ -10,7 +10,7 @@ if (is_readable(__DIR__ . '/ilmo_arvonta.php')) {
 }
 
 /** Cache-bust live_board.css / style.css -päivityksille. */
-const TULOSPALVELU_ASSET_V = '20261117sakot';
+const TULOSPALVELU_ASSET_V = '20261117online';
 
 /**
  * pageStart-optiot live-board -teemalle.
@@ -67,7 +67,7 @@ function tulospalveluYla(array $kilpailu, array $linkit, string $sivuOtsikko, ar
         : ($live ? 'Online' : 'Tulokset');
 
     $seurantaHref = (string) ($linkit['seuranta'] ?? 'seuranta.php');
-    // Rastiväliajat + Online-väliajat ylävalikkoon Pirilä-/suunnistuskisoissa
+    // Rastiväliajat + Online tulokset ylävalikkoon Pirilä-/suunnistuskisoissa
     $onPirilaNav = function_exists('pirilaSynkkaPaalla')
         ? pirilaSynkkaPaalla($kilpailu)
         : ((($kilpailu['kisa_tyyppi'] ?? '') === 'pirila') || !empty($kilpailu['pirila_synkka']));
@@ -87,7 +87,7 @@ function tulospalveluYla(array $kilpailu, array $linkit, string $sivuOtsikko, ar
         $nav[] = [
             'key' => 'online',
             'href' => $onlineHref,
-            'label' => 'Online-väliajat',
+            'label' => 'Online tulokset',
         ];
         $valiaHref = kilpailuKuoriUrl($kilpailuId, 'online', ['nakyma' => 'valiajat']);
         $nav[] = [
