@@ -83,7 +83,7 @@ pageStart('Lähtökello', [
     'lukijaLogo' => true,
     'lukijaToimet' => $kelloToimet,
     'extraHead' => '<meta name="theme-color" content="#07140f">'
-        . '<link rel="stylesheet" href="/assets/css/lahtokello.css?v=20261120ajastin">'
+        . '<link rel="stylesheet" href="/assets/css/lahtokello.css?v=20261120ajastin2">'
         . '<style>'
         . 'body.lahtokello-page .site-topbar{position:fixed;top:0;left:0;right:0;width:100%;z-index:8;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;background:#07140f;padding:.35rem .5rem;padding-top:max(.35rem,env(safe-area-inset-top,0px));flex-wrap:nowrap;max-width:none}'
         . 'body.lahtokello-page .lukija-logo{position:static;grid-column:2;height:2.6rem;width:auto;max-width:none;transform:none}'
@@ -149,19 +149,28 @@ pageStart('Lähtökello', [
 
         <section class="kello-asetus" id="kello-ajastin-asetus" hidden>
             <h3>Ajastin</h3>
-            <p class="kello-ohje">Ensimmäinen lähtö 5 sekunnin kuluttua käynnistyksestä. Väleissä näkyy kulunut aika edellisestä piipistä ja aika seuraavaan.</p>
-            <div class="kello-rivi kello-vali-rivi">
-                <label>Väli min
-                    <input id="kello-vali-min" inputmode="numeric" autocomplete="off" value="6">
-                </label>
-                <label>Väli s
-                    <input id="kello-vali-sek" inputmode="numeric" autocomplete="off" value="0">
-                </label>
-                <label>Kertaa
-                    <input id="kello-kertaa" inputmode="numeric" autocomplete="off" value="6">
-                </label>
+            <p class="kello-ohje">Väleissä näkyy kulunut aika edellisestä piipistä ja aika seuraavaan. 5–0-piipit ehtivät, jos ensimmäiseen lähtöön on vähintään 5 s.</p>
+            <div class="kello-vali-rivi">
+                <span class="kello-vali-yksi">
+                    Väli
+                    <input id="kello-vali-min" inputmode="numeric" autocomplete="off" value="6" aria-label="Väli minuutteina">
+                    min
+                    <input id="kello-vali-sek" inputmode="numeric" autocomplete="off" value="0" aria-label="Väli sekunteina">
+                    s
+                </span>
             </div>
-            <p class="kello-ohje">Kertaa 0 = jatkuva.</p>
+            <div class="kello-vali-rivi">
+                <span class="kello-vali-yksi">
+                    Kertaa
+                    <input id="kello-kertaa" inputmode="numeric" autocomplete="off" value="6" aria-label="Lähtökertojen määrä">
+                </span>
+                <span class="kello-vali-yksi">
+                    Ensimmäiseen
+                    <input id="kello-alkuun-sek" inputmode="numeric" autocomplete="off" value="5" aria-label="Sekunnit käynnistyksestä ensimmäiseen lähtöön">
+                    s
+                </span>
+            </div>
+            <p class="kello-ohje">Kertaa 0 = jatkuva. Ensimmäiseen = kuinka kauan käynnistyksestä ensimmäiseen 0-piippiin.</p>
             <fieldset class="kello-naytto-valinta">
                 <legend>Kellonäyttö</legend>
                 <label class="kello-check"><input type="radio" name="kello-ajastin-naytto" value="ylos"> Ylöspäin</label>
@@ -244,6 +253,6 @@ window.JAH_KELLO = {
 };
 </script>
 <script src="../assets/js/wake_lock.js?v=20260718a"></script>
-<script src="/assets/js/lahtokello.js?v=20261120ajastin"></script>
+<script src="/assets/js/lahtokello.js?v=20261120ajastin2"></script>
 
 <?php pageEnd(); ?>

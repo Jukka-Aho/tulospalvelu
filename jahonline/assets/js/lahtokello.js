@@ -30,6 +30,7 @@
     var valiMinEl = document.getElementById('kello-vali-min');
     var valiSekEl = document.getElementById('kello-vali-sek');
     var kertaaEl = document.getElementById('kello-kertaa');
+    var alkuunEl = document.getElementById('kello-alkuun-sek');
     var kaynnistaBtn = document.getElementById('kello-ajastin-kaynnista');
     var pysaytaBtn = document.getElementById('kello-ajastin-pysayta');
     var ajastinNollaaBtn = document.getElementById('kello-ajastin-nollaa');
@@ -38,7 +39,6 @@
     }
 
     var AVAIN = 'jah-lahtokello';
-    var LEAD_MS = 5000;
     var skew = 0;
     var ero = 0;
     var rivit = [];
@@ -57,7 +57,8 @@
         alkuMs: 0,
         kulunutPaussi: 0,
         valiMs: 6 * 60 * 1000,
-        kertaa: 6
+        kertaa: 6,
+        alkuunMs: 5000
     };
 
     var esiasetukset = {
@@ -111,6 +112,9 @@
         if (kertaaEl && tallennettu.kertaa != null) {
             kertaaEl.value = String(tallennettu.kertaa);
         }
+        if (alkuunEl && tallennettu.alkuunSek != null) {
+            alkuunEl.value = String(tallennettu.alkuunSek);
+        }
         if (tallennettu.ajastinNaytto === 'ylos' || tallennettu.ajastinNaytto === 'alas' || tallennettu.ajastinNaytto === 'molemmat') {
             ajastinNayttoTila = tallennettu.ajastinNaytto;
         }
@@ -139,6 +143,7 @@
             valiMin: valiMinEl ? valiMinEl.value : '6',
             valiSek: valiSekEl ? valiSekEl.value : '0',
             kertaa: kertaaEl ? kertaaEl.value : '6',
+            alkuunSek: alkuunEl ? alkuunEl.value : '5',
             ajastinNaytto: ajastinNayttoTila
         }));
     }
@@ -303,12 +308,27 @@
         return n;
     }
 
+    function ajastinAlkuunMsAsetus() {
+        var s = alkuunEl ? parseInt(alkuunEl.value, 10) : 5;
+        if (!isFinite(s) || s < 0) {
+            s = 0;
+        }
+        if (s > 600) {
+            s = 600;
+        }
+        return s * 1000;
+    }
+
     function kayttoValiMs() {
         return (ajastin.kaynnissa || ajastin.paussi) ? ajastin.valiMs : ajastinValiMsAsetus();
     }
 
     function kayttoKertaa() {
         return (ajastin.kaynnissa || ajastin.paussi) ? ajastin.kertaa : ajastinKertaaAsetus();
+    }
+
+    function kayttoAlkuunMs() {
+        return (ajastin.kaynnissa || ajastin.paussi) ? ajastin.alkuunMs : ajastinAlkuunMsAsetus();
     }
 
     function ajastinElapsed() {
@@ -327,9 +347,10 @@
             n = 9999;
         }
         var vali = kayttoValiMs();
+        var alkuun = kayttoAlkuunMs();
         var out = [];
         for (var i = 0; i < n; i++) {
-            out.push(LEAD_MS + i * vali);
+            out.push(alkuun + i * vali);
         }
         return out;
     }
@@ -345,16 +366,27 @@
         ];
     }
 
-    function kestoTeksti(ms) {
-        ms = Math.max(0, Math.floor(ms / 1000));
-        var h = Math.floor(ms / 3600);
-        var m = Math.floor((ms % 3600) / 60);
-        var s = ms % 60;
+    function kestoOsista(sek) {
+        sek = Math.max(0, sek);
+        var h = Math.floor(sek / 3600);
+        var m = Math.floor((sek % 3600) / 60);
+        var s = sek % 60;
         function p(n) { return (n < 10 ? '0' : '') + n; }
         if (h > 0) {
             return h + ':' + p(m) + ':' + p(s);
         }
         return m + ':' + p(s);
+    }
+
+    function kestoTeksti(ms) {
+        return kestoOsista(Math.floor(Math.max(0, ms) / 1000));
+    }
+
+    function kestoTekstiJaljella(ms) {
+        if (ms <= 0) {
+            return kestoOsista(0);
+        }
+        return kestoOsista(Math.ceil(ms / 1000));
     }
 
     function luettuAjastinNaytto() {
@@ -434,7 +466,7 @@
             pysaytaBtn.hidden = !kay;
         }
         var lukitse = kay || ajastin.paussi;
-        [valiMinEl, valiSekEl, kertaaEl].forEach(function (el) {
+        [valiMinEl, valiSekEl, kertaaEl, alkuunEl].forEach(function (el) {
             if (el) {
                 el.disabled = lukitse;
             }
@@ -462,6 +494,7 @@
         } else {
             ajastin.valiMs = ajastinValiMsAsetus();
             ajastin.kertaa = ajastinKertaaAsetus();
+            ajastin.alkuunMs = ajastinAlkuunMsAsetus();
             ajastin.alkuMs = Date.now();
             ajastin.kulunutPaussi = 0;
             ajastin.kaynnissa = true;
@@ -593,6 +626,9 @@
         for (var i = 0; i < starts.length; i++) {
             for (var j = 0; j < kuvi.length; j++) {
                 var hetki = starts[i] - kuvi[j].s * 1000;
+                if (hetki < -80) {
+                    continue;
+                }
                 var viive = (hetki - elapsed) / 1000;
                 if (viive < -0.08 || viive > 1.4) {
                     continue;
@@ -634,7 +670,7 @@
             ajastinYlos.textContent = kestoTeksti(kulunut);
         }
         if (ajastinAlas) {
-            ajastinAlas.textContent = kestoTeksti(seuraavaan);
+            ajastinAlas.textContent = kestoTekstiJaljella(seuraavaan);
         }
         if (ajastinTilaEl) {
             var n = kayttoKertaa();
@@ -656,7 +692,7 @@
         }
         if (laskuri) {
             if (next !== null && (ajastin.kaynnissa || ajastin.paussi)) {
-                var jaljellaS = Math.max(0, Math.floor(seuraavaan / 1000));
+                var jaljellaS = seuraavaan <= 0 ? 0 : Math.ceil(seuraavaan / 1000);
                 if (jaljellaS <= 10) {
                     laskuri.hidden = false;
                     laskuri.textContent = String(jaljellaS);
@@ -1042,7 +1078,7 @@
             piirra();
         });
     });
-    [valiMinEl, valiSekEl, kertaaEl].forEach(function (el) {
+    [valiMinEl, valiSekEl, kertaaEl, alkuunEl].forEach(function (el) {
         if (!el) {
             return;
         }
@@ -1148,7 +1184,7 @@
                     delete ajastettu[avain];
                     return;
                 }
-                var start = LEAD_MS + idx * kayttoValiMs();
+                var start = kayttoAlkuunMs() + idx * kayttoValiMs();
                 if (start - s * 1000 < e - 5000) {
                     delete ajastettu[avain];
                 }

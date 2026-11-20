@@ -422,13 +422,39 @@ body.lahtokello-page .container {
 }
 
 .kello-vali-rivi {
+    display: flex;
     flex-direction: row;
-    flex-wrap: wrap;
-    gap: 0.6rem;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 0.7rem;
+    margin-top: 0.7rem;
 }
 
-.kello-vali-rivi label {
-    flex: 1 1 5.5rem;
+.kello-vali-yksi {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 0.4rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.kello-vali-rivi input,
+.kello-vali-yksi input {
+    width: 3.8rem;
+    min-width: 3.8rem;
+    flex: 0 0 3.8rem;
+    min-height: 2.7rem;
+    box-sizing: border-box;
+    border-radius: 10px;
+    border: 1px solid #2d6a4a;
+    background: #173628;
+    color: #f4fff8;
+    font: inherit;
+    font-size: 1.15rem;
+    text-align: center;
+    padding: 0 0.25rem;
 }
 
 .kello-naytto-valinta {
