@@ -621,14 +621,19 @@ body.lahtokello-page .container {
 }
 
 body.kello-tila-ajastin .kello {
-    padding-bottom: max(28vh, calc(env(safe-area-inset-bottom, 0px) + 5rem));
+    padding-bottom: max(10vh, calc(env(safe-area-inset-bottom, 0px) + 4.5rem));
 }
 
 .kello-ajastin-naytto {
-    gap: 0.45rem;
+    flex: 1 1 auto;
+    min-height: 0;
+    width: 100%;
+    justify-content: stretch;
+    gap: 0.3rem;
 }
 
 .kello-ajastin-tila {
+    flex: 0 0 auto;
     margin: 0;
     font-size: clamp(1.05rem, 3.2vw, 1.55rem);
     font-weight: 700;
@@ -638,21 +643,34 @@ body.kello-tila-ajastin .kello {
 
 .kello-ajastin-kellot {
     display: flex;
+    flex: 1 1 auto;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 0.55rem;
+    align-items: stretch;
+    justify-content: space-evenly;
+    gap: 0.35rem;
+    min-height: 0;
     width: 100%;
 }
 
 .kello-ajastin-yksikko {
+    position: relative;
     display: flex;
+    flex: 1 1 0;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
+    min-width: 0;
+    min-height: 0;
     width: 100%;
+    padding-top: 1.15rem;
+    container-type: size;
 }
 
 .kello-ajastin-nimi {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
     font-size: clamp(0.9rem, 2.4vw, 1.15rem);
     font-weight: 700;
     letter-spacing: 0.08em;
@@ -660,16 +678,29 @@ body.kello-tila-ajastin .kello {
     color: #b7d7c4;
 }
 
-.kello-ajastin-kellot.is-molemmat .kello-naytto {
-    font-size: min(16vw, 18vh);
+body.kello-tila-ajastin .kello-ajastin-yksikko .kello-naytto {
+    width: 100%;
+    font-size: min(34vw, 40vh);
+}
+
+body.kello-tila-ajastin .kello-ajastin-kellot.is-molemmat .kello-naytto {
+    font-size: min(30vw, 22vh);
+}
+
+@supports (font-size: 1cqh) {
+    body.kello-tila-ajastin .kello-ajastin-yksikko .kello-naytto,
+    body.kello-tila-ajastin .kello-ajastin-kellot.is-molemmat .kello-naytto {
+        font-size: min(calc(100cqw / 4.8), 82cqh);
+    }
 }
 
 .kello-ajastin-ohjaus {
     display: flex;
+    flex: 0 0 auto;
     flex-wrap: wrap;
     gap: 0.55rem;
     justify-content: center;
-    margin-top: 0.55rem;
+    margin-top: 0.35rem;
     z-index: 5;
     pointer-events: auto;
 }
@@ -699,11 +730,24 @@ body.kello-tila-ajastin .kello {
     .kello-ajastin-kellot.is-molemmat {
         flex-direction: row;
         justify-content: space-around;
-        align-items: center;
+        align-items: stretch;
         gap: 1rem;
     }
 
-    .kello-ajastin-kellot.is-molemmat .kello-naytto {
-        font-size: min(12vw, 28vh);
+    body.kello-tila-ajastin .kello-ajastin-yksikko .kello-naytto {
+        font-size: min(28vw, 52vh);
+    }
+
+    body.kello-tila-ajastin .kello-ajastin-kellot.is-molemmat .kello-naytto {
+        font-size: min(20vw, 44vh);
+    }
+}
+
+@supports (font-size: 1cqh) {
+    @media (orientation: landscape) {
+        body.kello-tila-ajastin .kello-ajastin-yksikko .kello-naytto,
+        body.kello-tila-ajastin .kello-ajastin-kellot.is-molemmat .kello-naytto {
+            font-size: min(calc(100cqw / 4.8), 82cqh);
+        }
     }
 }
