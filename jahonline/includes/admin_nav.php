@@ -31,7 +31,13 @@ function adminShell($active, $pdo = null)
 
     echo '<aside class="admin-sidebar" id="admin-sidebar" tabindex="-1" aria-label="Hallintavalikko">';
     echo '<style>.active-kilpailu-seura{margin-top:4px;font-size:13px;font-weight:500}'
-        . '.active-kilpailu-lisatieto{margin-top:2px;font-size:12px}</style>';
+        . '.active-kilpailu-lisatieto{margin-top:2px;font-size:12px}'
+        . '.badge.badge-demo,.badge-demo{display:inline-block;background:#facc15;color:#1c1003;'
+        . 'font-weight:800;font-size:.82rem;letter-spacing:.05em;padding:.12em .55em;border-radius:6px;'
+        . 'border:1px solid #ca8a04;vertical-align:middle;line-height:1.25}'
+        . '.active-kilpailu .badge-demo{font-size:.9rem;margin-left:.35rem}'
+        . 'html[data-theme="dark"] .badge.badge-demo,html[data-theme="dark"] .badge-demo'
+        . '{background:#eab308;color:#1c1003;border-color:#fde047}</style>';
     echo '<div class="admin-sidebar-inner">';
     echo '<div class="admin-sidebar-header">';
     echo '<span class="admin-sidebar-title">Hallinta</span>';
@@ -46,6 +52,11 @@ function adminShell($active, $pdo = null)
         echo '<div class="section-label">' . ($iltarasti ? 'Tämä tapahtuma' : 'Tämä kilpailu') . '</div>';
         echo '<div class="active-kilpailu">';
         echo '<strong>' . htmlspecialchars($kilpailu['nimi']) . '</strong>';
+        if (function_exists('demoKisaBadgeHtml')) {
+            echo demoKisaBadgeHtml($kilpailu);
+        } elseif (!empty($kilpailu['testikisa'])) {
+            echo '<span class="badge badge-demo">Demo</span>';
+        }
         $seuraNimiNav = '';
         if (function_exists('kilpailuSeuraNimi') && $pdo instanceof PDO) {
             $seuraNimiNav = kilpailuSeuraNimi($pdo, $kilpailu);

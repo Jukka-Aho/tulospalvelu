@@ -219,8 +219,12 @@ function kilpailuListaKortti(array $k, int $valittu_id, array $seuraNimet): void
                 <?php if (kisaLuonneLabel($k['luonne'] ?? null) !== ''): ?>
                     <span class="badge badge-muted"><?= htmlspecialchars(kisaLuonneLabel($k['luonne'])) ?></span>
                 <?php endif; ?>
-                <?php if (!empty($k['testikisa'])): ?>
-                    <span class="badge badge-demo">DEMO - Ei julkinen</span>
+                <?php if (function_exists('demoKisaBadgeHtml') && !empty($k['testikisa'])): ?>
+                    <?= demoKisaBadgeHtml($k) ?>
+                    <span class="badge badge-muted">Ei julkinen</span>
+                <?php elseif (!empty($k['testikisa'])): ?>
+                    <span class="badge badge-demo">Demo</span>
+                    <span class="badge badge-muted">Ei julkinen</span>
                 <?php endif; ?>
                 <?php if (!empty($k['jaettu_jono'])): ?>
                     <span class="badge badge-muted">Jaettu lista</span>

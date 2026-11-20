@@ -394,8 +394,12 @@ pageStart('Omat tapahtumat', [
                         <?php if ($onIltarasti): ?>
                             <span class="muted"><?= $onViesti ? 'Viesti' : 'Henkilökohtainen' ?></span>
                         <?php endif; ?>
-                        <?php if (!empty($k['testikisa'])): ?>
-                            <span class="muted">Demo — ei julkinen</span>
+                        <?php if (function_exists('demoKisaBadgeHtml') && !empty($k['testikisa'])): ?>
+                            <?= demoKisaBadgeHtml($k) ?>
+                            <span class="muted">ei julkinen</span>
+                        <?php elseif (!empty($k['testikisa'])): ?>
+                            <span class="badge badge-demo">Demo</span>
+                            <span class="muted">ei julkinen</span>
                         <?php endif; ?>
                         <span class="muted"><?= htmlspecialchars(kilpailuTilaLabel($k['tila'] ?? '')) ?></span>
                     </div>

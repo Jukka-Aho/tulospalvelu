@@ -19,7 +19,19 @@ str_contains($aset, "\$_GET['kilpailu_id']") || fail('asetukset kilpailu_id');
 $hub = file_get_contents(__DIR__ . '/../public/omat_tapahtumat.php');
 str_contains($hub, 'iltarastiAsetuksetUrl') || fail('hub avaa asetuksiin');
 str_contains($hub, 'iltarastiTulospalveluUrl') && fail('hub ei enää tulospalveluun');
-str_contains($hub, 'Demo — ei julkinen') || fail('hub demo-merkintä');
+str_contains($hub, 'demoKisaBadgeHtml') || fail('hub demo-merkintä');
+str_contains($hub, 'badge-demo') || fail('hub demo-badge');
+
+$help = file_get_contents(__DIR__ . '/../includes/helpers.php');
+str_contains($help, 'function demoKisaBadgeHtml') || fail('demoKisaBadgeHtml');
+str_contains($help, 'badge badge-demo') || fail('demo badge luokka');
+
+$nav = file_get_contents(__DIR__ . '/../includes/admin_nav.php');
+str_contains($nav, 'demoKisaBadgeHtml') || fail('hallinta valikko demo');
+str_contains($nav, '.badge.badge-demo') || fail('hallinta valikko demo-tyyli');
+
+$hallinta = file_get_contents(__DIR__ . '/../admin/index.php');
+str_contains($hallinta, 'demoKisaBadgeHtml') || fail('hallinta kisa-lista demo');
 
 $acl = file_get_contents(__DIR__ . '/../includes/acl.php');
 str_contains($acl, "empty(\$kilpailu['testikisa'])") || fail('acl testikisa ei julkinen');

@@ -297,7 +297,9 @@ if ($hasLayout) {
     <div class="public-card hallinta-kisa-kortti">
         <div class="hallinta-kisa-ylapalkki">
             <div>
-                <h2><?= htmlspecialchars($kilpailu['nimi']) ?></h2>
+                <h2><?= htmlspecialchars($kilpailu['nimi']) ?>
+                    <?php if (function_exists('demoKisaBadgeHtml')): ?><?= demoKisaBadgeHtml($kilpailu) ?><?php endif; ?>
+                </h2>
                 <p>
                     <span class="badge status-<?= htmlspecialchars((string) $kilpailu['tila']) ?>">
                         <?= htmlspecialchars(function_exists('kilpailuTilaLabel') ? kilpailuTilaLabel($kilpailu['tila']) : (string) $kilpailu['tila']) ?>
@@ -766,6 +768,11 @@ if ($hasLayout) {
                                     <span class="badge badge-muted">Pirilä-synkka</span>
                                 <?php elseif (function_exists('kisaLuonneLabel') && kisaLuonneLabel($k['luonne'] ?? null) !== ''): ?>
                                     <span class="badge badge-muted"><?= htmlspecialchars(kisaLuonneLabel($k['luonne'])) ?></span>
+                                <?php endif; ?>
+                                <?php if (function_exists('demoKisaBadgeHtml')): ?>
+                                    <?= demoKisaBadgeHtml($k) ?>
+                                <?php elseif (!empty($k['testikisa'])): ?>
+                                    <span class="badge badge-demo">Demo</span>
                                 <?php endif; ?>
                             </div>
                         </div>

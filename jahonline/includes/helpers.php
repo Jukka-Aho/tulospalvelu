@@ -2301,6 +2301,16 @@ function kilpailuTilaLabel($tila)
     return $labels[$tila] ?? $tila;
 }
 
+/** Keltainen Demo-merkki hallinnan kisa-valikkoon ja listoihin. */
+function demoKisaBadgeHtml(array $kilpailu): string
+{
+    if (empty($kilpailu['testikisa'])) {
+        return '';
+    }
+
+    return '<span class="badge badge-demo">Demo</span>';
+}
+
 /** Sallitut kilpailun tilat (näyttöjärjestys). Arkisto ei ole lomakevalinta. */
 function kilpailuTilat(): array
 {
