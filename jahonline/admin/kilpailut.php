@@ -884,8 +884,9 @@ ob_start();
             value="<?= htmlspecialchars(isset($muokattava['ilmo_iban']) && $muokattava['ilmo_iban'] ? muotoileIban((string) $muokattava['ilmo_iban']) : '') ?>"
             placeholder="FI00 0000 0000 0000 00">
 
-        <label>Maksuohje</label>
-        <textarea name="ilmo_maksuohje" rows="3" placeholder="Esim. eräpäivä tai lisätieto"><?= htmlspecialchars((string) ($muokattava['ilmo_maksuohje'] ?? '')) ?></textarea>
+        <label>Maksuohje / lisätieto</label>
+        <textarea name="ilmo_maksuohje" rows="3" placeholder="Esim. liikuntasetelit käyvät, eräpäivä …"><?= htmlspecialchars((string) ($muokattava['ilmo_maksuohje'] ?? '')) ?></textarea>
+        <p class="muted form-hint">Näkyy ilmoittautumissivulla jo lomakkeella, ennen ilmoittautumista. Voit kertoa myös muut maksutavat, kuten liikuntasetelit tai Smartum.</p>
     </div>
 
     <div class="form-actions">

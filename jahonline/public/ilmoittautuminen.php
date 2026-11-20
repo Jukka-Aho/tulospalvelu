@@ -304,6 +304,10 @@ tulospalveluYla($kilpailu, $linkit, 'Ilmoittautuminen', [
         </p>
         <?php endif; ?>
 
+        <?php if (function_exists('ilmoMaksuohjeHtml')) {
+            ilmoMaksuohjeHtml($kilpailu);
+        } ?>
+
         <div class="form-actions">
             <button type="submit">Ilmoittaudu</button>
             <a class="btn-secondary" href="<?= htmlspecialchars($linkit['kilpailu']) ?>">Peruuta</a>

@@ -151,9 +151,7 @@ function maksuOhjeHtml(array $kilpailu, float $eur, ?string $viite, string $nimi
         <?php if ($ibanNaytto === ''): ?>
             <p class="lb-muted">Tilinumeroa ei ole vielä asetettu. Käytä järjestäjän maksuohjetta.</p>
         <?php endif; ?>
-        <?php if (!empty($kilpailu['ilmo_maksuohje'])): ?>
-            <pre class="maksuohje"><?= htmlspecialchars((string) $kilpailu['ilmo_maksuohje']) ?></pre>
-        <?php endif; ?>
+        <?php ilmoMaksuohjeHtml($kilpailu, false); ?>
     </div>
     <script>
     document.querySelectorAll('[data-kopioi]').forEach(function (btn) {
@@ -168,6 +166,32 @@ function maksuOhjeHtml(array $kilpailu, float $eur, ?string $viite, string $nimi
     });
     </script>
     <?php
+}
+
+function ilmoMaksuohjeTeksti(array $kilpailu): string
+{
+    return trim((string) ($kilpailu['ilmo_maksuohje'] ?? ''));
+}
+
+/**
+ * Kisan maksuohje / lisätieto (liikuntasetelit ym.). $kehys=false kun ollaan jo lb-maksuohje-laatikossa.
+ */
+function ilmoMaksuohjeHtml(array $kilpailu, bool $kehys = true): void
+{
+    $ohje = ilmoMaksuohjeTeksti($kilpailu);
+    if ($ohje === '') {
+        return;
+    }
+    if ($kehys) {
+        echo '<div class="lb-maksuohje lb-maksuohje--lisatieto">';
+        echo '<h3>Maksuohje</h3>';
+    }
+    echo '<pre class="maksuohje" style="white-space:pre-wrap;font-family:inherit;margin:.35rem 0 0">'
+        . htmlspecialchars($ohje)
+        . '</pre>';
+    if ($kehys) {
+        echo '</div>';
+    }
 }
 
 function seuraMaksuOnKirjattu(array $rivi): bool

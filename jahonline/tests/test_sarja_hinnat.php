@@ -7,6 +7,7 @@ function fail($msg)
 }
 
 $maksu = file_get_contents(__DIR__ . '/../includes/maksu.php');
+str_contains($maksu, 'function ilmoMaksuohjeHtml') || fail('maksuohje html');
 str_contains($maksu, 'maksu_sarjoittain') || fail('kilpailut sarjahinta-sarake');
 str_contains($maksu, 'ennakko_maksu_eur') || fail('sarjat ennakko-sarake');
 str_contains($maksu, 'paikanpaa_maksu_eur') || fail('sarjat paikanpaa-sarake');
@@ -22,6 +23,8 @@ str_contains($kisa, 'name="maksu_sarjoittain"') || fail('kisa valinta');
 str_contains($kisa, 'Yksi hinta kaikille sarjoille') || fail('yksi hinta');
 str_contains($kisa, 'Sarjakohtaiset hinnat') || fail('sarjahinnat');
 str_contains($kisa, 'maksu_sarjoittain = ?') || fail('kisa tallentaa valinnan');
+str_contains($kisa, 'Maksuohje / lisätieto') || fail('kisa maksuohje otsikko');
+str_contains($kisa, 'liikuntasetelit') || fail('kisa maksuohje vihje');
 
 $sarjat = file_get_contents(__DIR__ . '/../admin/sarjat.php');
 str_contains($sarjat, 'name="ennakko_maksu_eur"') || fail('sarja ennakko');
@@ -30,6 +33,7 @@ str_contains($sarjat, 'name="paikanpaa_maksu_eur"') || fail('sarja paikanpaa');
 $ilmo = file_get_contents(__DIR__ . '/../public/ilmoittautuminen.php');
 str_contains($ilmo, 'data-hinta') || fail('ilmo data-hinta');
 str_contains($ilmo, 'id="sarja-hinta"') || fail('ilmo hinta-elementti');
+str_contains($ilmo, 'ilmoMaksuohjeHtml') || fail('ilmo näyttää maksuohjeen');
 
 $kioski = file_get_contents(__DIR__ . '/../public/paikanpaa_ilmo.php');
 str_contains($kioski, 'data-hinta') || fail('kioski data-hinta');
