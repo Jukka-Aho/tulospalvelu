@@ -454,12 +454,6 @@
         if (pysaytaBtn) {
             pysaytaBtn.hidden = !kay;
         }
-        var lukitse = kay || ajastin.paussi;
-        [valiMinEl, valiSekEl, kertaaEl, alkuunEl].forEach(function (el) {
-            if (el) {
-                el.disabled = lukitse;
-            }
-        });
     }
 
     function asetaAaniPaalle() {
@@ -1113,7 +1107,27 @@
             piirra();
         });
     });
-    [valiMinEl, valiSekEl, kertaaEl, alkuunEl].forEach(function (el) {
+    function sidoNumerokentta(el) {
+        if (!el) {
+            return;
+        }
+        el.addEventListener('pointerdown', function () {
+            try {
+                el.focus();
+            } catch (e) { /* ignore */ }
+        });
+        el.addEventListener('focus', function () {
+            if (typeof el.scrollIntoView === 'function') {
+                try {
+                    el.scrollIntoView({ block: 'center', inline: 'nearest' });
+                } catch (e2) {
+                    el.scrollIntoView(true);
+                }
+            }
+        });
+    }
+    [valiMinEl, valiSekEl, kertaaEl, alkuunEl, lyhytEl, pitkaEl].forEach(function (el) {
+        sidoNumerokentta(el);
         if (!el) {
             return;
         }
