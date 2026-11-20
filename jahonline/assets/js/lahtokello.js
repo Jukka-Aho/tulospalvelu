@@ -356,17 +356,6 @@
         return out;
     }
 
-    function ajastinKuvio() {
-        return [
-            { s: 5, pitka: false },
-            { s: 4, pitka: false },
-            { s: 3, pitka: false },
-            { s: 2, pitka: false },
-            { s: 1, pitka: false },
-            { s: 0, pitka: true }
-        ];
-    }
-
     function kestoOsista(sek) {
         sek = Math.max(0, sek);
         var h = Math.floor(sek / 3600);
@@ -432,8 +421,7 @@
         piilota('kello-ajastin-asetus', !aj);
         piilota('kello-paikka-osio', aj);
         piilota('kello-naytto-asetus', aj);
-        piilota('kello-piippu-kuviot', aj);
-        piilota('kello-ajastin-piippu-ohje', !aj);
+        piilota('kello-minuutti-osio', aj);
         piilota('kello-sarja-osio', aj);
         piilota('kello-synkka-osio', aj);
         var synkkaEl = document.getElementById('kello-synkka');
@@ -653,13 +641,14 @@
             return;
         }
         var elapsed = ajastinElapsed();
-        var kuvi = ajastinKuvio();
+        var kuvi = kuvioNyt();
         var starts = ajastinStartit();
         var lat = aaniLatenssiMs();
         for (var i = 0; i < starts.length; i++) {
+            var edellinen = i > 0 ? starts[i - 1] : -1;
             for (var j = 0; j < kuvi.length; j++) {
                 var hetki = starts[i] - kuvi[j].s * 1000;
-                if (hetki < -80) {
+                if (hetki < -80 || hetki <= edellinen) {
                     continue;
                 }
                 var delay = hetki - elapsed;
@@ -672,13 +661,18 @@
                 }
                 ajastettu[avain] = true;
                 var pitka = kuvi[j].pitka;
+                var kaksi = kuvi[j].s === 10;
                 var odotus = Math.max(0, delay - lat);
-                var soitaNyt = function (p) {
+                var soitaNyt = function (p, k) {
                     return function () {
-                        soita(p);
+                        if (k) {
+                            soitaKaksi();
+                        } else {
+                            soita(p);
+                        }
                         vilkahda();
                     };
-                }(pitka);
+                }(pitka, kaksi);
                 if (odotus <= 8) {
                     soitaNyt();
                 } else {
@@ -741,7 +735,13 @@
             laskuri.textContent = '';
         }
         if (kuvio) {
-            kuvio.textContent = 'Lyhyet 5, 4, 3, 2, 1 s. Pitkät 0 s.';
+            var k = kuvioNyt();
+            var lyh = [];
+            var pit = [];
+            for (var ki = 0; ki < k.length; ki++) {
+                (k[ki].pitka ? pit : lyh).push(String(k[ki].s));
+            }
+            kuvio.textContent = 'Lyhyet ' + (lyh.join(', ') || '–') + ' s. Pitkät ' + (pit.join(', ') || '–') + ' s.';
         }
         aikatauluta();
     }

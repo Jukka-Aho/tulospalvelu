@@ -83,7 +83,7 @@ pageStart('Lähtökello', [
     'lukijaLogo' => true,
     'lukijaToimet' => $kelloToimet,
     'extraHead' => '<meta name="theme-color" content="#07140f">'
-        . '<link rel="stylesheet" href="/assets/css/lahtokello.css?v=20261120ajastin6">'
+        . '<link rel="stylesheet" href="/assets/css/lahtokello.css?v=20261120ajastin7">'
         . '<style>'
         . 'body.lahtokello-page .site-topbar{position:fixed;top:0;left:0;right:0;width:100%;z-index:8;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;background:#07140f;padding:.35rem .5rem;padding-top:max(.35rem,env(safe-area-inset-top,0px));flex-wrap:nowrap;max-width:none}'
         . 'body.lahtokello-page .lukija-logo{position:static;grid-column:2;height:2.6rem;width:auto;max-width:none;transform:none}'
@@ -201,7 +201,6 @@ pageStart('Lähtökello', [
             <h3>Piippaukset</h3>
             <p class="kello-ohje">Sekunnit ennen lähtöhetkeä. Lyhyt piippi on sama ääni kuin pitkä, vain lyhyempi. 10 sekunnin merkki on kaksi lyhyttä piippiä.</p>
             <p id="kello-kuvio" class="kello-kuvio"></p>
-            <p id="kello-ajastin-piippu-ohje" class="kello-ohje" hidden>Ajastin käyttää piippejä 5, 4, 3, 2, 1 (lyhyt) ja 0 (pitkä).</p>
             <div id="kello-piippu-kuviot">
             <div class="kello-rivi">
                 <label>Lyhyet
@@ -217,7 +216,7 @@ pageStart('Lähtökello', [
                 <button type="button" data-esiasetus="tavallinen">Tavallinen</button>
                 <button type="button" data-esiasetus="harva">Harva</button>
                 <button type="button" data-esiasetus="tihea">Tiheä</button>
-                <label class="kello-check"><input type="checkbox" id="kello-minuutti" checked> Piippaa myös tyhjällä minuutilla</label>
+                <label class="kello-check" id="kello-minuutti-osio"><input type="checkbox" id="kello-minuutti" checked> Piippaa myös tyhjällä minuutilla</label>
             </div>
             </div>
             <label class="kello-rivi">Voimakkuus
@@ -255,6 +254,6 @@ window.JAH_KELLO = {
 };
 </script>
 <script src="../assets/js/wake_lock.js?v=20260718a"></script>
-<script src="/assets/js/lahtokello.js?v=20261120ajastin6"></script>
+<script src="/assets/js/lahtokello.js?v=20261120ajastin7"></script>
 
 <?php pageEnd(); ?>
