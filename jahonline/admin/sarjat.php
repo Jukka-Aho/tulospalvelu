@@ -8,6 +8,9 @@ require_once __DIR__ . '/../includes/pirila_mode.php';
 require_once __DIR__ . '/../includes/layout.php';
 require_once __DIR__ . '/../includes/radat.php';
 require_once __DIR__ . '/../includes/sarja_numerot.php';
+if (is_readable(__DIR__ . '/../includes/maksu.php')) {
+    require_once __DIR__ . '/../includes/maksu.php';
+}
 if (is_readable(__DIR__ . '/../includes/viesti_sarjat.php')) {
     require_once __DIR__ . '/../includes/viesti_sarjat.php';
 }
@@ -26,7 +29,11 @@ $kilpailu = vaadiValittuKilpailu($pdo);
 vaadiKilpailunHallinta($kilpailu);
 radatVarmistaTaulut($pdo);
 sarjaNumerotVarmista($pdo);
+if (function_exists('maksuVarmista')) {
+    maksuVarmista($pdo);
+}
 $kilpailu_id = (int) $kilpailu['id'];
+$maksuSarjoittain = function_exists('kisaMaksuSarjoittain') && kisaMaksuSarjoittain($kilpailu);
 $pirila = pirilaSynkkaPaalla($kilpailu);
 $onViesti = function_exists('onkoViestiKilpailu') && onkoViestiKilpailu($kilpailu);
 if (function_exists('viestiSarjatVarmista')) {
@@ -64,8 +71,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ? viestiSarjaOsuuksiaArvo($_POST['osuuksia'] ?? 3)
             : 0;
         $stmt = $pdo->prepare('
-            INSERT INTO sarjat (kilpailu_id, nimi, matka, lahto_id, nayta_ajat, valia_lkm, jarjestys, numero_valit, osuuksia)
-            VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?)
+            INSERT INTO sarjat (kilpailu_id, nimi, matka, lahto_id, nayta_ajat, valia_lkm, jarjestys, numero_valit, osuuksia, ennakko_maksu_eur, paikanpaa_maksu_eur)
+            VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?)
         ');
         $stmt->execute([
             $kilpailu_id,
@@ -76,6 +83,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             max(0, (int) ($_POST['jarjestys'] ?? 0)),
             $valit !== '' ? $valit : null,
             $osuuksia,
+            function_exists('lomakeMaksuEur') ? lomakeMaksuEur($_POST['ennakko_maksu_eur'] ?? '') : null,
+            function_exists('lomakeMaksuEur') ? lomakeMaksuEur($_POST['paikanpaa_maksu_eur'] ?? '') : null,
         ]);
         if ($onViesti && function_exists('viestiSarjatPaivitaKisaOsuudet')) {
             viestiSarjatPaivitaKisaOsuudet($pdo, $kilpailu_id);
@@ -91,7 +100,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ? viestiSarjaOsuuksiaArvo($_POST['osuuksia'] ?? 3)
             : 0;
         $stmt = $pdo->prepare('
-            UPDATE sarjat SET nimi = ?, matka = ?, lahto_id = ?, nayta_ajat = ?, jarjestys = ?, numero_valit = ?, osuuksia = ?
+            UPDATE sarjat SET nimi = ?, matka = ?, lahto_id = ?, nayta_ajat = ?, jarjestys = ?, numero_valit = ?, osuuksia = ?,
+                ennakko_maksu_eur = ?, paikanpaa_maksu_eur = ?
             WHERE id = ? AND kilpailu_id = ?
         ');
         $stmt->execute([
@@ -100,6 +110,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             max(0, (int) ($_POST['jarjestys'] ?? 0)),
             $valit !== '' ? $valit : null,
             $osuuksia,
+            function_exists('lomakeMaksuEur') ? lomakeMaksuEur($_POST['ennakko_maksu_eur'] ?? '') : null,
+            function_exists('lomakeMaksuEur') ? lomakeMaksuEur($_POST['paikanpaa_maksu_eur'] ?? '') : null,
             $_POST['id'], $kilpailu_id,
         ]);
         if ($onViesti && function_exists('viestiSarjatPaivitaKisaOsuudet')) {
@@ -176,7 +188,13 @@ pageStart($pirila ? 'Sarjat (Pirila)' : 'Sarjat', ['admin' => true, 'active' => 
 <?php if ($pirila): ?>
     <p class="muted">Sarjat tulevat Pirilästä. Muokkaa nimiä, matkoja ja lähtöjä HkKisaWinissä tai ViestiWinissä; synkka päivittää ne tänne. Online-va on netin väliaikasarakkeiden määrä.</p>
 <?php else: ?>
-    <p class="muted">Määritä sarjat tässä. Radan voi valita sivulla <a href="radat.php">Radat</a>. Numerovälit koskevat paikan päällä annettavia kilpailunumeroita.</p>
+    <p class="muted">Määritä sarjat tässä. Radan voi valita sivulla <a href="radat.php">Radat</a>. Numerovälit koskevat paikan päällä annettavia kilpailunumeroita.
+        <?php if ($maksuSarjoittain): ?>
+            Kisa käyttää <strong>sarjakohtaisia hintoja</strong> (ennakko ja paikan päällä).
+        <?php else: ?>
+            Kisan asetuksissa on nyt yksi hinta kaikille; sarjan hinnat tulevat voimaan, kun valitset sarjakohtaiset hinnat.
+        <?php endif; ?>
+    </p>
     <h2><?= $muokattava ? 'Muokkaa sarjaa' : 'Lisää sarja' ?></h2>
     <form method="post">
         <div class="form-grid">
@@ -216,6 +234,18 @@ pageStart($pirila ? 'Sarjat (Pirila)' : 'Sarjat', ['admin' => true, 'active' => 
                value="<?= htmlspecialchars(sarjaNumeroValitTeksti((string) ($muokattava['numero_valit'] ?? ''))) ?>">
         <p class="muted" style="grid-column:2;margin-top:-0.5rem">Sarjan numerot, jotka ovat käytössä. Aukot ovat sallittuja (osa numeroista voi puuttua). Seuraava annettu numero on ensimmäinen vapaa näissä väleissä. Numero on yksilöllinen koko kisassa.</p>
 
+        <label>Ennakko (€)</label>
+        <input type="number" name="ennakko_maksu_eur" step="0.01" min="0"
+               placeholder="tyhjä = maksuton"
+               value="<?= htmlspecialchars(function_exists('lomakeMaksuEurArvo') ? lomakeMaksuEurArvo($muokattava['ennakko_maksu_eur'] ?? null) : '') ?>">
+        <p class="muted form-hint" style="grid-column:2;margin-top:-0.5rem">Verkkoilmoittautumisen hinta tälle sarjalle, kun kisan asetuksissa on sarjakohtaiset hinnat.</p>
+
+        <label>Paikan päällä (€)</label>
+        <input type="number" name="paikanpaa_maksu_eur" step="0.01" min="0"
+               placeholder="tyhjä = maksuton"
+               value="<?= htmlspecialchars(function_exists('lomakeMaksuEurArvo') ? lomakeMaksuEurArvo($muokattava['paikanpaa_maksu_eur'] ?? null) : '') ?>">
+        <p class="muted form-hint" style="grid-column:2;margin-top:-0.5rem">Kioski-ilmoittautumisen hinta tälle sarjalle.</p>
+
         <label class="checkbox-label">
             <input type="checkbox" name="nayta_ajat" <?= (($muokattava['nayta_ajat'] ?? 1) ? 'checked' : '') ?>>
             Näytä ajat tuloksissa
@@ -254,6 +284,7 @@ pageStart($pirila ? 'Sarjat (Pirila)' : 'Sarjat', ['admin' => true, 'active' => 
                         <th title="Sarjojen järjestys ilmoittautuneissa, lähtölistassa ja tuloksissa">Järj.</th>
                         <th>Ajat</th>
                         <?php if (!$pirila): ?><th>Numerovälit</th><?php endif; ?>
+                        <?php if (!$pirila): ?><th>Ennakko</th><th>Paikan päällä</th><?php endif; ?>
                         <?php if ($pirila): ?><th>Online-va</th><?php endif; ?>
                         <?php if (!$pirila): ?><th class="col-toiminnot">Toiminnot</th><?php endif; ?>
                     </tr>
@@ -289,6 +320,8 @@ pageStart($pirila ? 'Sarjat (Pirila)' : 'Sarjat', ['admin' => true, 'active' => 
                             <td><?= !empty($sarja['nayta_ajat']) ? 'Kyllä' : 'Ei' ?></td>
                             <?php if (!$pirila): ?>
                             <td><?= htmlspecialchars(sarjaNumeroValitTeksti((string) ($sarja['numero_valit'] ?? '')) ?: '—') ?></td>
+                            <td><?= htmlspecialchars(function_exists('formatEuro') ? (formatEuro(ilmoMaksuEurKentasta($sarja['ennakko_maksu_eur'] ?? null)) ?: '—') : '—') ?></td>
+                            <td><?= htmlspecialchars(function_exists('formatEuro') ? (formatEuro(ilmoMaksuEurKentasta($sarja['paikanpaa_maksu_eur'] ?? null)) ?: '—') : '—') ?></td>
                             <?php endif; ?>
                             <?php if ($pirila): ?>
                             <td>

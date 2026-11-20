@@ -28,6 +28,8 @@ if (is_readable(__DIR__ . '/../includes/kisa_osoite.php')) {
 }
 require_once __DIR__ . '/../includes/maksu.php';
 maksuVarmista($pdo);
+require_once __DIR__ . '/../includes/sarja_numerot.php';
+sarjaNumerotVarmista($pdo);
 tiliVaadiTulospalvelu($pdo);
 kilpailuVarmistaTilaEnum($pdo);
 kilpailuSynkkaaTilaIlmosta($pdo);
@@ -94,11 +96,12 @@ function kilpailuParsiseuraId(PDO $pdo, ?array $olemassa = null): ?int
 /**
  * Ilmoittautumisasetukset lomakkeesta (juoksukisa ja Pirilä-kisa).
  *
- * @return array{auki:int,alkaa:?string,paattyy:?string,maksu:?float,ohje:?string}
+ * @return array{auki:int,paikanpaa:int,alkaa:?string,paattyy:?string,maksu:?float,paikanpaa_maksu:?float,sarjoittain:int,ohje:?string}
  */
 function kilpailuParseIlmoAsetukset(string $kisaTyyppi): array
 {
     $auki = !empty($_POST['ilmoittautuminen_auki']) ? 1 : 0;
+    $paikanpaa = !empty($_POST['paikanpaa_ilmo']) ? 1 : 0;
 
     $parseDt = static function (string $raw): ?string {
         $raw = trim(str_replace('T', ' ', $raw));
@@ -119,6 +122,12 @@ function kilpailuParseIlmoAsetukset(string $kisaTyyppi): array
         $maksu = null;
     }
 
+    $ppMaksuRaw = trim((string) ($_POST['paikanpaa_maksu_eur'] ?? ''));
+    $ppMaksu = $ppMaksuRaw === '' ? null : (float) str_replace(',', '.', $ppMaksuRaw);
+    if ($ppMaksu !== null && $ppMaksu <= 0) {
+        $ppMaksu = null;
+    }
+
     $ohje = trim((string) ($_POST['ilmo_maksuohje'] ?? ''));
     $saaja = trim((string) ($_POST['ilmo_saaja'] ?? ''));
     $ibanRaaka = trim((string) ($_POST['ilmo_iban'] ?? ''));
@@ -126,9 +135,12 @@ function kilpailuParseIlmoAsetukset(string $kisaTyyppi): array
 
     return [
         'auki' => $auki,
+        'paikanpaa' => $paikanpaa,
         'alkaa' => $parseDt((string) ($_POST['ilmo_alkaa'] ?? '')),
         'paattyy' => $parseDt((string) ($_POST['ilmo_paattyy'] ?? '')),
         'maksu' => $maksu,
+        'paikanpaa_maksu' => $ppMaksu,
+        'sarjoittain' => ((string) ($_POST['maksu_sarjoittain'] ?? '0') === '1') ? 1 : 0,
         'ohje' => $ohje !== '' ? $ohje : null,
         'saaja' => $saaja !== '' ? mb_substr($saaja, 0, 140) : null,
         'iban' => $iban,
@@ -219,12 +231,8 @@ function kilpailuListaKortti(array $k, int $valittu_id, array $seuraNimet): void
                 <?php if (kisaLuonneLabel($k['luonne'] ?? null) !== ''): ?>
                     <span class="badge badge-muted"><?= htmlspecialchars(kisaLuonneLabel($k['luonne'])) ?></span>
                 <?php endif; ?>
-                <?php if (function_exists('demoKisaBadgeHtml') && !empty($k['testikisa'])): ?>
-                    <?= demoKisaBadgeHtml($k) ?>
-                    <span class="badge badge-muted">Ei julkinen</span>
-                <?php elseif (!empty($k['testikisa'])): ?>
-                    <span class="badge badge-demo">Demo</span>
-                    <span class="badge badge-muted">Ei julkinen</span>
+                <?php if (!empty($k['testikisa'])): ?>
+                    <span class="badge badge-demo">DEMO - Ei julkinen</span>
                 <?php endif; ?>
                 <?php if (!empty($k['jaettu_jono'])): ?>
                     <span class="badge badge-muted">Jaettu lista</span>
@@ -318,9 +326,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt = $pdo->prepare('
             INSERT INTO kilpailut
                 (nimi, paiva, paikka, tila, kisa_tyyppi, api_token, pirila_synkka, paakayttaja_id, seura_id,
-                 ilmoittautuminen_auki, ilmo_alkaa, ilmo_paattyy, ilmo_maksu_eur, ilmo_maksuohje,
+                 ilmoittautuminen_auki, paikanpaa_ilmo, ilmo_alkaa, ilmo_paattyy, ilmo_maksu_eur, paikanpaa_maksu_eur, maksu_sarjoittain, ilmo_maksuohje,
                  ilmo_saaja, ilmo_iban, testikisa, jaettu_jono, luonne, ampumapaikat)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ');
         $stmt->execute([
             $_POST['nimi'],
@@ -333,9 +341,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $ownerId > 0 ? $ownerId : null,
             $seuraId,
             $ilmo['auki'],
+            $ilmo['paikanpaa'],
             $ilmo['alkaa'],
             $ilmo['paattyy'],
             $ilmo['maksu'],
+            $ilmo['paikanpaa_maksu'],
+            $ilmo['sarjoittain'],
             $ilmo['ohje'],
             $ilmo['saaja'],
             $ilmo['iban'],
@@ -352,6 +363,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         asetaValittuKilpailu($uusiId);
         if (function_exists('kisaOsoiteTallenna')) {
             kisaOsoiteTallenna($pdo, $uusiId, (string) ($_POST['osoite'] ?? ''), null);
+        }
+        if (!empty($ilmo['paikanpaa']) && function_exists('paikanpaaVarmistaToken')) {
+            $pp = ['id' => $uusiId];
+            paikanpaaVarmistaToken($pdo, $pp);
         }
         $virhe = !empty($ilmo['iban_virhe']) ? '&virhe=' . urlencode('Tilinumero ei ole kelvollinen IBAN.') : '';
         header('Location: kilpailut.php?muokkaa=' . $uusiId . $virhe);
@@ -382,9 +397,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 pirila_synkka = ?,
                 seura_id = ?,
                 ilmoittautuminen_auki = ?,
+                paikanpaa_ilmo = ?,
                 ilmo_alkaa = ?,
                 ilmo_paattyy = ?,
                 ilmo_maksu_eur = ?,
+                paikanpaa_maksu_eur = ?,
+                maksu_sarjoittain = ?,
                 ilmo_maksuohje = ?,
                 ilmo_saaja = ?,
                 ilmo_iban = ?,
@@ -403,9 +421,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $pirilaKentat['pirila_synkka'],
             $seuraId,
             $ilmo['auki'],
+            $ilmo['paikanpaa'],
             $ilmo['alkaa'],
             $ilmo['paattyy'],
             $ilmo['maksu'],
+            $ilmo['paikanpaa_maksu'],
+            $ilmo['sarjoittain'],
             $ilmo['ohje'],
             $ilmo['saaja'],
             $ilmo['iban'],
@@ -420,6 +441,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             kisaOsoiteTallenna($pdo, $id, (string) ($_POST['osoite'] ?? ''), $olemassa);
         }
 
+        if (!empty($ilmo['paikanpaa']) && function_exists('paikanpaaVarmistaToken')) {
+            $pp = ['id' => $id];
+            paikanpaaVarmistaToken($pdo, $pp);
+        }
         $virhe = !empty($ilmo['iban_virhe']) ? '&virhe=' . urlencode('Tilinumero ei ole kelvollinen IBAN.') : '';
         header('Location: kilpailut.php?muokkaa=' . $id . $virhe);
         exit;
@@ -515,6 +540,23 @@ $seuraValinnat = kilpailuSeuraValinnat($pdo);
 $kilpailut = [];
 $seuraNimet = [];
 $kisaAikavali = null;
+// Liitä seuran nimi listaan
+$seuraNimet = [];
+if ($kilpailut !== []) {
+    $ids = [];
+    foreach ($kilpailut as $k) {
+        $sid = (int) ($k['seura_id'] ?? 0);
+        if ($sid > 0) {
+            $ids[$sid] = $sid;
+        }
+    }
+    if ($ids !== []) {
+        $in = implode(',', array_map('intval', $ids));
+        foreach ($pdo->query("SELECT id, nimi FROM seurat WHERE id IN ($in)")->fetchAll(PDO::FETCH_ASSOC) as $s) {
+            $seuraNimet[(int) $s['id']] = (string) $s['nimi'];
+        }
+    }
+}
 
 $muokattava = null;
 $irma_prefill = isset($_GET['irma']);
@@ -542,7 +584,22 @@ if ($muokattavaSeuraId <= 0 && !$muokattava) {
 $muokkaaTila = $muokattava && isset($muokattava['id']);
 $uusiTila = !$muokkaaTila && (isset($_GET['uusi']) || $irma_prefill);
 
-pageStart($uusiTila ? 'Uusi kilpailu' : 'Kilpailun asetukset', ['admin' => true, 'active' => 'omat_tapahtumat', 'pdo' => $pdo]);
+pageStart($uusiTila ? 'Uusi kilpailu' : 'Kilpailun asetukset', [
+    'admin' => true,
+    'active' => 'omat_tapahtumat',
+    'pdo' => $pdo,
+    'extraHead' => '<script>
+document.addEventListener("DOMContentLoaded",function(){
+  function paivita(){
+    var c=document.querySelector("input[name=maksu_sarjoittain]:checked");
+    var b=document.getElementById("yksi-hinta-kentat");
+    if(b) b.hidden=!!(c&&c.value==="1");
+  }
+  document.querySelectorAll("input[name=maksu_sarjoittain]").forEach(function(el){el.addEventListener("change",paivita)});
+  paivita();
+});
+</script>',
+]);
 ?>
 
 <p class="kisa-uusi-takaisin"><a href="/public/omat_tapahtumat.php">&larr; Omat tapahtumat</a></p>
@@ -623,7 +680,7 @@ ob_start();
     <p class="error"><?= htmlspecialchars((string) $_GET['virhe']) ?></p>
 <?php endif; ?>
 
-<form method="post" class="form-grid">
+<form method="post" class="form-grid kisa-asetukset-form">
     <?= csrfKentta() ?>
     <input type="hidden" name="action" value="<?= $muokkaaTila ? 'update' : 'create' ?>">
     <?php if ($muokkaaTila): ?>
@@ -695,18 +752,22 @@ ob_start();
     <fieldset class="pirila-kehys" style="border:1px solid var(--border,#c5d0c8);border-radius:10px;padding:.85rem 1rem;margin:1rem 0">
         <legend style="font-weight:600">Pirilä</legend>
         <p class="muted form-hint" style="margin-top:0">HkKisaWin / ViestiWin -synkka. Sarjat, radat, kilpailijat ja ajat tulevat Pirilästä. Etusivulla tyyppi on Suunnistus.</p>
-        <label class="checkbox-label" style="display:flex;gap:8px;align-items:center;font-weight:500">
-            <input type="checkbox" name="pirila_synkka" value="1" id="pirila_synkka"
-                <?= (function_exists('pirilaSynkkaPaalla') ? pirilaSynkkaPaalla($muokattava) : !empty($muokattava['pirila_synkka'])) ? 'checked' : '' ?>>
-            Pirilä-synkka
-        </label>
-        <p class="muted form-hint">Kun pois, kisa tehdään tässä sovelluksessa ja luonne valitsee valikot.</p>
-        <label class="checkbox-label" style="display:flex;gap:8px;align-items:center;font-weight:500">
-            <input type="checkbox" name="jaettu_jono" value="1"
-                <?= !empty($muokattava['jaettu_jono']) ? 'checked' : '' ?>>
-            Jaettu ajanottolista Pirilän kanssa
-        </label>
-        <p class="muted form-hint">Pirilä-kisassa avautuu Numerot-sivu: ajat tulevat Pirilästä, numerot selaimesta.</p>
+        <div class="kisa-valinta">
+            <label class="checkbox-label">
+                <input type="checkbox" name="pirila_synkka" value="1" id="pirila_synkka"
+                    <?= (function_exists('pirilaSynkkaPaalla') ? pirilaSynkkaPaalla($muokattava) : !empty($muokattava['pirila_synkka'])) ? 'checked' : '' ?>>
+                Pirilä-synkka
+            </label>
+            <p class="muted form-hint">Kun pois, kisa tehdään tässä sovelluksessa ja luonne valitsee valikot.</p>
+        </div>
+        <div class="kisa-valinta">
+            <label class="checkbox-label">
+                <input type="checkbox" name="jaettu_jono" value="1"
+                    <?= !empty($muokattava['jaettu_jono']) ? 'checked' : '' ?>>
+                Jaettu ajanottolista Pirilän kanssa
+            </label>
+            <p class="muted form-hint">Pirilä-kisassa avautuu Numerot-sivu: ajat tulevat Pirilästä, numerot selaimesta.</p>
+        </div>
     </fieldset>
     <?php endif; ?>
 
@@ -727,37 +788,83 @@ ob_start();
     </select>
     <p class="muted form-hint">Luonne valitsee näkyvät valikot: suunnistuksessa ratatiedot ja Emit-sivut, juoksussa ja hiihdossa ajanotto. Pirilä asettaa luonteen kilpailulajista, jos synkka on päällä.</p>
 
-    <label class="checkbox-label" style="display:flex;gap:8px;align-items:center;font-weight:500">
-        <input type="checkbox" name="ampumapaikat" value="1"
-            <?= !empty($muokattava['ampumapaikat']) ? 'checked' : '' ?>>
-        Ampumapaikat
-    </label>
-    <p class="muted form-hint">Kun päällä, valikoissa näkyy Ampumapaikka. Näkyy käyttäjille, joilla on käyttöoikeus <strong>ampumapaikat</strong>.</p>
+    <div class="kisa-valinta">
+        <label class="checkbox-label">
+            <input type="checkbox" name="ampumapaikat" value="1"
+                <?= !empty($muokattava['ampumapaikat']) ? 'checked' : '' ?>>
+            Ampumapaikat
+        </label>
+        <p class="muted form-hint">Kun päällä, valikoissa näkyy Ampumapaikka. Näkyy käyttäjille, joilla on käyttöoikeus <strong>ampumapaikat</strong>.</p>
+    </div>
 
-    <label class="checkbox-label" style="display:flex;gap:8px;align-items:center;font-weight:500">
-        <input type="checkbox" name="testikisa" value="1"
-            <?= !empty($muokattava['testikisa']) ? 'checked' : '' ?>>
-        Testikisa / demokisa
-    </label>
-    <p class="muted form-hint">Kaikki toimii normaalisti, mutta kisa ei nouse etusivun julkiseen listaan. Se näkyy sinulle, ja kisassa lukee että kyseessä on demokisa.</p>
+    <div class="kisa-valinta">
+        <label class="checkbox-label">
+            <input type="checkbox" name="testikisa" value="1"
+                <?= !empty($muokattava['testikisa']) ? 'checked' : '' ?>>
+            Testikisa / demokisa
+        </label>
+        <p class="muted form-hint">Kaikki toimii normaalisti, mutta kisa ei nouse etusivun julkiseen listaan. Se näkyy sinulle, ja kisassa lukee että kyseessä on demokisa.</p>
+    </div>
 
     <?php if (!$naytaPirilaKehys): ?>
-    <label class="checkbox-label" style="display:flex;gap:8px;align-items:center;font-weight:500">
-        <input type="checkbox" name="jaettu_jono" value="1"
-            <?= !empty($muokattava['jaettu_jono']) ? 'checked' : '' ?>>
-        Jaettu ajanottolista Pirilän kanssa
-    </label>
-    <p class="muted form-hint">Juoksun numeroiden syöttö ja Pirilän maaliajat menevät samaan listaan. Juoksukisa toimii yhä myös ilman Pirilää.</p>
+    <div class="kisa-valinta">
+        <label class="checkbox-label">
+            <input type="checkbox" name="jaettu_jono" value="1"
+                <?= !empty($muokattava['jaettu_jono']) ? 'checked' : '' ?>>
+            Jaettu ajanottolista Pirilän kanssa
+        </label>
+        <p class="muted form-hint">Juoksun numeroiden syöttö ja Pirilän maaliajat menevät samaan listaan. Juoksukisa toimii yhä myös ilman Pirilää.</p>
+    </div>
     <?php endif; ?>
 
     <div id="ilmo-asetukset" class="ilmo-asetukset">
-        <label>Ilmoittautuminen</label>
-        <label class="checkbox-label" style="display:flex;gap:8px;align-items:center;font-weight:500">
-            <input type="checkbox" name="ilmoittautuminen_auki" value="1"
-                <?= !empty($muokattava['ilmoittautuminen_auki']) ? 'checked' : '' ?>>
-            Ilmoittautumissivu käytössä
-        </label>
-        <p class="muted form-hint">Kun päällä, valikoissa näkyvät Ilmoittautuminen ja Ilmoittautuneet. Pirilä-kisassa ilmoittautuja saa automaattisesti numeron (1–9979); tiedot siirtyvät Pirilään taustasynkassa tai painikkeella Hae kilpailijat nyt, kun kisa on yhdistetty API:n kautta. Sarjojen nimien pitää täsmätä Pirilän sarjoihin.</p>
+        <div class="kisa-valinta">
+            <label class="checkbox-label">
+                <input type="checkbox" name="ilmoittautuminen_auki" value="1"
+                    <?= !empty($muokattava['ilmoittautuminen_auki']) ? 'checked' : '' ?>>
+                Ilmoittautumissivu käytössä
+            </label>
+            <p class="muted form-hint">Kun päällä, kisa nousee etusivun ilmoittautumisiin ja valikoissa näkyvät Ilmoittautuminen ja Ilmoittautuneet. Verkkoilmoittautuminen ei jaa kilpailunumeroita juoksukisassa. Pirilä-kisassa ilmoittautuja saa automaattisesti numeron (1–9979); tiedot siirtyvät Pirilään taustasynkassa tai painikkeella Hae kilpailijat nyt, kun kisa on yhdistetty API:n kautta. Sarjojen nimien pitää täsmätä Pirilän sarjoihin.</p>
+        </div>
+
+        <div class="kisa-valinta">
+            <label class="checkbox-label">
+                <input type="checkbox" name="paikanpaa_ilmo" value="1"
+                    <?= !empty($muokattava['paikanpaa_ilmo']) ? 'checked' : '' ?>>
+                Paikan päällä ilmoittautuminen (tabletti)
+            </label>
+            <p class="muted form-hint">Avaa kioskinäytön, joka jää auki kävelijöille. Numeroa ei anneta kioskissa. Toimihenkilö näkee listan ja antaa numeron. Julkinen osoite on arvattamaton; tulosta QR hallinnasta.</p>
+            <?php if (!empty($muokattava['id'])): ?>
+                <p><a href="kioski_qr.php?kilpailu_id=<?= (int) $muokattava['id'] ?>">Tulosta kioskin QR</a></p>
+            <?php endif; ?>
+        </div>
+
+        <label>Hinnat</label>
+        <div class="kisa-valinta">
+            <label class="checkbox-label">
+                <input type="radio" name="maksu_sarjoittain" value="0"
+                    <?= empty($muokattava['maksu_sarjoittain']) ? 'checked' : '' ?>>
+                Yksi hinta kaikille sarjoille
+            </label>
+            <label class="checkbox-label">
+                <input type="radio" name="maksu_sarjoittain" value="1"
+                    <?= !empty($muokattava['maksu_sarjoittain']) ? 'checked' : '' ?>>
+                Sarjakohtaiset hinnat
+            </label>
+            <p class="muted form-hint">Sarjakohtaiset: aseta ennakko- ja paikan päällä -hinnat kullekin sarjalle sivulla <a href="sarjat.php">Sarjat</a>. Ilmoittautuja näkee hinnan, kun valitsee sarjan.</p>
+        </div>
+
+        <div id="yksi-hinta-kentat">
+        <label>Paikan päällä maksu (€, tyhjä = maksuton)</label>
+        <input type="number" name="paikanpaa_maksu_eur" step="0.01" min="0"
+            value="<?= htmlspecialchars(isset($muokattava['paikanpaa_maksu_eur']) && $muokattava['paikanpaa_maksu_eur'] !== null && $muokattava['paikanpaa_maksu_eur'] !== '' ? (string) $muokattava['paikanpaa_maksu_eur'] : '') ?>">
+        <p class="muted form-hint">Kävelijän hinta kioskissa. Erillinen verkkoilmoittautumisen maksusta. Toimihenkilö näkee summan numeroa antaessa.</p>
+
+        <label>Verkkoilmoittautumisen maksu (€, tyhjä = maksuton)</label>
+        <input type="number" name="ilmo_maksu_eur" step="0.01" min="0"
+            value="<?= htmlspecialchars(isset($muokattava['ilmo_maksu_eur']) && $muokattava['ilmo_maksu_eur'] !== null && $muokattava['ilmo_maksu_eur'] !== '' ? (string) $muokattava['ilmo_maksu_eur'] : '') ?>">
+        <p class="muted form-hint">Vain verkkolomakkeelle. Kun summa on annettu, ilmoittautuja saa tilisiirron viitenumeron.</p>
+        </div>
 
         <label>Ilmoittautuminen alkaa</label>
         <input type="datetime-local" name="ilmo_alkaa"
@@ -766,11 +873,6 @@ ob_start();
         <label>Ilmoittautuminen päättyy</label>
         <input type="datetime-local" name="ilmo_paattyy"
             value="<?= htmlspecialchars(kilpailuIlmoDatetimeLocal($muokattava['ilmo_paattyy'] ?? null)) ?>">
-
-        <label>Maksu (€, tyhjä = maksuton)</label>
-        <input type="number" name="ilmo_maksu_eur" step="0.01" min="0"
-            value="<?= htmlspecialchars(isset($muokattava['ilmo_maksu_eur']) && $muokattava['ilmo_maksu_eur'] !== null && $muokattava['ilmo_maksu_eur'] !== '' ? (string) $muokattava['ilmo_maksu_eur'] : '') ?>">
-        <p class="muted form-hint">Kun summa on annettu, ilmoittautuja saa tilisiirron viitenumeron. Järjestäjä merkitsee maksun saapuneeksi kilpailijalistassa.</p>
 
         <label>Saaja</label>
         <input type="text" name="ilmo_saaja" maxlength="140"

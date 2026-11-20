@@ -1028,6 +1028,53 @@ function paikanpaaMaksuEur(array $kilpailu): ?float
     return ilmoMaksuEurKentasta($kilpailu['paikanpaa_maksu_eur'] ?? null);
 }
 
+/** Käytetäänkö sarjakohtaisia ennakko- ja paikanpäällähintoja. */
+function kisaMaksuSarjoittain(array $kilpailu): bool
+{
+    return !empty($kilpailu['maksu_sarjoittain']);
+}
+
+/** Verkkoilmoittautumisen hinta: kisan yksi hinta tai valitun sarjan ennakko. */
+function ilmoMaksuEurIlmoittautuvalle(array $kilpailu, ?array $sarja = null): ?float
+{
+    if (kisaMaksuSarjoittain($kilpailu)) {
+        return $sarja === null ? null : ilmoMaksuEurKentasta($sarja['ennakko_maksu_eur'] ?? null);
+    }
+
+    return ilmoMaksuEur($kilpailu);
+}
+
+/** Paikan päällä -hinta: kisan yksi hinta tai valitun sarjan paikanpäällähinta. */
+function paikanpaaMaksuEurIlmoittautuvalle(array $kilpailu, ?array $sarja = null): ?float
+{
+    if (kisaMaksuSarjoittain($kilpailu)) {
+        return $sarja === null ? null : ilmoMaksuEurKentasta($sarja['paikanpaa_maksu_eur'] ?? null);
+    }
+
+    return paikanpaaMaksuEur($kilpailu);
+}
+
+/** Lomakkeen eurokenttä: tyhjä tai ≤0 → null. */
+function lomakeMaksuEur($raw): ?float
+{
+    $raw = trim(str_replace(',', '.', (string) $raw));
+    if ($raw === '') {
+        return null;
+    }
+    $eur = round((float) $raw, 2);
+
+    return $eur > 0 ? $eur : null;
+}
+
+function lomakeMaksuEurArvo($raw): string
+{
+    if ($raw === null || $raw === '') {
+        return '';
+    }
+
+    return rtrim(rtrim(number_format((float) $raw, 2, '.', ''), '0'), '.');
+}
+
 function ilmoMaksuEurKentasta($raw): ?float
 {
     if ($raw === null || $raw === '') {
@@ -1439,7 +1486,7 @@ function kilpailijaNumeroVarattu(PDO $pdo, int $kilpailuId, int $numero, ?int $e
 function haeSarjatIlmoittautumiseen(PDO $pdo, int $kilpailuId): array
 {
     $stmt = $pdo->prepare('
-        SELECT id, nimi, matka
+        SELECT id, nimi, matka, ennakko_maksu_eur, paikanpaa_maksu_eur
         FROM sarjat
         WHERE kilpailu_id = ?
           AND UPPER(TRIM(nimi)) NOT IN (\'VAKANTIT\', \'VAKANTTI\')

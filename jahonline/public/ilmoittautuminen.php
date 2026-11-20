@@ -7,7 +7,9 @@ require_once __DIR__ . '/../includes/tulospalvelu.php';
 require_once __DIR__ . '/../includes/acl.php';
 require_once __DIR__ . '/../includes/pirila_mode.php';
 require_once __DIR__ . '/../includes/maksu.php';
+require_once __DIR__ . '/../includes/sarja_numerot.php';
 maksuVarmista($pdo);
+sarjaNumerotVarmista($pdo);
 
 $kilpailu_id = isset($_GET['kilpailu_id']) ? (int) $_GET['kilpailu_id'] : 0;
 
@@ -27,8 +29,9 @@ if (!$kilpailu) {
 vaadiJulkinenNakyvyys($kilpailu);
 
 $linkit = julkinenLinkit($kilpailu_id, true);
-$maksuEur = ilmoMaksuEur($kilpailu);
 $sarjat = haeSarjatIlmoittautumiseen($pdo, $kilpailu_id);
+$sarjaHinnat = function_exists('kisaMaksuSarjoittain') && kisaMaksuSarjoittain($kilpailu);
+$maksuEur = $sarjaHinnat ? null : ilmoMaksuEur($kilpailu);
 $aikatauluAuki = ilmoittautuminenAuki($kilpailu);
 $auki = $aikatauluAuki && $sarjat !== [];
 $virhe = '';
@@ -69,52 +72,13 @@ csrfToken();
 
 $tallennaIlmo = static function (
     PDO $pdo,
-    int $kilpailuId,
+    array $kilpailu,
     int $sarjaId,
     array $nimet,
     ?string $seura,
-    ?float $maksuEur,
     bool $annaNumero
 ): array {
-    $maksuTila = $maksuEur !== null ? 'odottaa' : 'ei_vaadita';
-    $numero = null;
-    $keskhyl = null;
-    if ($annaNumero) {
-        $numero = seuraavaKilpailijaNumero($pdo, $kilpailuId);
-        if ($numero <= 0) {
-            throw new RuntimeException('Ei vapaita kilpailijanumeroita.');
-        }
-        $keskhyl = 'N';
-    }
-    $stmt = $pdo->prepare('
-        INSERT INTO kilpailijat
-            (kilpailu_id, sarja_id, numero, nimi, etunimi, sukunimi, seura, status,
-             keskhyl, maksu_tila, maksu_eur, ilmoittautunut_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, \'OK\', ?, ?, ?, NOW())
-    ');
-    $stmt->execute([
-        $kilpailuId,
-        $sarjaId,
-        $numero,
-        $nimet['nimi'],
-        $nimet['etunimi'],
-        $nimet['sukunimi'],
-        $seura,
-        $keskhyl,
-        $maksuTila,
-        $maksuEur,
-    ]);
-    $id = (int) $pdo->lastInsertId();
-    $viite = $maksuEur !== null ? maksuTallennaViite($pdo, $id) : null;
-
-    return [
-        'id' => $id,
-        'numero' => $numero,
-        'maksu_tila' => $maksuTila,
-        'maksu_eur' => $maksuEur,
-        'maksu_viite' => $viite,
-        'nimi' => $nimet['nimi'],
-    ];
+    return ilmoTallennaKilpailija($pdo, $kilpailu, $sarjaId, $nimet, $seura, 'verkko', $annaNumero);
 };
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -172,7 +136,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $virhe = 'Ilmoittautuminen epäonnistui. Yritä uudelleen.';
             for ($yritys = 0; $yritys < 5; $yritys++) {
                 try {
-                    $tallennettu = $tallennaIlmo($pdo, $kilpailu_id, $sarjaId, $nimet, $seuraVal, $maksuEur, $pirilaIlmo);
+                    $tallennettu = $tallennaIlmo($pdo, $kilpailu, $sarjaId, $nimet, $seuraVal, $pirilaIlmo);
                     $onnistui = $onnistuiRivi($tallennettu, $form, $sarjaNimi);
                     $form = ['etunimi' => '', 'sukunimi' => '', 'seura' => '', 'sarja_id' => ''];
                     $virhe = '';
@@ -277,16 +241,23 @@ tulospalveluYla($kilpailu, $linkit, 'Ilmoittautuminen', [
         <input type="text" id="seura" name="seura" maxlength="255"
                value="<?= htmlspecialchars($form['seura']) ?>">
 
-        <label for="sarja_id">Sarja</label>
-        <select id="sarja_id" name="sarja_id" required>
-            <option value="">— Valitse sarja —</option>
-            <?php foreach ($sarjat as $s): ?>
-                <option value="<?= (int) $s['id'] ?>"
-                    <?= (string) (int) $s['id'] === $form['sarja_id'] ? 'selected' : '' ?>>
-                    <?= htmlspecialchars(sarjaOtsikkoMatka($s['nimi'], $s['matka'] ?? '')) ?>
-                </option>
-            <?php endforeach; ?>
-        </select>
+            <label for="sarja_id">Sarja</label>
+            <select id="sarja_id" name="sarja_id" required>
+                <option value="">— Valitse sarja —</option>
+                <?php foreach ($sarjat as $s): ?>
+                    <?php
+                    $hintaEur = $sarjaHinnat && function_exists('ilmoMaksuEurIlmoittautuvalle')
+                        ? ilmoMaksuEurIlmoittautuvalle($kilpailu, $s)
+                        : null;
+                    $hintaTxt = $hintaEur !== null ? formatEuro($hintaEur) : '';
+                    ?>
+                    <option value="<?= (int) $s['id'] ?>"
+                        <?= (string) (int) $s['id'] === $form['sarja_id'] ? 'selected' : '' ?>
+                        <?php if ($sarjaHinnat): ?>data-hinta="<?= htmlspecialchars($hintaTxt) ?>"<?php endif; ?>>
+                        <?= htmlspecialchars(sarjaOtsikkoMatka($s['nimi'], $s['matka'] ?? '')) ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
 
         <?php if ($pirilaIlmo): ?>
         <p class="lb-muted form-hint">
@@ -295,11 +266,33 @@ tulospalveluYla($kilpailu, $linkit, 'Ilmoittautuminen', [
         </p>
         <?php else: ?>
         <p class="lb-muted form-hint">
-            Kilpailunumero annetaan myöhemmin järjestäjän toimesta, ei tässä lomakkeessa.
+            Kilpailunumeroa ei anneta verkkoilmoittautumisessa. Järjestäjä jakaa numeron myöhemmin.
         </p>
         <?php endif; ?>
 
-        <?php if ($maksuEur !== null): ?>
+        <?php if ($sarjaHinnat): ?>
+        <p class="lb-muted form-hint" id="sarja-hinta" hidden></p>
+        <script>
+        (function () {
+            var sel = document.getElementById('sarja_id');
+            var el = document.getElementById('sarja-hinta');
+            if (!sel || !el) return;
+            var iban = <?= !empty($kilpailu['ilmo_iban']) ? 'true' : 'false' ?>;
+            function paivita() {
+                if (!sel.value) { el.hidden = true; return; }
+                var opt = sel.options[sel.selectedIndex];
+                var h = opt ? (opt.getAttribute('data-hinta') || '') : '';
+                el.hidden = false;
+                el.textContent = h
+                    ? ('Osallistumismaksu ' + h + ' tilisiirrolla. Ilmoittautumisen jälkeen saat viitenumeron'
+                        + (iban ? ' ja tilinumeron.' : '.'))
+                    : 'Tälle sarjalle ei ole osallistumismaksua.';
+            }
+            sel.addEventListener('change', paivita);
+            paivita();
+        })();
+        </script>
+        <?php elseif ($maksuEur !== null): ?>
         <p class="lb-muted form-hint">
             Osallistumismaksu <?= htmlspecialchars(formatEuro($maksuEur)) ?> tilisiirrolla.
             Ilmoittautumisen jälkeen saat viitenumeron
