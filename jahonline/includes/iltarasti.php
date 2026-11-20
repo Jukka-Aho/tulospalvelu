@@ -128,6 +128,11 @@ function iltarastiTulospalveluUrl(int $kilpailuId): string
     return '/public/emit_lukija.php?kilpailu_id=' . (int) $kilpailuId;
 }
 
+function iltarastiAsetuksetUrl(int $kilpailuId): string
+{
+    return '/public/iltarasti_asetukset.php?kilpailu_id=' . (int) $kilpailuId;
+}
+
 function iltarastiKioskiUrl(string $sivu, int $kilpailuId = 0): string
 {
     return match ($sivu) {
@@ -217,7 +222,8 @@ function iltarastiTallennaAsetukset(
     int $kilpailuId,
     string $nimi,
     ?string $paikka,
-    ?string $pvm = null
+    ?string $pvm = null,
+    bool $testikisa = false
 ): void {
     $nimi = trim($nimi);
     if ($nimi === '') {
@@ -229,15 +235,19 @@ function iltarastiTallennaAsetukset(
     }
     $tila = iltarastiTilaPaivasta($pvm);
     $paikka = trim((string) $paikka);
+    $demo = $testikisa ? 1 : 0;
     $pdo->prepare('
         UPDATE kilpailut
-        SET nimi = ?, paikka = ?, paiva = ?, alku_at = NULL, loppu_at = NULL, tila = ?
+        SET nimi = ?, paikka = ?, paiva = ?, alku_at = NULL, loppu_at = NULL, tila = ?,
+            testikisa = ?, julkinen = ?
         WHERE id = ?
     ')->execute([
         mb_substr($nimi, 0, 255),
         $paikka !== '' ? mb_substr($paikka, 0, 255) : null,
         $pvm,
         $tila,
+        $demo,
+        $demo ? 0 : 1,
         $kilpailuId,
     ]);
 }

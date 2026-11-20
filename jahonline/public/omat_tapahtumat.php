@@ -213,7 +213,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     kisaOsoiteTallenna($pdo, (int) $kisa['id'], (string) ($_POST['osoite'] ?? ''), null);
                 }
                 asetaValittuKilpailu((int) $kisa['id']);
-                header('Location: ' . iltarastiTulospalveluUrl((int) $kisa['id']));
+                header('Location: ' . iltarastiAsetuksetUrl((int) $kisa['id']));
                 exit;
             }
             if ($malli === 'juoksu') {
@@ -269,7 +269,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw new RuntimeException('Tapahtumaa ei löydy.');
             }
             asetaValittuKilpailu($kid);
-            header('Location: ' . iltarastiTulospalveluUrl($kid));
+            header('Location: ' . iltarastiAsetuksetUrl($kid));
             exit;
         }
         if ($toiminto === 'valitse_kilpailu') {
@@ -394,6 +394,9 @@ pageStart('Omat tapahtumat', [
                         <?php if ($onIltarasti): ?>
                             <span class="muted"><?= $onViesti ? 'Viesti' : 'Henkilökohtainen' ?></span>
                         <?php endif; ?>
+                        <?php if (!empty($k['testikisa'])): ?>
+                            <span class="muted">Demo — ei julkinen</span>
+                        <?php endif; ?>
                         <span class="muted"><?= htmlspecialchars(kilpailuTilaLabel($k['tila'] ?? '')) ?></span>
                     </div>
                     <div class="omat-kisa-toiminnot">
@@ -403,7 +406,11 @@ pageStart('Omat tapahtumat', [
                             <input type="hidden" name="kilpailu_id" value="<?= (int) $k['id'] ?>">
                             <button type="submit" class="btn-small omat-avaa">Avaa</button>
                         </form>
-                        <a class="btn-small btn-secondary omat-asetukset" href="/admin/kilpailut.php?muokkaa=<?= (int) $k['id'] ?>">Asetukset</a>
+                        <a class="btn-small btn-secondary omat-asetukset" href="<?= htmlspecialchars(
+                            $onIltarasti
+                                ? iltarastiAsetuksetUrl((int) $k['id'])
+                                : '/admin/kilpailut.php?muokkaa=' . (int) $k['id']
+                        ) ?>">Asetukset</a>
                         <?php if (function_exists('voiHallitaKilpailua') && voiHallitaKilpailua($k) && function_exists('kilpailuPoistoLomakeHtml')): ?>
                             <?= kilpailuPoistoLomakeHtml($k, [
                                 'kohde' => $onIltarasti ? 'tapahtuman' : 'kilpailun',

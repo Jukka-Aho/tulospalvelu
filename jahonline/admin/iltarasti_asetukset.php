@@ -26,11 +26,22 @@ if (function_exists('tiliLataaKayttajaSessioon')) {
 }
 vaadiKisahallinta();
 
-$kilpailu = vaadiValittuKilpailu($pdo);
-vaadiKilpailunHallinta($kilpailu);
-if (!kisaOnIltarasti($kilpailu)) {
-    header('Location: index.php');
-    exit;
+$getId = (int) ($_GET['kilpailu_id'] ?? 0);
+if ($getId > 0) {
+    $kilpailu = haeKilpailu($pdo, $getId);
+    if (!$kilpailu || !kisaOnIltarasti($kilpailu)) {
+        header('Location: /public/omat_tapahtumat.php');
+        exit;
+    }
+    vaadiKilpailunHallinta($kilpailu);
+    asetaValittuKilpailu($getId);
+} else {
+    $kilpailu = vaadiValittuKilpailu($pdo);
+    vaadiKilpailunHallinta($kilpailu);
+    if (!kisaOnIltarasti($kilpailu)) {
+        header('Location: /public/omat_tapahtumat.php');
+        exit;
+    }
 }
 iltarastiOhjaaJulkiseen('/public/iltarasti_asetukset.php');
 iltarastiVarmista($pdo);
@@ -88,7 +99,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $kilpailu_id,
             (string) ($_POST['nimi'] ?? ''),
             (string) ($_POST['paikka'] ?? ''),
-            (string) ($_POST['paiva'] ?? '')
+            (string) ($_POST['paiva'] ?? ''),
+            !empty($_POST['testikisa'])
         );
         if (function_exists('kisaOsoiteTallenna')) {
             kisaOsoiteTallenna($pdo, $kilpailu_id, (string) ($_POST['osoite'] ?? ''), $kilpailu);
@@ -182,6 +194,12 @@ pageStart('Asetukset', iltarastiKuoriOpts($pdo, $kilpailu, 'asetukset'));
     <label>Osoite <input name="osoite" maxlength="255" placeholder="Katuosoite, postitoimipaikka" value="<?= htmlspecialchars((string) ($kilpailu['osoite'] ?? '')) ?>"></label>
     <p class="muted">Osoite näyttää tapahtuman etusivun kartalla.</p>
     <label>Päivä <input type="date" name="paiva" required value="<?= htmlspecialchars($pvmLomake) ?>"></label>
+    <label class="checkbox-label" style="display:flex;gap:8px;align-items:center;font-weight:500">
+        <input type="checkbox" name="testikisa" value="1"
+            <?= !empty($kilpailu['testikisa']) ? 'checked' : '' ?>>
+        Demo-kisa
+    </label>
+    <p class="muted">Kun päällä, tapahtuma ei näy julkisella etusivulla. Hallinnassa se näkyy, ja tuloksiin pääsee vain kirjautuneena.</p>
     <?php if (!empty($onViesti)): ?>
         <p class="muted">Rastilippu-liitäntä on toistaiseksi vain henkilökohtaisissa tapahtumissa.</p>
         <h2 style="margin:1.1rem 0 0.4rem">Sarjat</h2>

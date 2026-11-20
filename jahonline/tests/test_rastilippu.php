@@ -182,7 +182,7 @@ str_contains($sivu, "includes/acl.php") || fail('hub lataa acl (voiHallitaKilpai
 str_contains($sivu, 'name="alku_at"') && fail('hub ei alku_at');
 str_contains($sivu, 'name="loppu_at"') && fail('hub ei loppu_at');
 str_contains($sivu, 'datetime-local') && fail('hub ei datetime');
-str_contains($sivu, 'iltarastiTulospalveluUrl') || fail('hub avaa tulospalveluun');
+str_contains($sivu, 'iltarastiAsetuksetUrl') || fail('hub avaa asetuksiin');
 str_contains($sivu, 'iltarastiTanaan()') || fail('hub paiva helsinki');
 str_contains($sivu, 'type="date" name="paiva" required') || fail('hub paiva required');
 str_contains($sivu, 'luo_seura') || fail('hub seuran nimi');
@@ -209,6 +209,7 @@ ok('alku ja loppu');
 
 $aset = file_get_contents(__DIR__ . '/../admin/iltarasti_asetukset.php');
 str_contains($aset, 'iltarastiTallennaAsetukset') || fail('asetukset tallenna');
+str_contains($aset, 'name="testikisa"') || fail('asetukset demo');
 str_contains($aset, 'name="paiva"') || fail('asetukset paiva');
 str_contains($aset, 'type="date" name="paiva" required') || fail('asetukset paiva required');
 str_contains(file_get_contents(__DIR__ . '/../includes/iltarasti.php'), 'Anna tapahtuman päivämäärä.') || fail('paiva pakollinen tallennuksessa');
