@@ -642,12 +642,14 @@ body.kello-tila-ajastin .kello {
     z-index: 2;
     flex: 0 0 auto;
     margin: 0;
-    padding: 0.1rem 0.3rem;
-    font-size: clamp(1rem, 2.6vw, 1.4rem);
-    font-weight: 700;
+    padding: 0.15rem 0.4rem 0.25rem;
+    font-size: clamp(2.1rem, 9vw, 5.5rem);
+    font-weight: 800;
     text-align: center;
-    color: #b7d7c4;
-    line-height: 1.25;
+    color: #f4fff8;
+    line-height: 1.05;
+    letter-spacing: 0.02em;
+    font-variant-numeric: tabular-nums;
 }
 
 .kello-ajastin-kellot {
