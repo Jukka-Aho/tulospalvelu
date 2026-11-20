@@ -339,9 +339,13 @@ body.lahtokello-page .container {
 }
 
 .kello-asetusikkuna {
-    width: min(36rem, 96vw);
+    width: min(36rem, 100vw);
+    min-width: 0;
+    max-width: 100vw;
     max-height: min(92vh, 40rem);
-    overflow: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
+    box-sizing: border-box;
     background: #10261c;
     color: #f4fff8;
     border: 1px solid #2d6a4a;
@@ -379,9 +383,21 @@ body.lahtokello-page .container {
     margin-top: 0.7rem;
 }
 
+.kello-rivi label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 0;
+    width: 100%;
+}
+
 .kello-rivi input[type="text"],
 .kello-rivi input:not([type="checkbox"]):not([type="range"]),
 .kello-rivi select {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
     min-height: 2.7rem;
     border-radius: 10px;
     border: 1px solid #2d6a4a;
@@ -481,8 +497,8 @@ body.lahtokello-page .container {
 
 @media (max-width: 720px) {
     .kello-asetusikkuna {
-        width: 100%;
-        max-width: 100%;
+        width: 100vw;
+        max-width: 100vw;
         height: 100dvh;
         height: 100svh;
         max-height: 100dvh;
@@ -491,7 +507,8 @@ body.lahtokello-page .container {
         border-radius: 0;
         border: 0;
         padding: 0.4rem 0.55rem calc(0.45rem + env(safe-area-inset-bottom, 0px));
-        overflow: auto;
+        overflow-x: hidden;
+        overflow-y: auto;
         box-sizing: border-box;
     }
 
@@ -587,13 +604,19 @@ body.lahtokello-page .container {
     }
 
     #kello-piippu-kuviot {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 0.35rem;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        width: 100%;
     }
 
-    #kello-piippu-kuviot .kello-valinnat {
-        grid-column: 1 / -1;
+    #kello-piippu-kuviot .kello-rivi {
+        min-width: 0;
+        width: 100%;
+    }
+
+    .kello-valinnat {
+        flex-wrap: wrap;
     }
 }
 
