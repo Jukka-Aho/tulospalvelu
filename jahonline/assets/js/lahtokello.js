@@ -49,6 +49,7 @@
     var ctx = null;
     var ajastettu = {};
     var vilkku = 0;
+    var ajastinRaf = 0;
     var tila = 'lahdot';
     var ajastinNayttoTila = 'molemmat';
     var ajastin = {
@@ -503,6 +504,7 @@
         }
         paivitaAjastinNapit();
         suljeAsetukset();
+        varmistaAjastinRaf();
         piirra();
     }
 
@@ -615,22 +617,53 @@
         }
     }
 
+    function aaniLatenssiMs() {
+        if (!ctx) {
+            return 0;
+        }
+        var s = (ctx.outputLatency || 0) + (ctx.baseLatency || 0);
+        if (!isFinite(s) || s < 0) {
+            s = 0;
+        }
+        if (s > 0.2) {
+            s = 0.2;
+        }
+        return s * 1000;
+    }
+
+    function varmistaAjastinRaf() {
+        if (ajastinRaf) {
+            return;
+        }
+        var loop = function () {
+            ajastinRaf = 0;
+            if (onAjastin() && ajastin.kaynnissa && !ajastin.paussi) {
+                piirra();
+                ajastinRaf = window.requestAnimationFrame(loop);
+            }
+        };
+        ajastinRaf = window.requestAnimationFrame(loop);
+    }
+
     function aikataulutaAjastin() {
         if (!ajastin.kaynnissa || ajastin.paussi) {
             return;
         }
+        if (!aani || !ctx) {
+            return;
+        }
         var elapsed = ajastinElapsed();
-        var audioNyt = ctx.currentTime;
         var kuvi = ajastinKuvio();
         var starts = ajastinStartit();
+        var lat = aaniLatenssiMs();
         for (var i = 0; i < starts.length; i++) {
             for (var j = 0; j < kuvi.length; j++) {
                 var hetki = starts[i] - kuvi[j].s * 1000;
                 if (hetki < -80) {
                     continue;
                 }
-                var viive = (hetki - elapsed) / 1000;
-                if (viive < -0.08 || viive > 1.4) {
+                var delay = hetki - elapsed;
+                if (delay < -80 || delay > 1500) {
                     continue;
                 }
                 var avain = 'a:' + i + ':' + kuvi[j].s;
@@ -638,8 +671,19 @@
                     continue;
                 }
                 ajastettu[avain] = true;
-                soita(kuvi[j].pitka, audioNyt + Math.max(0, viive));
-                setTimeout(vilkahda, Math.max(0, viive * 1000));
+                var pitka = kuvi[j].pitka;
+                var odotus = Math.max(0, delay - lat);
+                var soitaNyt = function (p) {
+                    return function () {
+                        soita(p);
+                        vilkahda();
+                    };
+                }(pitka);
+                if (odotus <= 8) {
+                    soitaNyt();
+                } else {
+                    setTimeout(soitaNyt, odotus);
+                }
             }
         }
     }
@@ -671,6 +715,8 @@
         }
         if (ajastinAlas) {
             ajastinAlas.textContent = kestoTekstiJaljella(seuraavaan);
+            var lahella = (ajastin.kaynnissa || ajastin.paussi) && next !== null && seuraavaan > 0 && seuraavaan <= 10000;
+            ajastinAlas.classList.toggle('is-lahella', lahella);
         }
         if (ajastinTilaEl) {
             var n = kayttoKertaa();
@@ -691,19 +737,8 @@
             }
         }
         if (laskuri) {
-            if (next !== null && (ajastin.kaynnissa || ajastin.paussi)) {
-                var jaljellaS = seuraavaan <= 0 ? 0 : Math.ceil(seuraavaan / 1000);
-                if (jaljellaS <= 10) {
-                    laskuri.hidden = false;
-                    laskuri.textContent = String(jaljellaS);
-                } else {
-                    laskuri.hidden = true;
-                    laskuri.textContent = '';
-                }
-            } else {
-                laskuri.hidden = true;
-                laskuri.textContent = '';
-            }
+            laskuri.hidden = true;
+            laskuri.textContent = '';
         }
         if (kuvio) {
             kuvio.textContent = 'Lyhyet 5, 4, 3, 2, 1 s. Pitkät 0 s.';

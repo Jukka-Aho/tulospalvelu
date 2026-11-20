@@ -621,7 +621,8 @@ body.lahtokello-page .container {
 }
 
 body.kello-tila-ajastin .kello {
-    padding-bottom: max(10vh, calc(env(safe-area-inset-bottom, 0px) + 4.5rem));
+    padding-top: max(4.6rem, calc(env(safe-area-inset-top, 0px) + 3.8rem));
+    padding-bottom: max(1rem, calc(env(safe-area-inset-bottom, 0px) + 0.8rem));
 }
 
 .kello-ajastin-naytto {
@@ -633,12 +634,16 @@ body.kello-tila-ajastin .kello {
 }
 
 .kello-ajastin-tila {
+    position: relative;
+    z-index: 2;
     flex: 0 0 auto;
     margin: 0;
-    font-size: clamp(1.05rem, 3.2vw, 1.55rem);
+    padding: 0.1rem 0.3rem;
+    font-size: clamp(1rem, 2.6vw, 1.4rem);
     font-weight: 700;
     text-align: center;
     color: #b7d7c4;
+    line-height: 1.25;
 }
 
 .kello-ajastin-kellot {
@@ -680,17 +685,21 @@ body.kello-tila-ajastin .kello {
 
 body.kello-tila-ajastin .kello-ajastin-yksikko .kello-naytto {
     width: 100%;
-    font-size: min(34vw, 40vh);
+    font-size: min(42vw, 48vh);
 }
 
 body.kello-tila-ajastin .kello-ajastin-kellot.is-molemmat .kello-naytto {
-    font-size: min(30vw, 22vh);
+    font-size: min(38vw, 28vh);
+}
+
+body.kello-tila-ajastin .kello-ajastin-yksikko .kello-naytto.is-lahella {
+    color: #7dff6a;
 }
 
 @supports (font-size: 1cqh) {
     body.kello-tila-ajastin .kello-ajastin-yksikko .kello-naytto,
     body.kello-tila-ajastin .kello-ajastin-kellot.is-molemmat .kello-naytto {
-        font-size: min(calc(100cqw / 4.8), 82cqh);
+        font-size: min(calc(100cqw / 4), 92cqh);
     }
 }
 
@@ -735,11 +744,11 @@ body.kello-tila-ajastin .kello-ajastin-kellot.is-molemmat .kello-naytto {
     }
 
     body.kello-tila-ajastin .kello-ajastin-yksikko .kello-naytto {
-        font-size: min(28vw, 52vh);
+        font-size: min(34vw, 58vh);
     }
 
     body.kello-tila-ajastin .kello-ajastin-kellot.is-molemmat .kello-naytto {
-        font-size: min(20vw, 44vh);
+        font-size: min(24vw, 52vh);
     }
 }
 
@@ -747,7 +756,7 @@ body.kello-tila-ajastin .kello-ajastin-kellot.is-molemmat .kello-naytto {
     @media (orientation: landscape) {
         body.kello-tila-ajastin .kello-ajastin-yksikko .kello-naytto,
         body.kello-tila-ajastin .kello-ajastin-kellot.is-molemmat .kello-naytto {
-            font-size: min(calc(100cqw / 4.8), 82cqh);
+            font-size: min(calc(100cqw / 4), 92cqh);
         }
     }
 }
