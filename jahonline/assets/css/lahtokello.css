@@ -468,6 +468,135 @@ body.lahtokello-page .container {
     font-weight: 700;
 }
 
+.kello-radio-rivi {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem 0.85rem;
+}
+
+.kello-radio-rivi .kello-check {
+    margin-top: 0.35rem;
+}
+
+@media (max-width: 720px) {
+    .kello-asetusikkuna {
+        width: 100%;
+        max-width: 100%;
+        height: 100dvh;
+        height: 100svh;
+        max-height: 100dvh;
+        max-height: 100svh;
+        margin: 0;
+        border-radius: 0;
+        border: 0;
+        padding: 0.4rem 0.55rem calc(0.45rem + env(safe-area-inset-bottom, 0px));
+        overflow: auto;
+        box-sizing: border-box;
+    }
+
+    .kello-asetusikkuna .kello-kisa,
+    .kello-asetusikkuna .kello-ohje,
+    .kello-asetusikkuna .kello-kuvio,
+    .kello-asetusikkuna > .kello-synkka {
+        display: none !important;
+    }
+
+    .kello-asetus-yla {
+        margin: 0 0 0.15rem;
+    }
+
+    .kello-asetusikkuna h2 {
+        font-size: 1.05rem;
+    }
+
+    .kello-asetusikkuna h3 {
+        font-size: 0.95rem;
+        margin: 0;
+    }
+
+    .kello-asetus {
+        margin-top: 0.4rem;
+        padding: 0.4rem 0.5rem;
+        border-radius: 10px;
+    }
+
+    #kello-tila-osio {
+        margin-top: 0.25rem;
+    }
+
+    .kello-asetus .kello-check,
+    .kello-radio-rivi .kello-check {
+        margin-top: 0.15rem;
+    }
+
+    .kello-vali-rivi {
+        margin-top: 0.35rem;
+        gap: 0.45rem 0.65rem;
+        flex-wrap: wrap;
+    }
+
+    .kello-vali-yksi {
+        gap: 0.3rem;
+        font-size: 0.95rem;
+    }
+
+    .kello-vali-rivi input,
+    .kello-vali-yksi input {
+        width: 3.1rem;
+        min-width: 3.1rem;
+        flex-basis: 3.1rem;
+        min-height: 2.2rem;
+        font-size: 1.05rem;
+    }
+
+    .kello-rivi {
+        margin-top: 0.35rem;
+    }
+
+    .kello-rivi input:not([type="checkbox"]):not([type="range"]),
+    .kello-rivi select,
+    .kello-paikka select {
+        min-height: 2.2rem;
+        font-size: 1.05rem;
+    }
+
+    .kello-napit,
+    .kello-valinnat,
+    .kello-synkka-napit {
+        margin-top: 0.35rem;
+        gap: 0.35rem;
+    }
+
+    .kello-asetusikkuna button {
+        min-height: 2.2rem;
+        padding: 0.25rem 0.7rem;
+    }
+
+    .kello-paikka {
+        margin-top: 0.4rem;
+    }
+
+    .kello-naytto-valinta {
+        margin-top: 0.35rem;
+    }
+
+    .kello-virhe {
+        min-height: 0;
+        margin: 0.2rem 0 0;
+    }
+
+    #kello-piippu-kuviot {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.35rem;
+    }
+
+    #kello-piippu-kuviot .kello-valinnat {
+        grid-column: 1 / -1;
+    }
+}
+
 body.kello-tila-ajastin .kello {
     padding-bottom: max(28vh, calc(env(safe-area-inset-bottom, 0px) + 5rem));
 }
