@@ -1452,7 +1452,8 @@ function haeSarjatIlmoittautumiseen(PDO $pdo, int $kilpailuId): array
 
 /**
  * Ilmoittautuneet / osallistujat julkiseen listaan, ryhmiteltynä sarjoittain.
- * @return array<string, array{matka:?string, rivit:array}>
+ * Avain on sarja_id (s{id}), jotta samannimiset eri matkat pysyvät erillään.
+ * @return array<string, array{nimi:string, matka:?string, jarjestys?:int, rivit:array}>
  */
 function haeIlmoittautuneetRyhmiteltyna(PDO $pdo, int $kilpailuId): array
 {
@@ -1470,6 +1471,7 @@ function haeIlmoittautuneetRyhmiteltyna(PDO $pdo, int $kilpailuId): array
             k.nimi,
             k.seura,
             k.ilmoittautunut_at,
+            s.id AS sarja_id,
             s.nimi AS sarja,
             s.matka AS sarja_matka,
             s.jarjestys AS sarja_jarjestys
@@ -1479,23 +1481,27 @@ function haeIlmoittautuneetRyhmiteltyna(PDO $pdo, int $kilpailuId): array
           AND k.status = \'OK\'
           AND COALESCE(k.osuus, 0) = 0
           AND UPPER(TRIM(s.nimi)) NOT IN (\'VAKANTIT\', \'VAKANTTI\')
-        ORDER BY s.jarjestys ASC, s.nimi ASC, k.sukunimi ASC, k.etunimi ASC, k.id ASC
+        ORDER BY s.jarjestys ASC, s.nimi ASC, s.matka ASC, k.sukunimi ASC, k.etunimi ASC, k.id ASC
     ');
     $stmt->execute([$kilpailuId]);
 
     $ryhmat = [];
     foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $r) {
-        $sarja = $r['sarja'];
-        if (onVakanttiSarja((string) $sarja)) {
+        $sarja = (string) ($r['sarja'] ?? '');
+        if (onVakanttiSarja($sarja)) {
             continue;
         }
-        if (!isset($ryhmat[$sarja])) {
-            $ryhmat[$sarja] = [
+        $sid = (int) ($r['sarja_id'] ?? 0);
+        $key = $sid > 0 ? ('s' . $sid) : $sarja;
+        if (!isset($ryhmat[$key])) {
+            $ryhmat[$key] = [
+                'nimi' => $sarja,
                 'matka' => $r['sarja_matka'] ?? null,
+                'jarjestys' => (int) ($r['sarja_jarjestys'] ?? 0),
                 'rivit' => [],
             ];
         }
-        $ryhmat[$sarja]['rivit'][] = $r;
+        $ryhmat[$key]['rivit'][] = $r;
     }
 
     return $ryhmat;

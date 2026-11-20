@@ -73,7 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $matka,
             $_POST['lahto_id'] ?: null,
             isset($_POST['nayta_ajat']) ? 1 : 0,
-            $_POST['jarjestys'],
+            max(0, (int) ($_POST['jarjestys'] ?? 0)),
             $valit !== '' ? $valit : null,
             $osuuksia,
         ]);
@@ -97,7 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute([
             $_POST['nimi'], $matka, $_POST['lahto_id'] ?: null,
             isset($_POST['nayta_ajat']) ? 1 : 0,
-            $_POST['jarjestys'],
+            max(0, (int) ($_POST['jarjestys'] ?? 0)),
             $valit !== '' ? $valit : null,
             $osuuksia,
             $_POST['id'], $kilpailu_id,
@@ -135,6 +135,11 @@ if (!$pirila) {
     $stmt = $pdo->prepare('SELECT id, nimi, lahtoaika FROM lahdot WHERE kilpailu_id = ? ORDER BY lahtoaika');
     $stmt->execute([$kilpailu_id]);
     $lahdot = $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+$seuraavaJarjestys = 1;
+foreach ($sarjat as $s) {
+    $seuraavaJarjestys = max($seuraavaJarjestys, (int) ($s['jarjestys'] ?? 0) + 1);
 }
 
 $muokattava = null;
@@ -201,7 +206,9 @@ pageStart($pirila ? 'Sarjat (Pirila)' : 'Sarjat', ['admin' => true, 'active' => 
         <?php endif; ?>
 
         <label>Järjestys</label>
-        <input type="number" name="jarjestys" value="<?= htmlspecialchars((string) ($muokattava['jarjestys'] ?? '0')) ?>">
+        <input type="number" name="jarjestys" min="0" step="1"
+               value="<?= htmlspecialchars((string) ($muokattava['jarjestys'] ?? $seuraavaJarjestys)) ?>">
+        <p class="muted form-hint" style="grid-column:2;margin-top:-0.5rem">Sarjojen järjestys ilmoittautumislomakkeessa, ilmoittautuneissa, lähtölistassa ja tuloksissa. Pienin numero ensin (1 = ensimmäinen). Sama numero → aakkosjärjestys nimen mukaan. Jos osalla on 0 ja osalla 1, 2, …, nollat tulevat ensin — numeroi siis kaikki sarjat, jos haluat tietyn järjestyksen.</p>
 
         <label>Numerovälit</label>
         <input type="text" name="numero_valit" maxlength="200"
@@ -244,7 +251,7 @@ pageStart($pirila ? 'Sarjat (Pirila)' : 'Sarjat', ['admin' => true, 'active' => 
                         <th>Rata</th>
                         <th>Matka</th>
                         <th>Lähtö</th>
-                        <th>Järj.</th>
+                        <th title="Sarjojen järjestys ilmoittautuneissa, lähtölistassa ja tuloksissa">Järj.</th>
                         <th>Ajat</th>
                         <?php if (!$pirila): ?><th>Numerovälit</th><?php endif; ?>
                         <?php if ($pirila): ?><th>Online-va</th><?php endif; ?>

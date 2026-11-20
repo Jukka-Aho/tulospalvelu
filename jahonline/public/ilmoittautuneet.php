@@ -95,8 +95,9 @@ tulospalveluYla($kilpailu, $linkit, 'Ilmoittautuneet', [
 <?php endif; ?>
 
 <?php if (!empty($ryhmat)): ?>
-  <?php foreach ($ryhmat as $sarjaNimi => $data): ?>
+  <?php foreach ($ryhmat as $sarjaAvain => $data): ?>
     <?php
+    $sarjaNimi = (string) ($data['nimi'] ?? $sarjaAvain);
     $nakyvat = 0;
     foreach ($data['rivit'] as $rr) {
         if (riviVastaaSeuraan($rr, $seuraSuodatin)) {
