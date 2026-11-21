@@ -23,7 +23,7 @@ str_contains($php, 'Luetaanko lähteväksi vai pois maastosta?') || fail('kysy p
 str_contains($php, "'Pois maastosta'") || fail('nappi pois maastosta');
 str_contains($php, 'emit_lukija.js?v=20261116viesti') || fail('js cache');
 str_contains($php, "\$emitCssV = '20261116hamp'") || fail('css napit cache');
-str_contains($php, 'emit_proto.js?v=20261114tyhja') || fail('proto cache');
+str_contains($php, 'emit_proto.js?v=20261121ffff') || fail('proto cache');
 str_contains($php, 'automaatti24') || fail('js versio');
 str_contains($emitSrc, '$automaattiLuku && in_array($moodi, [\'lue\', \'maali\'], true)') || fail('php automaatti loytaa valmiin tuloksen');
 str_contains($emitSrc, 'jo luettu pois maastosta') || fail('php kysy kaytetty kortti');
@@ -91,7 +91,11 @@ str_contains($protoJs, 'function lueOtsikko') || fail('proto lueOtsikko');
 str_contains($protoJs, 'tavut < LUKIJA_PITUUS') || fail('proto ei tulkitse otsikkoa tulokseksi');
 str_contains($protoJs, 'if (!code && !aika)') || fail('proto sailyttää nollaleiman');
 str_contains($protoJs, 'if (i && !code && !aika)') || fail('proto pysahtyy tyhjaan leimaan');
+str_contains($protoJs, 'aika === 65535') || fail('proto pysahtyy 0xFFFF-aikaan');
+str_contains($protoJs, 'kello_sec === 65535') || fail('proto ascii pysahtyy 0xFFFF-aikaan');
 str_contains($emitSrc, '$koodi === 0 && $kello === 0') || fail('php pysahtyy tyhjaan leimaan');
+str_contains($emitSrc, 'emitLukijaLeimaOnTyhjaMuisti($kello)') || fail('php pysahtyy 0xFFFF-aikaan');
+str_contains($emitSrc, 'emitLukijaUudetLeimatVainEtuliite') || fail('php ei ylikirjoita etuliitteella');
 $api = file_get_contents(__DIR__ . '/../api/api_emit_luku.php');
 str_contains($api, 'session_write_close') || fail('emit api vapauttaa session');
 $rl = file_get_contents(__DIR__ . '/../includes/rastilippu.php');
@@ -151,6 +155,17 @@ emitLukijaValitseToiminto(true, true, 'lahto', [['koodi' => 31]], true, true) ==
     || fail('automaatti nayttaa tuloksen');
 emitLukijaOnAutomaatti(['automaatti' => 1]) || fail('php automaatti lippu');
 !emitLukijaOnAutomaatti(['moodi' => 'lue']) || fail('php tulospalvelu ei automaatti');
+emitLukijaLeimaOnTyhjaMuisti(65535) || fail('0xFFFF on tyhja muisti');
+!emitLukijaLeimaOnTyhjaMuisti(900) || fail('tavallinen aika ei tyhja');
+$hyvat = [];
+foreach ([141, 142, 143, 144, 145, 146, 147, 144, 148, 149, 144, 151, 152, 153, 155, 156, 157, 159, 160] as $i => $k) {
+    $hyvat[] = ['koodi' => $k, 'rasti_koodi' => $k];
+}
+$lyhyt = array_slice($hyvat, 0, 7);
+$roska = array_merge($lyhyt, [['koodi' => 16, 'rasti_koodi' => 16]]);
+emitLukijaUudetLeimatVainEtuliite($hyvat, $lyhyt) || fail('7 on 19:n etuliite');
+!emitLukijaUudetLeimatVainEtuliite($roska, $hyvat) || fail('hyva 19 ei ole 8 roskan etuliite');
+!emitLukijaUudetLeimatVainEtuliite($hyvat, $hyvat) || fail('sama pituus ei etuliite');
 ok('iltarasti lukija kysy ja kehys');
 
 echo "all tests passed\n";

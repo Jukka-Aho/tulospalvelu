@@ -354,6 +354,9 @@ function emitLukijaPuhdistaLeimat($raw): array
         if ($kello > 8 * 86400) {
             continue;
         }
+        if (function_exists('emitLukijaLeimaOnTyhjaMuisti') && emitLukijaLeimaOnTyhjaMuisti($kello)) {
+            break;
+        }
         if ($koodi === 0 && $kello === 0) {
             if ($ulos !== []) {
                 break;
@@ -758,11 +761,34 @@ function emitLukijaTallennaLeimat(
     array $rivi,
     array $leimat,
     ?int $nolla,
-    int $kayttajaId
+    int $kayttajaId,
+    bool $korvaaAina = false
 ): array {
     pirilaTapahtumaVarmista($pdo);
     $kilpailuId = (int) $kilpailu['id'];
     $kid = (int) $rivi['id'];
+    if (
+        !$korvaaAina
+        && $kid > 0
+        && function_exists('emitLukijaUudetLeimatVainEtuliite')
+        && function_exists('emitLukijaHaeLeimatKannasta')
+    ) {
+        $vanhat = emitLukijaHaeLeimatKannasta($pdo, $kid);
+        if (emitLukijaUudetLeimatVainEtuliite($vanhat, $leimat)) {
+            $naytto = [];
+            foreach ($vanhat as $i => $vanha) {
+                $kello = (int) ($vanha['kello_sec'] ?? $vanha['aika_sec'] ?? 0);
+                $naytto[] = [
+                    'jarjestys' => $i + 1,
+                    'koodi' => (int) ($vanha['koodi'] ?? 0),
+                    'kello' => emitLukijaKelloTeksti($kello),
+                    'aika_sec' => (int) ($vanha['aika_sec'] ?? $kello),
+                ];
+            }
+
+            return $naytto;
+        }
+    }
     if ($nolla === null) {
         $nolla = emitLukijaNollaLeimoista($leimat);
     }
@@ -853,7 +879,7 @@ function emitLukijaTallennaMuokatut(
         }
         $puhdistetut[] = ['koodi' => $koodi, 'kello_sec' => $kello];
     }
-    $naytto = emitLukijaTallennaLeimat($pdo, $kilpailu, $rivi, $puhdistetut, null, $kayttajaId);
+    $naytto = emitLukijaTallennaLeimat($pdo, $kilpailu, $rivi, $puhdistetut, null, $kayttajaId, true);
     $numero = $rivi['numero'] !== null ? (int) $rivi['numero'] : 0;
     if ($numero > 0 && !$puhdistetut) {
         emitLukijaKirjaaTapahtuma($pdo, (int) $kilpailu['id'], emitLukijaLahde($kayttajaId), [
@@ -1452,6 +1478,10 @@ function emitLukijaKasittele(PDO $pdo, array $kilpailu, int $kayttajaId, array $
             $naytto = [];
             if ($leimat) {
                 $naytto = emitLukijaTallennaLeimat($pdo, $kilpailu, $rivi, $leimat, $nolla, $kayttajaId);
+                $tallennetut = emitLukijaHaeLeimatKannasta($pdo, (int) $rivi['id']);
+                if ($tallennetut) {
+                    $leimat = $tallennetut;
+                }
             } elseif ($iltarastiKisa) {
                 $leimat = emitLukijaHaeLeimatKannasta($pdo, (int) $rivi['id']);
             }
@@ -1541,6 +1571,10 @@ function emitLukijaKasittele(PDO $pdo, array $kilpailu, int $kayttajaId, array $
                 $naytto = [];
                 if ($leimat) {
                     $naytto = emitLukijaTallennaLeimat($pdo, $kilpailu, $leimaRivi, $leimat, $nolla, $kayttajaId);
+                    $tallennetut = emitLukijaHaeLeimatKannasta($pdo, (int) $leimaRivi['id']);
+                    if ($tallennetut) {
+                        $leimat = $tallennetut;
+                    }
                     $vastaus['leimat'] = $naytto;
                     if ($naytto) {
                         $vastaus['message'] = trim((string) ($vastaus['message'] ?? ''))

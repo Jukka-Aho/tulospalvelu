@@ -217,3 +217,32 @@ function emitLukijaLeimaPisteet(array $rataRastit, array $leimat): array
 
     return $out;
 }
+
+/** Emit e-cardin tyhjä paikka: aika 0xFFFF. */
+function emitLukijaLeimaOnTyhjaMuisti(int $kello): bool
+{
+    return $kello === 65535;
+}
+
+/**
+ * Uusi leimasarja on vanhan etuliite (lyhyempi, samat koodit alusta).
+ * Lukijan toinen dumppi 0xFFFF-roskan jälkeen ei saa ylikirjoittaa täyttä lukua.
+ *
+ * @param list<array{koodi?:int|string,rasti_koodi?:int|string}> $vanhat
+ * @param list<array{koodi?:int|string,rasti_koodi?:int|string}> $uudet
+ */
+function emitLukijaUudetLeimatVainEtuliite(array $vanhat, array $uudet): bool
+{
+    if ($uudet === [] || count($vanhat) <= count($uudet)) {
+        return false;
+    }
+    foreach ($uudet as $i => $uusi) {
+        $uk = (int) ($uusi['koodi'] ?? $uusi['rasti_koodi'] ?? -1);
+        $vk = (int) ($vanhat[$i]['koodi'] ?? $vanhat[$i]['rasti_koodi'] ?? -2);
+        if ($uk !== $vk) {
+            return false;
+        }
+    }
+
+    return true;
+}

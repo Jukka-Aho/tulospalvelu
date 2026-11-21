@@ -91,18 +91,25 @@
         controls.sort(function (a, b) { return a.indeksi - b.indeksi; });
         if (badge > 0) {
             var lukija = false;
-            controls.forEach(function (c) {
-                if (LUKIJA[c.koodi]) {
-                    lukija = true;
+            var leimat = [];
+            for (i = 0; i < controls.length; i++) {
+                if (controls[i].kello_sec === 65535) {
+                    break;
                 }
-            });
+                if (controls[i].koodi > 0 && controls[i].koodi < 256) {
+                    leimat.push(controls[i]);
+                    if (LUKIJA[controls[i].koodi]) {
+                        lukija = true;
+                    }
+                }
+            }
             return {
                 tyyppi: 'kortti',
                 badge: badge,
                 koodi: koodi,
                 kello: kello,
                 lukija: lukija,
-                leimat: controls.filter(function (c) { return c.koodi > 0 && c.koodi < 256; })
+                leimat: leimat
             };
         }
         if (msgtp === 1 || laite) {
@@ -323,7 +330,15 @@
             var code = c[off];
             var aika = c[off + 1] | (c[off + 2] << 8);
             off += 3;
-            if (!code) {
+            // Pirilä: ensimmäinen tyhjä paikka (i>0) päättää listan.
+            // 0xFFFF-aika on tyhjä e-card-muisti; jatko olisi vanhaa roskaa.
+            if (aika === 65535) {
+                break;
+            }
+            if (i && !code && !aika) {
+                break;
+            }
+            if (!code && !aika) {
                 continue;
             }
             if (LUKIJA[code]) {
@@ -355,26 +370,93 @@
                 continue;
             }
             var tavut = data.length - i;
-            var sanoma = puraLukijaKehys(data, i, tavut);
-            if (sanoma) {
-                loytyi.push(sanoma);
-                if (tavut >= LUKIJA_PITUUS) {
-                    i += LUKIJA_PITUUS;
-                    continue;
-                }
+            // Pirilä LID_LUKIJA on 217 tavua. Alle sen vain otsikko (badge).
+            if (tavut < LUKIJA_PITUUS) {
                 break;
             }
-            var otsikko = puraLukijaOtsikko(data, i);
-            if (otsikko) {
-                loytyi.push(otsikko);
-                if (tavut >= LUKIJA_PITUUS) {
-                    i += LUKIJA_PITUUS;
-                    continue;
-                }
+            var sanoma = puraLukijaKehys(data, i, LUKIJA_PITUUS);
+            if (sanoma) {
+                loytyi.push(sanoma);
+                i += LUKIJA_PITUUS;
+                continue;
             }
-            break;
+            i++;
         }
         return loytyi;
+    }
+
+    function keskenLukija(data) {
+        if (!data || data.length < 2) {
+            return false;
+        }
+        var i;
+        for (i = 0; i + 1 < data.length; i++) {
+            if (data[i] !== 0x20 || data[i + 1] !== 0x20) {
+                continue;
+            }
+            if (i + 10 > data.length) {
+                return true;
+            }
+            if (!lukijaSummaNolla(data, i + 2, 8)) {
+                continue;
+            }
+            return (data.length - i) < LUKIJA_PITUUS;
+        }
+        return false;
+    }
+
+    function lueOtsikko(data) {
+        if (!data || data.length < 10) {
+            return null;
+        }
+        var i;
+        for (i = 0; i + 10 <= data.length; i++) {
+            if (data[i] !== 0x20 || data[i + 1] !== 0x20) {
+                continue;
+            }
+            if (!lukijaSummaNolla(data, i + 2, 8)) {
+                continue;
+            }
+            return puraLukijaOtsikko(data, i);
+        }
+        return null;
+    }
+
+    function lukijaOtsikkoAlku(data) {
+        if (!data || data.length < 2) {
+            return -1;
+        }
+        var i;
+        for (i = 0; i + 1 < data.length; i++) {
+            if (data[i] !== 0x20 || data[i + 1] !== 0x20) {
+                continue;
+            }
+            if (i + 10 > data.length) {
+                return i;
+            }
+            if (!lukijaSummaNolla(data, i + 2, 8)) {
+                continue;
+            }
+            return i;
+        }
+        return -1;
+    }
+
+    function lueKehykset(data) {
+        var sanomat = etsiLukija(data);
+        var alku = lukijaOtsikkoAlku(data);
+        if (!sanomat.length) {
+            return { sanomat: [], jaljella: data, alku: alku };
+        }
+        var used = (alku >= 0 ? alku : 0) + sanomat.length * LUKIJA_PITUUS;
+        if (used > data.length) {
+            used = data.length;
+        }
+        return {
+            sanomat: sanomat,
+            jaljella: data.slice(used),
+            alku: alku
+        };
     }
 
     return {
@@ -383,6 +465,9 @@
         luoPuskuri: luoPuskuri,
         kelloKomento: kelloKomento,
         etsiLukija: etsiLukija,
+        keskenLukija: keskenLukija,
+        lueOtsikko: lueOtsikko,
+        lueKehykset: lueKehykset,
         LUKIJA_PITUUS: LUKIJA_PITUUS,
         LUKIJA: LUKIJA
     };

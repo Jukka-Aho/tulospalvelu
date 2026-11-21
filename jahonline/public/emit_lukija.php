@@ -381,7 +381,7 @@ window.JAH_EMIT = {
 </script>
 <script src="../assets/js/wake_lock.js?v=20260718a"></script>
 <script type="module" src="../assets/js/usb_sarja_boot.js?v=20261114pcusb3"></script>
-<script src="../assets/js/emit_proto.js?v=20261114tyhja"></script>
+<script src="../assets/js/emit_proto.js?v=20261121ffff"></script>
 <script src="/assets/js/jah-radat-offline.js?v=20261107radat"></script>
 <script src="../assets/js/si_proto.js?v=20261112si"></script>
 <script src="../assets/js/emit_lukija.js?v=20261116viesti"></script>
