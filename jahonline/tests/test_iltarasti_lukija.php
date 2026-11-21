@@ -21,12 +21,14 @@ $kehysJs = file_get_contents(__DIR__ . '/../assets/js/iltarasti_kuori_kehys.js')
 
 str_contains($php, 'Luetaanko lähteväksi vai pois maastosta?') || fail('kysy pois maastosta');
 str_contains($php, "'Pois maastosta'") || fail('nappi pois maastosta');
-str_contains($php, 'emit_lukija.js?v=20261116viesti') || fail('js cache');
+str_contains($php, 'emit_lukija.js?v=20261121maali') || fail('js cache');
 str_contains($php, "\$emitCssV = '20261116hamp'") || fail('css napit cache');
 str_contains($php, 'emit_proto.js?v=20261121ffff') || fail('proto cache');
-str_contains($php, 'automaatti24') || fail('js versio');
+str_contains($php, 'automaatti25') || fail('js versio');
 str_contains($emitSrc, '$automaattiLuku && in_array($moodi, [\'lue\', \'maali\'], true)') || fail('php automaatti loytaa valmiin tuloksen');
 str_contains($emitSrc, 'jo luettu pois maastosta') || fail('php kysy kaytetty kortti');
+str_contains($emitSrc, 'Henkilöä ei ole vielä kirjattu') || fail('php maali pyytaa kirjausta');
+str_contains($emitSrc, '$leimatMaasto') || fail('php sisaanluku tallentaa leimat');
 str_contains($js, 'viimeVastaus && !viimeVastaus.kysy') || fail('js ei ylikirjoita tulosta tuntemattomalla');
 str_contains($js, 'onkoAutomaatti() && samaNayttoEmit(emitVastaus)') || fail('js kysy vain automaatissa estetaan');
 str_contains($js, 'body.automaatti = 1') || fail('js lahettaa automaatti');
@@ -38,6 +40,9 @@ str_contains($js, 'nollaSecLeimoista(kilpailija.leimat') && fail('nollaSec kaata
 str_contains($js, 'pois maastosta') || fail('js kysy teksti');
 str_contains($js, 'cfg.iltarasti && !kioski') || fail('js piilottaa vanhat leimat');
 str_contains($js, "moodiLahetys = 'maastoon'") || fail('js lahtevaksi maastoon');
+str_contains($js, 'nLeima > 0') || fail('js maali kirjaa leimoilla myos sisaanluvusta');
+str_contains($js, 'kaipaaKirjausta') || fail('js nayttaa lomakkeen kun henkilo puuttuu');
+str_contains($js, 'leimaa luettu') || fail('js nayttaa luettujen leimojen maaran');
 str_contains($js, "moodiLahetys = ilmanAikaa ? 'pois_maastosta' : 'maali'") || fail('js pois tai maali');
 str_contains($js, 'jah-lukija-halutaan') || fail('js lukija pysyy');
 str_contains($js, 'haeSallittuPortti') || fail('js getPorts');

@@ -1,6 +1,6 @@
 (function () {
     'use strict';
-    window.JAH_EMIT_VERSIO = 'automaatti24';
+    window.JAH_EMIT_VERSIO = 'automaatti25';
 
     var proto = window.JahEmitProto;
     var siProto = window.JahSiProto;
@@ -2896,8 +2896,13 @@
                 asetaMoodi('maali', { sailo: true });
             }
             piilotaKysely();
+            var kaipaaKirjausta = data.taso === 'virhe' && !data.kilpailija_id;
             if (lisaaEl) {
-                lisaaEl.hidden = true;
+                lisaaEl.hidden = !kaipaaKirjausta;
+            }
+            if (kaipaaKirjausta && lisaaEl) {
+                asetaEmitKentta((body && body.emit) || data.emit || odottaaEmit);
+                naytaEhdotukset(odottaaEmit);
             }
             naytaIltarastiMaali(data, luokka);
             if (data.kilpailija_id || data.luotu) {
@@ -3158,8 +3163,10 @@
             lokiin('Emit ' + sanoma.badge + ' kortin viikko ' + sanoma.viikko
                 + (sanoma.vuosi ? '/' + sanoma.vuosi : '') + ' (ei näytetä).');
         }
-        if (sanoma.leimat && sanoma.leimat.length && !(cfg.iltarasti && !kioski)) {
-            html += '<br><span class="muted">' + sanoma.leimat.length + ' leimaa</span>';
+        if (sanoma.leimat && sanoma.leimat.length) {
+            html += '<br><span class="muted">' + sanoma.leimat.length + ' leimaa luettu</span>';
+        } else if (moodi === 'maali' || moodi === 'automaatti') {
+            html += '<br><span class="muted">Kortilta ei tullut leimoja — lue uudelleen</span>';
         }
         html += '<br>Luetaan rastit…';
         if (!(kesken && sanoma.badge === viimeBadge) && !samaNayttoEmit(sanoma.badge)) {
@@ -4612,7 +4619,8 @@
             }
             var moodiLahetys = 'tallenna';
             if (cfg.iltarasti) {
-                var pois = moodi === 'maali' || tarkoitus === 'maali';
+                var nLeima = (odottaaLeimat || []).length;
+                var pois = moodi === 'maali' || tarkoitus === 'maali' || nLeima > 0;
                 if (pois) {
                     moodiLahetys = ilmanAikaa ? 'pois_maastosta' : 'maali';
                 } else {

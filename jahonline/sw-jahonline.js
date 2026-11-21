@@ -3,7 +3,7 @@
  * /ahoauto/, /autot/, /ohjaus/ ja /scenic/ jätetään rauhaan.
  * Iltarastit: verkko ensin, muuten viimeisin avattu sivu.
  */
-const CACHE = 'jahonline-app-v58';
+const CACHE = 'jahonline-app-v59';
 const SHELL = [
   '/gps/assets/css/gps.css',
   '/gps/assets/icons/icon-192.png',
@@ -18,7 +18,7 @@ const SHELL = [
   '/assets/css/live_board.css?v=20261112pallo',
   '/assets/css/iltarasti_kuori.css?v=20261114pcusb2',
   '/assets/css/palvelu_valitsin.css?v=20261106mobiili',
-  '/assets/js/emit_lukija.js?v=20261116viesti',
+  '/assets/js/emit_lukija.js?v=20261121maali',
   '/assets/js/iltarasti_kuori_kehys.js?v=20261114pcusb3',
   '/assets/js/seuranta.js?v=20261112pallo',
   '/assets/js/jah-radat-offline.js?v=20261112rata4',

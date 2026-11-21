@@ -1413,6 +1413,29 @@ function emitLukijaKasittele(PDO $pdo, array $kilpailu, int $kayttajaId, array $
                 (string) ($tulos['message'] ?? 'Kirjaus epäonnistui.'),
                 $tulos + ['radat' => emitLukijaRataLista($pdo, $kilpailuId)]
             );
+            $leimatMaasto = emitLukijaPuhdistaLeimat($data['leimat'] ?? []);
+            $kidMaasto = (int) ($tulos['kilpailija_id'] ?? 0);
+            if (!empty($tulos['ok']) && $leimatMaasto && $kidMaasto > 0) {
+                $leimaRivi = emitLukijaHaeId($pdo, $kidMaasto) ?: $tulos;
+                $nollaMaasto = isset($data['nolla_sec']) && $data['nolla_sec'] !== '' && $data['nolla_sec'] !== null
+                    ? (int) $data['nolla_sec']
+                    : null;
+                $naytto = emitLukijaTallennaLeimat($pdo, $kilpailu, $leimaRivi, $leimatMaasto, $nollaMaasto, $kayttajaId);
+                $tark = emitLukijaLiitaTarkistus($pdo, $kilpailu, $leimaRivi, $leimatMaasto, $nollaMaasto, $kayttajaId, null, true);
+                $viesti = trim((string) ($vastaus['message'] ?? '') . ' ' . count($naytto) . ' leimaa tallennettu.');
+                if (!empty($tark['tarkistus_viesti'])) {
+                    $viesti .= ' ' . $tark['tarkistus_viesti'];
+                }
+                $taso = (string) ($tark['taso_tarkistus'] ?? $vastaus['taso'] ?? 'ok');
+                if ($taso === 'virhe') {
+                    $taso = 'varoitus';
+                }
+                $henkilo = emitLukijaHenkilo($leimaRivi, $emit);
+                $vastaus = emitLukijaVastaus($taso, $viesti, $henkilo + $tark + $tulos + [
+                    'leimat' => $naytto ?: $leimatMaasto,
+                    'radat' => emitLukijaRataLista($pdo, $kilpailuId),
+                ]);
+            }
         }
     } elseif ($moodi === 'tarkista' || $moodi === 'ota_aika') {
         if (!$rivi) {
@@ -1466,7 +1489,10 @@ function emitLukijaKasittele(PDO $pdo, array $kilpailu, int $kayttajaId, array $
             }
         }
         if (!$rivi) {
-            $vastaus = emitLukijaVastaus('virhe', 'Korttia ei löydy kilpailusta. Lisää hänet kilpailijaksi tai merkitse lähtöön.');
+            $vastaus = emitLukijaVastaus(
+                'virhe',
+                'Henkilöä ei ole vielä kirjattu. Anna nimi ja rata ja paina Kirjaa — leimat tallentuvat samalla.'
+            );
         } else {
             $nolla = isset($data['nolla_sec']) && $data['nolla_sec'] !== '' && $data['nolla_sec'] !== null
                 ? (int) $data['nolla_sec']

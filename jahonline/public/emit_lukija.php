@@ -384,10 +384,10 @@ window.JAH_EMIT = {
 <script src="../assets/js/emit_proto.js?v=20261121ffff"></script>
 <script src="/assets/js/jah-radat-offline.js?v=20261107radat"></script>
 <script src="../assets/js/si_proto.js?v=20261112si"></script>
-<script src="../assets/js/emit_lukija.js?v=20261116viesti"></script>
+<script src="../assets/js/emit_lukija.js?v=20261121maali"></script>
 <script>
 (function () {
-    if (window.JAH_EMIT_VERSIO === 'automaatti24') {
+    if (window.JAH_EMIT_VERSIO === 'automaatti25') {
         return;
     }
     var el = document.getElementById('emit-yhteenveto');
@@ -395,10 +395,10 @@ window.JAH_EMIT = {
         el.textContent = 'Puhelimen muistissa on vanha lukijaohjelma. Ladataan sivu uudelleen.';
     }
     try {
-        if (sessionStorage.getItem('jah-emit-automaatti24')) {
+        if (sessionStorage.getItem('jah-emit-automaatti25')) {
             return;
         }
-        sessionStorage.setItem('jah-emit-automaatti24', '1');
+        sessionStorage.setItem('jah-emit-automaatti25', '1');
     } catch (e) {
         return;
     }
