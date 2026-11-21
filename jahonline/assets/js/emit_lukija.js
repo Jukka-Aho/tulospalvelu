@@ -1488,6 +1488,17 @@
         return { koodi: '', teksti: '' };
     }
 
+    function arvausKysymys(arvaus) {
+        if (!arvaus || !arvaus.id) {
+            return '';
+        }
+        if (arvaus.kysymys) {
+            return String(arvaus.kysymys);
+        }
+        return 'Leimat vastaavat rataa ' + (arvaus.nimi || arvaus.id)
+            + '. Vaihdetaanko kilpailija tälle radalle?';
+    }
+
     function naytaIltarastiMaali(data, luokka) {
         var t = data && data.tarkistus ? data.tarkistus : {};
         var nimi = kioskiNimi(data || {});
@@ -1512,6 +1523,9 @@
         }
         if (tila.koodi === 'E' && t.puuttuvat && t.puuttuvat.length) {
             html += '<div class="emit-puute">Puuttuu: ' + escapeHtml(t.puuttuvat.join(', ')) + '</div>';
+        }
+        if (tila.koodi === 'E' && data && data.arvaus && data.arvaus.id) {
+            html += '<div class="emit-maali-arvaus">' + escapeHtml(arvausKysymys(data.arvaus)) + '</div>';
         }
         if (!html) {
             html = escapeHtml((data && data.message) || '');
@@ -2451,7 +2465,7 @@
                 rataSel.value = String(arvaus.id);
             }
             if (arvausTeksti) {
-                arvausTeksti.textContent = 'Leimat sopivat radalle ' + (arvaus.nimi || arvaus.id) + '.';
+                arvausTeksti.textContent = arvausKysymys(arvaus);
             }
             if (arvausEl) {
                 arvausEl.hidden = false;

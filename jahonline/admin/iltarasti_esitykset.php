@@ -104,6 +104,13 @@ pageStart('Esitykset', iltarastiKuoriOpts($pdo, $kilpailu, 'esitykset', 'iltaras
                         · Väärät: <?= htmlspecialchars(implode(', ', array_map('strval', $e['vaarat']))) ?>
                     <?php endif; ?>
                 </p>
+                <?php if (!empty($e['arvaus']['id'])):
+                    $arvausKysymys = function_exists('iltarastiArvausKysymys')
+                        ? iltarastiArvausKysymys($e['arvaus'])
+                        : ('Leimat vastaavat rataa ' . (string) $e['arvaus']['nimi'] . '. Vaihdetaanko kilpailija tälle radalle?');
+                    ?>
+                    <p class="esitys-arvaus"><?= htmlspecialchars($arvausKysymys) ?></p>
+                <?php endif; ?>
                 <div class="esitys-toimet">
                     <form method="post" class="esitys-lomake" data-action="paatos">
                         <?= csrfKentta() ?>
@@ -121,7 +128,7 @@ pageStart('Esitykset', iltarastiKuoriOpts($pdo, $kilpailu, 'esitykset', 'iltaras
                             <input type="hidden" name="kilpailija_id" value="<?= $eid ?>">
                             <input type="hidden" name="action" value="vaihda_rata">
                             <input type="hidden" name="sarja_id" value="<?= (int) $e['arvaus']['id'] ?>">
-                            <button type="submit" class="btn esitys-vaihda">Vaihda: <?= htmlspecialchars((string) $e['arvaus']['nimi']) ?></button>
+                            <button type="submit" class="btn esitys-vaihda">Kyllä, vaihda tälle radalle</button>
                         </form>
                     <?php endif; ?>
                 </div>

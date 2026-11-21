@@ -152,7 +152,7 @@ if ($iltarasti && function_exists('rastilippuKilpailuYhdistetty') && rastilippuK
     $rlIlmoTeksti = trim((string) ($kilpailu['rastilippu_ilmo_viesti'] ?? ''));
 }
 
-$emitCssV = '20261116hamp';
+$emitCssV = '20261121arvaus';
 $extraHead = '<meta name="mobile-web-app-capable" content="yes">'
     . '<meta name="apple-mobile-web-app-capable" content="yes">'
     . '<meta name="theme-color" content="#0b3d2e">'
@@ -250,7 +250,7 @@ $rataValinnat = static function (array $sarjat): void {
     <p class="emit-paatos-otsikko"<?= $iltarasti ? ' hidden' : '' ?>>Esitys — rastit eivät täsmää. Valitse päätös tai vaihda rata.</p>
     <div id="emit-arvaus" class="emit-arvaus" hidden>
         <p id="arvaus-teksti" class="emit-arvaus-teksti"></p>
-        <button type="button" id="arvaus-vaihda" class="emit-yhdista emit-arvaus-nappi">Vaihda tälle radalle</button>
+        <button type="button" id="arvaus-vaihda" class="emit-yhdista emit-arvaus-nappi">Kyllä, vaihda tälle radalle</button>
     </div>
     <label for="paatos-rata">Rata
         <select id="paatos-rata"></select>
@@ -384,7 +384,7 @@ window.JAH_EMIT = {
 <script src="../assets/js/emit_proto.js?v=20261121ffff"></script>
 <script src="/assets/js/jah-radat-offline.js?v=20261107radat"></script>
 <script src="../assets/js/si_proto.js?v=20261112si"></script>
-<script src="../assets/js/emit_lukija.js?v=20261121maali"></script>
+<script src="../assets/js/emit_lukija.js?v=20261121arvaus"></script>
 <script>
 (function () {
     if (window.JAH_EMIT_VERSIO === 'automaatti25') {

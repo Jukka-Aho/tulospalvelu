@@ -175,12 +175,12 @@ function pageStart($title, array $opts = [])
     echo '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>';
     echo '<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">';
     echo '<link rel="stylesheet" href="/assets/css/maali_jono.css?v=20261114ylapalkki">';
-    echo '<link rel="stylesheet" href="/assets/css/style.css?v=20261116kisat">';
+    echo '<link rel="stylesheet" href="/assets/css/style.css?v=20261120demo">';
     echo '<link rel="stylesheet" href="/assets/css/jah_ruksi.css?v=20261114ruksi">';
     echo '<link rel="stylesheet" href="/assets/css/palvelu_valitsin.css?v=20261106mobiili">';
     echo '<link rel="stylesheet" href="/assets/css/seura_kisavalikko.css?v=20261019gold3">';
     if ($iltarastiKuori) {
-        echo '<link rel="stylesheet" href="/assets/css/iltarasti_kuori.css?v=20261114pcusb2">';
+        echo '<link rel="stylesheet" href="/assets/css/iltarasti_kuori.css?v=20261121arvaus">';
     }
     echo '<script src="/assets/js/theme.js?v=20261114teema3"></script>';
     if (!$embed) {
@@ -410,7 +410,7 @@ function pageEnd()
     }
 
     if (!$embed) {
-        echo '<script src="/assets/js/jah-pwa.js?v=20261116hamp"></script>';
+        echo '<script src="/assets/js/jah-pwa.js?v=20261121arvaus"></script>';
         jahPageLoaderFoot();
     }
     echo '</body></html>';

@@ -393,6 +393,21 @@ html[data-theme="dark"] .emit-viesti-sivu .emit-osuus {
 
 .emit-lukija-page .emit-arvaus {
     margin: 0 0 0.7rem;
+    padding: 0.55rem 0.65rem;
+    border: 2px solid #c49a22;
+    border-radius: 0.45rem;
+    background: #fff3cd;
+}
+
+.emit-lukija-page.emit-iltarasti .emit-maali-arvaus {
+    margin: 0.35rem 0 0.2rem;
+    padding: 0.45rem 0.6rem;
+    border: 2px solid #c49a22;
+    border-radius: 0.4rem;
+    background: #fff3cd;
+    color: #1c1408;
+    font-weight: 750;
+    line-height: 1.35;
 }
 
 .emit-lukija-page .emit-arvaus-teksti {

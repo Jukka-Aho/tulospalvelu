@@ -1071,6 +1071,20 @@ function iltarastiArvaaRata(PDO $pdo, int $kilpailuId, int $nykySarjaId, array $
     return iltarastiArvaaRataLeimoista($radat, $leimat, $nykySarjaId);
 }
 
+/** Kysymys, kun esityksessä tasan yksi toinen rata täsmää leimoihin. */
+function iltarastiArvausKysymys(?array $arvaus): string
+{
+    if (!$arvaus || (int) ($arvaus['id'] ?? 0) < 1) {
+        return '';
+    }
+    $nimi = trim((string) ($arvaus['nimi'] ?? ''));
+    if ($nimi === '') {
+        $nimi = (string) $arvaus['id'];
+    }
+
+    return 'Leimat vastaavat rataa ' . $nimi . '. Vaihdetaanko kilpailija tälle radalle?';
+}
+
 /**
  * Kirjoita emit-väliajat uudelleen radan nykyisten rastien mukaan.
  *
@@ -1663,6 +1677,10 @@ function emitLukijaKasittele(PDO $pdo, array $kilpailu, int $kayttajaId, array $
                     $arvausLeimat
                 );
                 if ($arvaus) {
+                    $kysymys = iltarastiArvausKysymys($arvaus);
+                    if ($kysymys !== '') {
+                        $arvaus['kysymys'] = $kysymys;
+                    }
                     $vastaus['arvaus'] = $arvaus;
                 }
             }
