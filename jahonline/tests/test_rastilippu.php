@@ -259,6 +259,7 @@ ok('salasanan unohtaminen');
 $tul = file_get_contents(__DIR__ . '/../admin/iltarasti_tulokset.php');
 str_contains($tul, 'seuranta.php') || fail('tulokset iframe');
 str_contains($tul, 'embed=1') || fail('tulokset embed');
+str_contains($tul, 'scroll=1') || fail('tulokset embed vierittaa');
 ok('tulokset sivu');
 
 $emit = file_get_contents(__DIR__ . '/../public/emit_lukija.php');
@@ -324,12 +325,12 @@ str_contains($swJah, 'kilpailijat.php') || fail('pwa cache osanottajat');
 str_contains($swJah, 'iltarastit.php') || fail('pwa cache hub');
 str_contains($swJah, 'omat_tapahtumat.php') || fail('pwa cache omat tapahtumat');
 str_contains($swJah, '/public/kilpailijat.php') || fail('pwa cache kioski osanottajat');
-str_contains($swJah, 'jahonline-app-v60') || fail('pwa cache v60');
+str_contains($swJah, 'jahonline-app-v61') || fail('pwa cache v61');
 str_contains($swJah, 'jah-radat-offline') || fail('pwa cache radat js');
 str_contains($swJah, 'ILTA_PREFETCH') || fail('pwa sw prefetch');
 str_contains($swJah, 'ignoreSearch') || fail('pwa sw ignoreSearch');
 $pwaJs = file_get_contents(__DIR__ . '/../assets/js/jah-pwa.js');
-str_contains($pwaJs, 'jahonline-app-v60') || fail('pwa js cache v60');
+str_contains($pwaJs, 'jahonline-app-v61') || fail('pwa js cache v61');
 str_contains($pwaJs, "scope: '/admin/'") || fail('pwa admin scope');
 str_contains($pwaJs, "scope: '/public/'") || fail('pwa public scope');
 str_contains($pwaJs, 'iltarasti-kioski') || fail('pwa kioski luokka');
@@ -576,6 +577,15 @@ ok('iltarasti valiajat sivu');
 $tulSivu = file_get_contents(__DIR__ . '/../admin/iltarasti_tulokset.php');
 str_contains($tulSivu, 'nakyma=') || fail('tulokset nakyma iframeen');
 ok('iltarasti tulokset sivu');
+
+$seurSrc = file_get_contents(__DIR__ . '/../public/seuranta.php');
+str_contains($seurSrc, 'seuranta-embed-scroll') || fail('seuranta embed scroll luokka');
+str_contains($seurSrc, "name=\"scroll\"") || fail('seuranta scroll hidden');
+$lbCss = file_get_contents(__DIR__ . '/../assets/css/live_board.css');
+str_contains($lbCss, 'seuranta-embed-scroll') || fail('css embed scroll');
+str_contains($lbCss, 'overflow-y: auto !important') || fail('css embed overflow-y');
+str_contains($lbCss, 'safe-area-inset-bottom') || fail('css embed alareuna');
+ok('tulokset embed vieritys');
 
 require_once __DIR__ . '/../includes/tili.php';
 tiliSalasanaPituus('Abcdef1!') >= 8 || fail('salasana pituus');

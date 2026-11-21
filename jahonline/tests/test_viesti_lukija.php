@@ -45,7 +45,7 @@ str_contains($help, "'viesti_lukija'") || fail('julkinenLinkit viesti');
 
 $sw = file_get_contents(__DIR__ . '/../sw-jahonline.js');
 str_contains($sw, 'viesti_lukija.php') || fail('pwa viestisivu');
-str_contains($sw, 'jahonline-app-v60') || fail('pwa cache');
+str_contains($sw, 'jahonline-app-v61') || fail('pwa cache');
 
 require_once __DIR__ . '/../includes/emit_lukija_logiikka.php';
 $n = emitLukijaViestiNaytto([

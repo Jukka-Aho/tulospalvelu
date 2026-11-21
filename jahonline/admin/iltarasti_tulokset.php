@@ -40,7 +40,7 @@ if ($nakyma !== 'valiajat') {
 }
 
 $src = '/public/seuranta.php?kilpailu_id=' . (int) $kilpailu['id']
-    . '&embed=1&nakyma=' . rawurlencode($nakyma);
+    . '&embed=1&scroll=1&nakyma=' . rawurlencode($nakyma);
 $naytaSsl = false;
 if (is_readable(__DIR__ . '/../includes/ssl_tulokset.php')) {
     require_once __DIR__ . '/../includes/ssl_tulokset.php';

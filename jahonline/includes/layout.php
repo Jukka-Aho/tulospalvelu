@@ -410,7 +410,7 @@ function pageEnd()
     }
 
     if (!$embed) {
-        echo '<script src="/assets/js/jah-pwa.js?v=20261121arvaus"></script>';
+        echo '<script src="/assets/js/jah-pwa.js?v=20261121scroll"></script>';
         jahPageLoaderFoot();
     }
     echo '</body></html>';

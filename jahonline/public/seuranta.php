@@ -70,6 +70,9 @@ $isLiveRefresh = ($_SERVER['HTTP_X_LIVE_REFRESH'] ?? '') === '1';
 $fragmentOnly = $isLiveRefresh || isset($_GET['fragment']);
 $embedMode = isset($_GET['embed'])
     && ((string) $_GET['embed'] === '1' || strtolower((string) $_GET['embed']) === 'true');
+$embedScroll = $embedMode
+    && isset($_GET['scroll'])
+    && ((string) $_GET['scroll'] === '1' || strtolower((string) $_GET['scroll']) === 'true');
 
 // Iltarasti: kuori ilman kilpailun tulospalveluvalikoita.
 if ($onIltarasti && !$fragmentOnly && !$embedMode) {
@@ -533,6 +536,7 @@ $seurantaUrl = static function (string $nak, string $sarja, array $extra = []) u
     $naytaMatkanMukaan,
     $matkaValittu,
     $embedMode,
+    $embedScroll,
     $osuusValittu,
     $onViesti
 ): string {
@@ -542,6 +546,9 @@ $seurantaUrl = static function (string $nak, string $sarja, array $extra = []) u
     ];
     if ($embedMode) {
         $params['embed'] = 1;
+    }
+    if ($embedScroll) {
+        $params['scroll'] = 1;
     }
     $forceMatka = array_key_exists('ryhmittele', $extra)
         ? ((string) ($extra['ryhmittele'] ?? '') === 'matka')
@@ -582,6 +589,9 @@ $tyhjennaSeuraParams = [
 if ($embedMode) {
     $tyhjennaSeuraParams['embed'] = 1;
 }
+if ($embedScroll) {
+    $tyhjennaSeuraParams['scroll'] = 1;
+}
 if ($naytaMatkanMukaan) {
     $tyhjennaSeuraParams['ryhmittele'] = 'matka';
     if ($matkaValittu !== '') {
@@ -612,7 +622,7 @@ $tulostaNimiSolu = static function (
     array $r,
     bool $maalissa,
     bool $linkitaNimi
-) use ($kilpailu_id, $onPirila, $onIltarasti, $embedMode, $nakyma): void {
+) use ($kilpailu_id, $onPirila, $onIltarasti, $embedMode, $embedScroll, $nakyma): void {
     $kid = (int) ($r['kilpailija_id'] ?? 0);
     $nimiTxt = (string) ($r['nimi'] ?? '');
     $parentTarget = $embedMode ? ' target="_parent" rel="noopener"' : '';
@@ -635,6 +645,9 @@ $tulostaNimiSolu = static function (
         $seuraExtra = ['nakyma' => $nakyma];
         if ($embedMode) {
             $seuraExtra['embed'] = 1;
+        }
+        if ($embedScroll) {
+            $seuraExtra['scroll'] = 1;
         }
         $meta[] = seuraLinkHtml((int) $kilpailu_id, (string) $r['seura'], 'seuranta', $seuraExtra, 'lb-seura-link');
     }
@@ -694,6 +707,7 @@ if (!$fragmentOnly) {
     $pageOpts = tulospalveluPageOpts(
         'seuranta-page'
         . ($embedMode ? ' seuranta-embed' : '')
+        . ($embedScroll ? ' seuranta-embed-scroll' : '')
         . ($onIltarasti ? ' seuranta-iltarasti' : '')
     );
     if ($embedMode) {
@@ -734,6 +748,9 @@ if (!$fragmentOnly) {
       <input type="hidden" name="nakyma" value="<?= htmlspecialchars($nakyma, ENT_QUOTES, 'UTF-8') ?>">
       <?php if ($embedMode): ?>
         <input type="hidden" name="embed" value="1">
+      <?php endif; ?>
+      <?php if ($embedScroll): ?>
+        <input type="hidden" name="scroll" value="1">
       <?php endif; ?>
       <?php if ($seuraSuodatin !== ''): ?>
         <input type="hidden" name="seura" value="<?= htmlspecialchars($seuraSuodatin, ENT_QUOTES, 'UTF-8') ?>">
@@ -1509,6 +1526,9 @@ $parentTarget = $embedMode ? ' target="_parent" rel="noopener"' : '';
         if ($embedMode) {
             $seuraExtra['embed'] = 1;
             $seuraExtra['_target'] = '_parent';
+        }
+        if ($embedScroll) {
+            $seuraExtra['scroll'] = 1;
         }
         $naytaSija = $maalissa
             ? ((!empty($onViesti) && $osuusValittu > 0 && ($r['osuus_sija'] ?? null) !== null)

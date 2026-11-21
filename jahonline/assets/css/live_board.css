@@ -2786,6 +2786,26 @@ body.jah-embed {
   overflow: hidden !important;
 }
 
+/* Iltarastien Tulokset: iframe täyttää ruudun, joten embedin on vierittävä
+ * itse. Muuten viimeinen rivi voi jäädä hieman peittoon ilman scrollia. */
+html:has(body.jah-embed.seuranta-embed-scroll) {
+  height: 100% !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+body.jah-embed.seuranta-embed-scroll {
+  height: 100% !important;
+  min-height: 0 !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+body.jah-embed.seuranta-embed-scroll .lb {
+  padding-bottom: calc(1.35rem + env(safe-area-inset-bottom, 0px));
+}
+
 html[data-theme="dark"] body.jah-embed,
 body.jah-embed[data-theme="dark"] {
   background: #071018 !important;

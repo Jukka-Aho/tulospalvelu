@@ -10,7 +10,7 @@ if (is_readable(__DIR__ . '/ilmo_arvonta.php')) {
 }
 
 /** Cache-bust live_board.css / style.css -päivityksille. */
-const TULOSPALVELU_ASSET_V = '20261117online';
+const TULOSPALVELU_ASSET_V = '20261121scroll';
 
 /**
  * pageStart-optiot live-board -teemalle.
