@@ -2528,6 +2528,15 @@
 
     function korttiLuettu(sanoma) {
         var nyt = Date.now();
+        var nLeimat = (sanoma.leimat && sanoma.leimat.length) || 0;
+        if ((moodi === 'maali' || moodi === 'automaatti') && !kioski
+            && sanoma.badge === viimeBadge
+            && viimeVastaus && viimeVastaus.tarkistus && !viimeVastaus.kysy
+            && String(viimeVastaus.emit) === String(sanoma.badge)
+            && !(kesken && nLeimat > ((odottaaLeimat && odottaaLeimat.length) || 0))) {
+            viimeAika = nyt;
+            return;
+        }
         if (sanoma.badge === viimeBadge && nyt - viimeAika < 2500) {
             viimeAika = nyt;
             return;
