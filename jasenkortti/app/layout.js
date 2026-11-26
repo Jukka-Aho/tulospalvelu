@@ -1,8 +1,8 @@
 import "./globals.css";
 
 export const metadata = {
-  title: "Jäsenkortti",
-  description: "Seuroille myytävä digitaalinen jäsenkortti — demo",
+  title: "EpSu-kortti",
+  description: "Seuroille myytävä EpSu-kortti — demo",
 };
 
 export default function RootLayout({ children }) {

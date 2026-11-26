@@ -1,4 +1,4 @@
-# Jäsenkortti (demo)
+# EpSu-kortti (demo)
 
 Clickable Finnish SaaS demo: clubs sell digital membership cards; members buy on a phone.
 

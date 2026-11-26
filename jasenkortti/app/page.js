@@ -5,10 +5,10 @@ export default function HomePage() {
     <main className="wrap">
       <p className="kicker">Jukka Aho · SaaS-demo</p>
       <div className="hero">
-        <h1>Jäsenkortti seuroille</h1>
+        <h1>EpSu-kortti seuroille</h1>
         <p className="lede">
           Myy seuralle kausimyynti: jäsen ostaa puhelimella, saa henkilökohtaisen
-          digitaalisen jäsenkortin QR-koodilla. Tämä on klikkailtava demo — maksua ei
+          EpSu-kortin QR-koodilla. Tämä on klikkailtava demo — maksua ei
           veloiteta.
         </p>
         <div className="actions">
@@ -26,7 +26,7 @@ export default function HomePage() {
           <li>Avaa seuran näkymä — Esimerkkiseura ja kausi Jäsenyys 2026 on valmiina.</li>
           <li>Kopioi ostolinkki ja avaa se puhelimen kokoisessa ikkunassa.</li>
           <li>Syötä nimi ja sähköposti, paina Maksa (demo).</li>
-          <li>Kortti aukeaa. Kopioi korttilinkki, jolla kortin voi avata uudelleen.</li>
+          <li>EpSu-kortti aukeaa. Kopioi korttilinkki, jolla kortin voi avata uudelleen.</li>
           <li>Seuran ostajalistassa näkyy uusi jäsen.</li>
         </ol>
       </section>

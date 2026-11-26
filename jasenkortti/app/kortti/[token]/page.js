@@ -38,7 +38,7 @@ export default function CardPage() {
   if (!member || !season) {
     return (
       <main className="wrap phone">
-        <h1>Korttia ei löydy</h1>
+        <h1>EpSu-korttia ei löydy</h1>
         <p className="muted">
           Demo tallentaa kortit tähän selaimeen. Avaa sama ostolinkki ja maksa uudelleen.
         </p>
@@ -49,16 +49,16 @@ export default function CardPage() {
 
   return (
     <main className="wrap phone">
-      <p className="kicker">Jäsenkortti</p>
+      <p className="kicker">EpSu-kortti</p>
       <article className="card">
-        <div className="club">{state.club.name}</div>
+        <div className="club">EpSu-kortti · {state.club.name}</div>
         <h2>{member.name}</h2>
         <p className="meta">{season.name}</p>
         <p className="meta">
           Voimassa {formatFiDate(season.validFrom)}–{formatFiDate(season.validTo)}
         </p>
         <div className="qr">
-          {qr ? <img src={qr} alt="Jäsenkortin QR-koodi" width={180} height={180} /> : null}
+          {qr ? <img src={qr} alt="EpSu-kortin QR-koodi" width={180} height={180} /> : null}
         </div>
       </article>
       <section className="panel" style={{ marginTop: 18 }}>

@@ -77,7 +77,7 @@ export default function CheckoutPage() {
           <button className="btn primary" type="submit" disabled={paying}>
             {paying ? "Maksetaan…" : "Maksa (demo)"}
           </button>
-          <p className="muted">Demo: maksua ei veloiteta. Kortti aukeaa heti.</p>
+          <p className="muted">Demo: maksua ei veloiteta. EpSu-kortti aukeaa heti.</p>
         </div>
       </form>
     </main>
