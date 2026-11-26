@@ -2,9 +2,9 @@ const STORAGE_KEY = "jasenkortti-demo-v1";
 
 export const SEED = {
   club: {
-    id: "esimerkkiseura",
-    name: "Esimerkkiseura",
-    city: "Jyväskylä",
+    id: "epsu",
+    name: "Etelä-Pohjanmaan Suunnistus ry",
+    city: "Seinäjoki",
     sport: "Suunnistus",
   },
   seasons: [
@@ -44,6 +44,7 @@ export function loadState() {
     if (!parsed.club || !Array.isArray(parsed.seasons) || !Array.isArray(parsed.members)) {
       return emptyState();
     }
+    parsed.club = { ...SEED.club };
     return parsed;
   } catch {
     return emptyState();

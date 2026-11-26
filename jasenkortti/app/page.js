@@ -23,7 +23,7 @@ export default function HomePage() {
       <section className="panel">
         <h2>Näin kokeilet</h2>
         <ol className="muted">
-          <li>Avaa seuran näkymä — Esimerkkiseura ja kausi Jäsenyys 2026 on valmiina.</li>
+          <li>Avaa seuran näkymä — Etelä-Pohjanmaan Suunnistus ry ja kausi Jäsenyys 2026 on valmiina.</li>
           <li>Kopioi ostolinkki ja avaa se puhelimen kokoisessa ikkunassa.</li>
           <li>Syötä nimi ja sähköposti, paina Maksa (demo).</li>
           <li>EpSu-kortti aukeaa. Kopioi korttilinkki, jolla kortin voi avata uudelleen.</li>
